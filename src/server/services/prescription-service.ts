@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@/generated/prisma/client";
+import { Prisma } from "@prisma/client";
 import { generatePrescriptionPdf } from "./prescription-pdf-service";
 import { createNotification } from "./notification-service";
 import { NOTIFICATION_TYPES } from "@/lib/constants";

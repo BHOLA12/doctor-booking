@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { FileText, Loader2, Upload } from "lucide-react";
 import { MedicalReportInfo } from "@/types";
 import { REPORT_TYPES } from "@/lib/constants";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";

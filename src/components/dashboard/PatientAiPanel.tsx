@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Brain, Loader2, Sparkles, AlertCircle, FileText, TestTube, Shield } from "lucide-react";
+import { Brain, Loader2, Sparkles, AlertCircle, FileText } from "lucide-react";
 import { ReportAnalysisResult, SymptomCheckerResult } from "@/types";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
