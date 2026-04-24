@@ -1,0 +1,161 @@
+// Doctor Booking Platform - Database Schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id         String   @id @default(cuid())
+  name       String
+  email      String   @unique
+  phone      String?
+  password   String
+  role       String   @default("PATIENT") // PATIENT, DOCTOR, ADMIN
+  avatar     String?
+  isVerified Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  doctor       Doctor?
+  appointments Appointment[] @relation("PatientAppointments")
+  medicalReports MedicalReport[]
+  prescriptions Prescription[] @relation("PatientPrescriptions")
+  notifications Notification[]
+  reviews      Review[]
+}
+
+model Doctor {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialization   String
+  experience       Int
+  licenseNumber    String?  @unique
+  fees             Int
+  bio              String?
+  clinicName       String?
+  clinicAddress    String?
+  city             String   @default("")
+  state            String   @default("")
+  country          String   @default("")
+  latitude         Float?
+  longitude        Float?
+  isApproved       Boolean  @default(false)
+  rating           Float    @default(0)
+  totalReviews     Int      @default(0)
+  consultationType String   @default("BOTH") // ONLINE, OFFLINE, BOTH
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  slots        Slot[]
+  appointments Appointment[]
+  prescriptions Prescription[] @relation("DoctorPrescriptions")
+  reviews      Review[]
+}
+
+model Slot {
+  id        String   @id @default(cuid())
+  doctorId  String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  dayOfWeek Int // 0=Sunday, 6=Saturday
+  startTime String // "09:00"
+  endTime   String // "09:30"
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@unique([doctorId, dayOfWeek, startTime])
+}
+
+model Appointment {
+  id               String   @id @default(cuid())
+  patientId        String
+  patient          User     @relation("PatientAppointments", fields: [patientId], references: [id])
+  doctorId         String
+  doctor           Doctor   @relation(fields: [doctorId], references: [id])
+  date             String // "2024-03-15"
+  startTime        String // "09:00"
+  endTime          String // "09:30"
+  status           String   @default("PENDING") // PENDING, CONFIRMED, CANCELLED, COMPLETED
+  consultationType String // ONLINE, OFFLINE
+  appointmentType  String   @default("NORMAL") // EMERGENCY, FOLLOW_UP, NORMAL
+  priorityRank     Int      @default(3)
+  queuePositionSnapshot Int?
+  estimatedWaitMinutes Int?
+  notes            String?
+  symptoms         String?
+  isEmergency      Boolean  @default(false)
+  paymentStatus    String   @default("PENDING") // PENDING, PAID, FAILED
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  prescription     Prescription?
+
+  @@index([doctorId, date, status])
+  @@index([doctorId, date, priorityRank, createdAt])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int // 1-5
+  comment   String?
+  patientId String
+  patient   User     @relation(fields: [patientId], references: [id])
+  doctorId  String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([patientId, doctorId])
+}
+
+model MedicalReport {
+  id         String   @id @default(cuid())
+  patientId  String
+  patient    User     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  fileUrl    String
+  fileName   String
+  type       String
+  date       DateTime
+  uploadedAt DateTime @default(now())
+  summary    String?
+
+  @@index([patientId, date(sort: Desc)])
+}
+
+model Prescription {
+  id           String      @id @default(cuid())
+  appointmentId String?    @unique
+  appointment  Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  patientId    String
+  patient      User        @relation("PatientPrescriptions", fields: [patientId], references: [id], onDelete: Cascade)
+  doctorId     String
+  doctor       Doctor      @relation("DoctorPrescriptions", fields: [doctorId], references: [id], onDelete: Cascade)
+  symptoms     String
+  diagnosis    String
+  medicines    Json
+  precautions  String?
+  pdfUrl       String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([patientId, createdAt(sort: Desc)])
+  @@index([doctorId, createdAt(sort: Desc)])
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  message     String
+  type        String
+  isRead      Boolean  @default(false)
+  link        String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt(sort: Desc)])
+}
