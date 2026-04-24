@@ -162,18 +162,19 @@ export default async function HomePage() {
               Find the right doctor for your health needs
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+          <div className="flex flex-wrap justify-center gap-4">
             {SPECIALIZATIONS.map((spec) => (
-              <Link key={spec.value} href={`/doctors?specialization=${spec.value}`} className="h-full">
+              <Link 
+                key={spec.value} 
+                href={`/doctors?specialization=${spec.value}`} 
+                className="w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.666rem)] lg:w-[calc(25%-0.75rem)] xl:w-[calc(16.666%-0.833rem)] h-full"
+              >
                 <Card className="group h-full cursor-pointer rounded-[20px] border border-slate-200/80 bg-white/95 shadow-[0_8px_30px_rgba(15,23,42,0.05)] transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.03] hover:border-blue-200 hover:shadow-[0_18px_40px_rgba(15,23,42,0.10)]">
                   <CardContent className="flex h-full flex-col items-center px-5 py-6 text-center">
                     <div
-                      className={`mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br ${spec.accent} shadow-inner`}
+                      className={`mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br ${spec.accent} shadow-inner`}
                     >
-                      {(() => {
-                        const Icon = specializationIcons[spec.iconKey as keyof typeof specializationIcons];
-                        return <Icon className="h-6 w-6" strokeWidth={2} />;
-                      })()}
+                      <span className="text-3xl drop-shadow-sm">{spec.emoji}</span>
                     </div>
                     <p className="text-sm font-semibold text-slate-900 sm:text-[15px]">
                       {spec.label}
