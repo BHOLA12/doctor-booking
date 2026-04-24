@@ -16,6 +16,19 @@ import {
   Heart,
   Shield,
   Zap,
+  HeartPulse,
+  Sparkles,
+  Bone,
+  Baby,
+  Ear,
+  Brain,
+  Eye,
+  BrainCircuit,
+  ShieldPlus,
+  Pill,
+  Activity,
+  UserRound,
+  Building2,
 } from "lucide-react";
 import { SPECIALIZATIONS } from "@/lib/constants";
 
@@ -30,6 +43,22 @@ export default async function HomePage() {
     prisma.doctor.count({ where: { isApproved: true } }),
     prisma.appointment.count(),
   ]);
+
+  const specializationIcons = {
+    stethoscope: Stethoscope,
+    "heart-pulse": HeartPulse,
+    pill: Pill,
+    sparkles: Sparkles,
+    bone: Bone,
+    baby: Baby,
+    "shield-plus": ShieldPlus,
+    ear: Ear,
+    brain: Brain,
+    eye: Eye,
+    "brain-circuit": BrainCircuit,
+    activity: Activity,
+    "user-round": UserRound,
+  } as const;
 
   return (
     <div className="flex flex-col">
@@ -59,17 +88,24 @@ export default async function HomePage() {
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Link href="/doctors" className="block">
-                  <div className="w-full h-12 pl-12 pr-4 rounded-xl border bg-background/80 backdrop-blur-sm flex items-center text-muted-foreground hover:border-primary/50 transition-colors cursor-pointer">
+                  <div className="w-full h-12 pl-12 pr-4 rounded-xl border bg-background/80 backdrop-blur-sm flex items-center text-muted-foreground hover:border-primary/50 transition-colors cursor-pointer text-sm">
                     Search doctors, specializations...
                   </div>
                 </Link>
               </div>
-              <Link href="/doctors">
-                <Button size="lg" className="h-12 px-8 rounded-xl text-base font-semibold gap-2">
-                  <Search className="h-4 w-4" />
-                  Search
-                </Button>
-              </Link>
+              <div className="flex gap-2">
+                <Link href="/hospitals">
+                  <Button size="lg" variant="outline" className="h-12 px-6 rounded-xl text-sm font-bold gap-2 bg-background shadow-sm hover:bg-muted">
+                    <Building2 className="h-4 w-4" />
+                    Hospitals
+                  </Button>
+                </Link>
+                <Link href="/doctors">
+                  <Button size="lg" className="h-12 px-8 rounded-xl text-sm font-bold gap-2">
+                    Search
+                  </Button>
+                </Link>
+              </div>
             </div>
 
             {/* Quick Specializations */}
@@ -80,7 +116,7 @@ export default async function HomePage() {
                     variant="outline"
                     className="px-3 py-1.5 text-sm cursor-pointer hover:bg-primary/10 hover:border-primary/30 transition-all"
                   >
-                    {spec.icon} {spec.label}
+                    {spec.label}
                   </Badge>
                 </Link>
               ))}
@@ -114,19 +150,37 @@ export default async function HomePage() {
       </section>
 
       {/* Specializations */}
-      <section className="py-16 sm:py-20">
+      <section className="relative overflow-hidden bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_40%,#f8fbff_100%)] py-16 sm:py-20">
+        <div className="absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.08),_transparent_60%)]" />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold">Browse by Specialization</h2>
-            <p className="mt-3 text-lg text-muted-foreground">Find the right doctor for your health needs</p>
+          <div className="mx-auto mb-12 max-w-2xl text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+              Browse by Specialization
+            </h2>
+            <div className="mx-auto mt-4 h-1.5 w-24 rounded-full bg-[linear-gradient(90deg,#93c5fd_0%,#3b82f6_45%,#bfdbfe_100%)]" />
+            <p className="mt-4 text-lg text-slate-500">
+              Find the right doctor for your health needs
+            </p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
             {SPECIALIZATIONS.map((spec) => (
-              <Link key={spec.value} href={`/doctors?specialization=${spec.value}`}>
-                <Card className="group hover:shadow-lg hover:border-primary/30 transition-all duration-300 cursor-pointer h-full">
-                  <CardContent className="flex flex-col items-center justify-center p-6 text-center">
-                    <span className="text-3xl mb-3 group-hover:scale-110 transition-transform">{spec.icon}</span>
-                    <p className="text-sm font-medium">{spec.label}</p>
+              <Link key={spec.value} href={`/doctors?specialization=${spec.value}`} className="h-full">
+                <Card className="group h-full cursor-pointer rounded-[20px] border border-slate-200/80 bg-white/95 shadow-[0_8px_30px_rgba(15,23,42,0.05)] transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.03] hover:border-blue-200 hover:shadow-[0_18px_40px_rgba(15,23,42,0.10)]">
+                  <CardContent className="flex h-full flex-col items-center px-5 py-6 text-center">
+                    <div
+                      className={`mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br ${spec.accent} shadow-inner`}
+                    >
+                      {(() => {
+                        const Icon = specializationIcons[spec.iconKey as keyof typeof specializationIcons];
+                        return <Icon className="h-6 w-6" strokeWidth={2} />;
+                      })()}
+                    </div>
+                    <p className="text-sm font-semibold text-slate-900 sm:text-[15px]">
+                      {spec.label}
+                    </p>
+                    <p className="mt-2 text-xs leading-5 text-slate-500 sm:text-sm">
+                      {spec.description}
+                    </p>
                   </CardContent>
                 </Card>
               </Link>

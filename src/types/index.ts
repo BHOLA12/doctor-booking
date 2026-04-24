@@ -9,6 +9,17 @@ export interface UserProfile {
   createdAt: string;
 }
 
+export interface HospitalInfo {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  rating: number;
+  totalReviews: number;
+  image?: string;
+  specialties?: string[];
+}
+
 export interface DoctorProfile {
   id: string;
   userId: string;
@@ -29,6 +40,8 @@ export interface DoctorProfile {
   rating: number;
   totalReviews: number;
   consultationType: string;
+  hospitalId?: string;
+  hospital?: HospitalInfo;
   slots?: SlotInfo[];
   reviews?: ReviewInfo[];
 }

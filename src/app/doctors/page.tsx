@@ -87,7 +87,7 @@ function DoctorsContent() {
             <SelectItem value="all">All Specializations</SelectItem>
             {SPECIALIZATIONS.map((s) => (
               <SelectItem key={s.value} value={s.value}>
-                {s.icon} {s.label}
+                {s.label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -138,7 +138,7 @@ function DoctorsContent() {
             className="cursor-pointer"
             onClick={() => setSpecialization(s.value === specialization ? "" : s.value)}
           >
-            {s.icon} {s.label}
+            {s.label}
           </Badge>
         ))}
       </div>

@@ -44,6 +44,8 @@ model Doctor {
   country          String   @default("")
   latitude         Float?
   longitude        Float?
+  hospitalId       String?
+  hospital         Hospital? @relation(fields: [hospitalId], references: [id])
   isApproved       Boolean  @default(false)
   rating           Float    @default(0)
   totalReviews     Int      @default(0)
@@ -157,4 +159,19 @@ model Notification {
   createdAt   DateTime @default(now())
 
   @@index([userId, createdAt(sort: Desc)])
+}
+
+model Hospital {
+  id          String   @id @default(cuid())
+  name        String
+  address     String
+  city        String
+  rating      Float    @default(0)
+  totalReviews Int     @default(0)
+  image       String?
+  specialties Json?    // Array of specialties available at the hospital
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  doctors     Doctor[]
 }

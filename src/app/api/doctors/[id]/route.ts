@@ -15,6 +15,7 @@ export async function GET(
         user: {
           select: { id: true, name: true, email: true, avatar: true, phone: true },
         },
+        hospital: true,
         slots: {
           where: { isActive: true },
           orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],

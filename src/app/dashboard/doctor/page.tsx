@@ -337,7 +337,7 @@ export default function DoctorDashboard() {
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {SPECIALIZATIONS.map((s) => (
-                        <SelectItem key={s.label} value={s.label}>{s.icon} {s.label}</SelectItem>
+                        <SelectItem key={s.label} value={s.label}>{s.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
