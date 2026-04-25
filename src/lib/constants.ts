@@ -103,6 +103,15 @@ export const SPECIALIZATIONS = [
     description: "Expert care for sexual health and wellness.",
     accent: "from-rose-100 to-red-50 text-rose-500",
   },
+  {
+    value: "nutritionist",
+    label: "Nutritionist / Dietitian",
+    iconKey: "activity",
+    emoji: "🥗",
+    description: "Personalised diet plans & nutritional guidance.",
+    accent: "from-green-100 to-emerald-50 text-green-600",
+    featured: true,
+  },
 ];
 
 export const DAYS_OF_WEEK = [

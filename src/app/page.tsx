@@ -1,323 +1,220 @@
 import Link from "next/link";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import SpecializationTabs from "@/components/home/SpecializationTabs";
+import DoctorsCarousel from "@/components/home/DoctorsCarousel";
+import SearchBar from "@/components/shared/SearchBar";
 import {
   Search,
-  Star,
-  MapPin,
+  CalendarDays,
   Clock,
+  ArrowRight,
+  ShieldCheck,
+  Star,
   Users,
   Stethoscope,
-  Award,
-  CalendarCheck,
-  ArrowRight,
-  Heart,
+  Pill,
+  FlaskConical,
+  Salad,
   Shield,
   Zap,
-  HeartPulse,
-  Sparkles,
-  Bone,
-  Baby,
-  Ear,
-  Brain,
-  Eye,
-  BrainCircuit,
-  ShieldPlus,
-  Pill,
-  Activity,
-  UserRound,
-  Building2,
+  Truck,
+  FileText,
+  CreditCard,
+  Headphones,
 } from "lucide-react";
-import { SPECIALIZATIONS } from "@/lib/constants";
 
 export default async function HomePage() {
-  const [featuredDoctors, totalDoctors, totalAppointments] = await Promise.all([
-    prisma.doctor.findMany({
-      where: { isApproved: true },
-      include: { user: { select: { name: true, avatar: true } } },
-      orderBy: { rating: "desc" },
-      take: 6,
-    }),
-    prisma.doctor.count({ where: { isApproved: true } }),
-    prisma.appointment.count(),
-  ]);
+  const featuredDoctors = await prisma.doctor.findMany({
+    where: { isApproved: true },
+    include: { user: { select: { name: true, avatar: true } } },
+    orderBy: { rating: "desc" },
+    take: 10,
+  });
 
-  const specializationIcons = {
-    stethoscope: Stethoscope,
-    "heart-pulse": HeartPulse,
-    pill: Pill,
-    sparkles: Sparkles,
-    bone: Bone,
-    baby: Baby,
-    "shield-plus": ShieldPlus,
-    ear: Ear,
-    brain: Brain,
-    eye: Eye,
-    "brain-circuit": BrainCircuit,
-    activity: Activity,
-    "user-round": UserRound,
-  } as const;
+  const serviceLinks = [
+    {
+      emoji: "🩺",
+      label: "Consult Doctor",
+      desc: "Book with verified specialists",
+      href: "/doctors",
+    },
+    {
+      emoji: "💊",
+      label: "Order Medicines",
+      desc: "Genuine meds, free delivery",
+      href: "/medicines",
+    },
+    {
+      emoji: "🧪",
+      label: "Book Lab Tests",
+      desc: "Home sample collection",
+      href: "/lab-tests",
+    },
+    {
+      emoji: "🥗",
+      label: "Diet Plans",
+      desc: "Expert nutrition guidance",
+      href: "/nutrition",
+    },
+  ];
+
+  const features = [
+    { icon: Shield, label: "Verified Doctors", desc: "100% verified & experienced doctors" },
+    { icon: Zap, label: "Instant Booking", desc: "Book appointments in just a few clicks" },
+    { icon: Truck, label: "Fast Delivery", desc: "Medicines delivered to your doorstep" },
+    { icon: FileText, label: "Accurate Reports", desc: "Lab reports in 6–24 hours" },
+    { icon: CreditCard, label: "Secure Payments", desc: "Multiple payment options available" },
+    { icon: Headphones, label: "24/7 Support", desc: "We're here to help you anytime" },
+  ];
 
   return (
     <div className="flex flex-col">
-      {/* Hero Section */}
-      <section className="relative hero-gradient overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--color-teal-200)_0%,_transparent_50%)] opacity-40" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--color-teal-100)_0%,_transparent_50%)] opacity-30" />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-36">
-          <div className="max-w-3xl">
-            <Badge variant="secondary" className="mb-6 px-4 py-1.5 text-sm font-medium rounded-full">
-              <MapPin className="h-3.5 w-3.5 mr-1.5" />
-              Available Worldwide
-            </Badge>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
-              Find & Book{" "}
-              <span className="gradient-text">Top Doctors</span>
-              <br />
-              Near You
-            </h1>
-            <p className="mt-6 text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-2xl">
-              Book appointments with verified doctors across the globe. Search by specialization,
-              choose your city, and get quality healthcare at your convenience.
-            </p>
+      {/* ============ HERO ============ */}
+      <section className="relative bg-gradient-to-br from-teal-50 via-emerald-50/40 to-white overflow-hidden min-h-[580px]">
+        {/* Blob bg */}
+        <div className="absolute top-0 right-0 w-[700px] h-[700px] bg-teal-100/50 rounded-full translate-x-1/3 -translate-y-1/4 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-emerald-100/30 rounded-full -translate-x-1/2 translate-y-1/2 blur-3xl pointer-events-none" />
 
-            {/* Search Bar */}
-            <div className="mt-8 flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Link href="/doctors" className="block">
-                  <div className="w-full h-12 pl-12 pr-4 rounded-xl border bg-background/80 backdrop-blur-sm flex items-center text-muted-foreground hover:border-primary/50 transition-colors cursor-pointer text-sm">
-                    Search doctors, specializations...
-                  </div>
-                </Link>
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 pb-0 sm:pt-14">
+          <div className="grid lg:grid-cols-2 gap-6 items-end">
+            {/* ---- LEFT ---- */}
+            <div className="pb-10 lg:pb-16 z-10">
+              {/* Trust badge */}
+              <div className="inline-flex items-center gap-2 bg-white border border-teal-200/80 rounded-full px-4 py-1.5 mb-6 shadow-sm">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold text-primary">Trusted by 50,000+ Patients</span>
               </div>
-              <div className="flex gap-2">
-                <Link href="/hospitals">
-                  <Button size="lg" variant="outline" className="h-12 px-6 rounded-xl text-sm font-bold gap-2 bg-background shadow-sm hover:bg-muted">
-                    <Building2 className="h-4 w-4" />
-                    Hospitals
-                  </Button>
-                </Link>
-                <Link href="/doctors">
-                  <Button size="lg" className="h-12 px-8 rounded-xl text-sm font-bold gap-2">
-                    Search
-                  </Button>
-                </Link>
+
+              <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] font-extrabold tracking-tight leading-[1.15] mb-4 text-gray-900">
+                Healthcare,
+                <br />
+                Simplified for{" "}
+                <span className="gradient-text">Everyone</span>
+              </h1>
+
+              <p className="text-base sm:text-lg text-slate-500 leading-relaxed mb-7 max-w-lg">
+                Book appointments with top doctors, order medicines,
+                book lab tests &amp; consult online — all in one place.
+              </p>
+
+              {/* ---- Search Bar ---- */}
+              <div className="mt-0 mb-6">
+                <SearchBar />
+              </div>
+
+              {/* ---- Service Quick Links ---- */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {serviceLinks.map((svc) => (
+                  <Link key={svc.href} href={svc.href}>
+                    <div className="flex items-center gap-3 bg-white rounded-xl border border-slate-100 px-3.5 py-3 shadow-sm hover:shadow-md hover:border-primary/30 transition-all group cursor-pointer">
+                      <span className="text-xl shrink-0">{svc.emoji}</span>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-xs leading-tight text-slate-800 group-hover:text-primary transition-colors">{svc.label}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{svc.desc}</p>
+                      </div>
+                      <ArrowRight className="h-3.5 w-3.5 text-muted-foreground ml-auto shrink-0 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                    </div>
+                  </Link>
+                ))}
               </div>
             </div>
 
-            {/* Quick Specializations */}
-            <div className="mt-6 flex flex-wrap gap-2">
-              {SPECIALIZATIONS.slice(0, 5).map((spec) => (
-                <Link key={spec.value} href={`/doctors?specialization=${spec.value}`}>
-                  <Badge
-                    variant="outline"
-                    className="px-3 py-1.5 text-sm cursor-pointer hover:bg-primary/10 hover:border-primary/30 transition-all"
-                  >
-                    {spec.label}
-                  </Badge>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+            {/* ---- RIGHT: Doctor Image + Stat Cards ---- */}
+            <div className="relative flex justify-center lg:justify-end items-end self-end z-10">
+              {/* Circular teal bg behind doctor */}
+              <div className="absolute bottom-0 right-0 w-[420px] h-[420px] bg-gradient-to-br from-teal-200/60 to-emerald-100/40 rounded-full" />
 
-      {/* Stats Section */}
-      <section className="border-b">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { icon: Stethoscope, label: "Verified Doctors", value: `${totalDoctors}+`, color: "text-teal-600" },
-              { icon: CalendarCheck, label: "Appointments", value: `${totalAppointments}+`, color: "text-blue-600" },
-              { icon: Award, label: "Specializations", value: "12+", color: "text-amber-600" },
-              { icon: Users, label: "Happy Patients", value: "500+", color: "text-emerald-600" },
-            ].map((stat) => (
-              <div key={stat.label} className="flex items-center gap-4 p-4 rounded-xl hover:bg-muted/50 transition-colors">
-                <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-muted ${stat.color}`}>
-                  <stat.icon className="h-6 w-6" />
+              {/* Doctor Image */}
+              <div className="relative z-10 w-[340px] sm:w-[380px] lg:w-[420px]">
+                <Image
+                  src="/doctor-hero.png"
+                  alt="DocBook Healthcare Professional"
+                  width={420}
+                  height={520}
+                  className="object-contain object-bottom drop-shadow-xl"
+                  priority
+                />
+              </div>
+
+              {/* Floating Stat Cards */}
+              {/* 50k patients */}
+              <div className="absolute top-8 left-0 lg:-left-8 bg-white rounded-2xl shadow-xl border border-slate-100 px-4 py-3 flex items-center gap-3 z-20 w-[170px]">
+                <div className="flex -space-x-2">
+                  {["bg-teal-400", "bg-blue-400", "bg-violet-400"].map((c, i) => (
+                    <div key={i} className={`h-8 w-8 rounded-full ${c} border-2 border-white flex items-center justify-center text-white text-xs font-bold`}>
+                      {["A", "B", "C"][i]}
+                    </div>
+                  ))}
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{stat.value}</p>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
+                  <p className="text-base font-extrabold text-slate-800 leading-none">50,000+</p>
+                  <p className="text-[10px] text-muted-foreground">Happy Patients</p>
                 </div>
+              </div>
+
+              {/* 4.8 Rating */}
+              <div className="absolute top-1/2 right-0 lg:-right-4 -translate-y-1/2 bg-white rounded-2xl shadow-xl border border-slate-100 px-4 py-3 flex items-center gap-3 z-20 w-[155px]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 shrink-0">
+                  <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-base font-extrabold text-slate-800 leading-none">4.8 / 5</p>
+                  <p className="text-[10px] text-muted-foreground">Average Rating</p>
+                </div>
+              </div>
+
+              {/* 100% Secure */}
+              <div className="absolute bottom-24 left-0 lg:-left-4 bg-white rounded-2xl shadow-xl border border-slate-100 px-4 py-3 flex items-center gap-3 z-20 w-[160px]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 shrink-0">
+                  <ShieldCheck className="h-5 w-5 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="text-base font-extrabold text-slate-800 leading-none">100%</p>
+                  <p className="text-[10px] text-muted-foreground">Secure & Verified</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============ SPECIALIZATION TABS ============ */}
+      <SpecializationTabs />
+
+      {/* ============ TOP DOCTORS CAROUSEL ============ */}
+      <DoctorsCarousel doctors={featuredDoctors} />
+
+      {/* ============ FEATURES STRIP ============ */}
+      <section className="py-10 border-t bg-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
+            {features.map(({ icon: Icon, label, desc }) => (
+              <div key={label} className="flex flex-col items-center text-center gap-2">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
+                  <Icon className="h-5 w-5 text-primary" />
+                </div>
+                <p className="font-semibold text-sm text-slate-800">{label}</p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Specializations */}
-      <section className="relative overflow-hidden bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_40%,#f8fbff_100%)] py-16 sm:py-20">
-        <div className="absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.08),_transparent_60%)]" />
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto mb-12 max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
-              Browse by Specialization
-            </h2>
-            <div className="mx-auto mt-4 h-1.5 w-24 rounded-full bg-[linear-gradient(90deg,#93c5fd_0%,#3b82f6_45%,#bfdbfe_100%)]" />
-            <p className="mt-4 text-lg text-slate-500">
-              Find the right doctor for your health needs
-            </p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-4">
-            {SPECIALIZATIONS.map((spec) => (
-              <Link 
-                key={spec.value} 
-                href={`/doctors?specialization=${spec.value}`} 
-                className="w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.666rem)] lg:w-[calc(25%-0.75rem)] xl:w-[calc(16.666%-0.833rem)] h-full"
-              >
-                <Card className="group h-full cursor-pointer rounded-[20px] border border-slate-200/80 bg-white/95 shadow-[0_8px_30px_rgba(15,23,42,0.05)] transition-all duration-300 ease-out hover:-translate-y-1 hover:scale-[1.03] hover:border-blue-200 hover:shadow-[0_18px_40px_rgba(15,23,42,0.10)]">
-                  <CardContent className="flex h-full flex-col items-center px-5 py-6 text-center">
-                    <div
-                      className={`mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br ${spec.accent} shadow-inner`}
-                    >
-                      <span className="text-3xl drop-shadow-sm">{spec.emoji}</span>
-                    </div>
-                    <p className="text-sm font-semibold text-slate-900 sm:text-[15px]">
-                      {spec.label}
-                    </p>
-                    <p className="mt-2 text-xs leading-5 text-slate-500 sm:text-sm">
-                      {spec.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Doctors */}
-      <section className="py-16 sm:py-20 bg-muted/30">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-12">
-            <div>
-              <h2 className="text-3xl sm:text-4xl font-bold">Top Rated Doctors</h2>
-              <p className="mt-3 text-lg text-muted-foreground">Trusted by patients worldwide</p>
-            </div>
-            <Link href="/doctors">
-              <Button variant="outline" className="gap-2 hidden sm:flex">
-                View All <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredDoctors.map((doctor) => (
-              <Link key={doctor.id} href={`/doctors/${doctor.id}`}>
-                <Card className="group hover:shadow-xl hover:border-primary/20 transition-all duration-300 overflow-hidden h-full">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xl font-bold">
-                        {doctor.user.name.split(" ").filter((_,i) => i > 0).map(n => n[0]).join("").slice(0, 2) || doctor.user.name.charAt(0)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold truncate group-hover:text-primary transition-colors">
-                          {doctor.user.name}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">{doctor.specialization}</p>
-                        <div className="flex items-center gap-3 mt-2">
-                          <span className="flex items-center gap-1 text-sm">
-                            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                            <span className="font-medium">{doctor.rating.toFixed(1)}</span>
-                            <span className="text-muted-foreground">({doctor.totalReviews})</span>
-                          </span>
-                          <span className="text-sm text-muted-foreground">
-                            {doctor.experience} yrs exp
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-4 flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                        <MapPin className="h-3.5 w-3.5" />
-                        {doctor.city}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-sm font-semibold text-primary">
-                        <Clock className="h-3.5 w-3.5" />
-                        ₹{doctor.fees}
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full mt-4 group-hover:bg-primary group-hover:text-primary-foreground transition-all"
-                    >
-                      Book Appointment
-                    </Button>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-
-          <div className="mt-8 text-center sm:hidden">
-            <Link href="/doctors">
-              <Button variant="outline" className="gap-2">
-                View All Doctors <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Why Choose Us */}
-      <section className="py-16 sm:py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold">Why Choose DocBook?</h2>
-            <p className="mt-3 text-lg text-muted-foreground">Healthcare made simple, anywhere</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Shield,
-                title: "Verified Doctors",
-                description: "All doctors are verified by our admin team. Only qualified and experienced professionals are listed.",
-                color: "text-teal-600 bg-teal-50",
-              },
-              {
-                icon: Zap,
-                title: "Instant Booking",
-                description: "Book appointments in seconds. Choose your preferred time slot and consultation type.",
-                color: "text-blue-600 bg-blue-50",
-              },
-              {
-                icon: Heart,
-                title: "Trusted Reviews",
-                description: "Read genuine patient reviews and ratings to make informed decisions about your healthcare.",
-                color: "text-rose-600 bg-rose-50",
-              },
-            ].map((feature) => (
-              <Card key={feature.title} className="border-none shadow-sm hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-8">
-                  <div className={`inline-flex h-12 w-12 items-center justify-center rounded-xl ${feature.color} mb-4`}>
-                    <feature.icon className="h-6 w-6" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 sm:py-20 bg-primary text-primary-foreground">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">Are you a Doctor?</h2>
-          <p className="text-lg opacity-90 mb-8 max-w-2xl mx-auto">
-            Join DocBook and reach thousands of patients worldwide. Manage your appointments,
-            build your online reputation, and grow your practice.
+      {/* ============ CTA ============ */}
+      <section className="py-14 bg-primary text-primary-foreground">
+        <div className="mx-auto max-w-4xl px-4 text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-3">Are you a Doctor?</h2>
+          <p className="opacity-90 text-lg mb-7 max-w-xl mx-auto">
+            Join DocBook and reach thousands of patients. Manage appointments & grow your practice.
           </p>
           <Link href="/register?role=DOCTOR">
-            <Button size="lg" variant="secondary" className="text-base font-semibold px-8 rounded-full">
-              Register as Doctor
-              <ArrowRight className="h-4 w-4 ml-2" />
+            <Button size="lg" variant="secondary" className="font-semibold px-8 rounded-full text-base">
+              Register as Doctor <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </Link>
         </div>

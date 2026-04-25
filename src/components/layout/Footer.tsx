@@ -5,17 +5,17 @@ export default function Footer() {
   return (
     <footer className="border-t bg-muted/30">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           {/* Brand */}
-          <div className="md:col-span-1">
+          <div className="md:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                 <Stethoscope className="h-4 w-4" />
               </div>
               <span className="text-lg font-bold gradient-text">DocBook</span>
             </Link>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Your trusted global healthcare partner. Find and book appointments with the best doctors near you, anywhere in the world.
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
+              Your complete healthcare super-app. Book doctors, order medicines, schedule lab tests, and get personalised diet plans — all in one place.
             </p>
           </div>
 
@@ -24,20 +24,20 @@ export default function Footer() {
             <h3 className="font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2.5 text-sm text-muted-foreground">
               <li><Link href="/doctors" className="hover:text-foreground transition-colors">Find Doctors</Link></li>
-              <li><Link href="/register" className="hover:text-foreground transition-colors">Register</Link></li>
-              <li><Link href="/login" className="hover:text-foreground transition-colors">Login</Link></li>
+              <li><Link href="/hospitals" className="hover:text-foreground transition-colors">Hospitals</Link></li>
+              <li><Link href="/online-consultation" className="hover:text-foreground transition-colors">Online Consultation</Link></li>
               <li><Link href="/register?role=DOCTOR" className="hover:text-foreground transition-colors">Join as Doctor</Link></li>
             </ul>
           </div>
 
-          {/* Specializations */}
+          {/* Services */}
           <div>
-            <h3 className="font-semibold mb-4">Specializations</h3>
+            <h3 className="font-semibold mb-4">Services</h3>
             <ul className="space-y-2.5 text-sm text-muted-foreground">
-              <li><Link href="/doctors?specialization=cardiologist" className="hover:text-foreground transition-colors">Cardiologist</Link></li>
-              <li><Link href="/doctors?specialization=dentist" className="hover:text-foreground transition-colors">Dentist</Link></li>
-              <li><Link href="/doctors?specialization=pediatrician" className="hover:text-foreground transition-colors">Pediatrician</Link></li>
-              <li><Link href="/doctors?specialization=orthopedic" className="hover:text-foreground transition-colors">Orthopedic</Link></li>
+              <li><Link href="/medicines" className="hover:text-foreground transition-colors">Order Medicines</Link></li>
+              <li><Link href="/lab-tests" className="hover:text-foreground transition-colors">Book Lab Tests</Link></li>
+              <li><Link href="/nutrition" className="hover:text-foreground transition-colors">Diet Plans</Link></li>
+              <li><Link href="/doctors?specialization=nutritionist" className="hover:text-foreground transition-colors">Find Nutritionist</Link></li>
             </ul>
           </div>
 
@@ -68,3 +68,4 @@ export default function Footer() {
     </footer>
   );
 }
+

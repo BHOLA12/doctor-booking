@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getCached, setCached, buildCacheKey } from "@/lib/search-cache";
 
 export const dynamic = "force-dynamic";
 
@@ -9,53 +10,49 @@ export async function GET(request: NextRequest) {
     const city = searchParams.get("city") || "";
     const specialization = searchParams.get("specialization") || "";
     const search = searchParams.get("search") || "";
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "12");
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
+    const limit = Math.min(50, parseInt(searchParams.get("limit") || "12"));
     const sortBy = searchParams.get("sortBy") || "experience_reviews";
 
-    const where: Record<string, unknown> = {
-      isApproved: true,
-    };
+    // ── Cache key (includes all filter dimensions) ──
+    const cacheKey = buildCacheKey(
+      "doctors-list",
+      search,
+      specialization,
+      city,
+      sortBy,
+      `p${page}`,
+      `l${limit}`
+    );
 
-    let validIds: string[] | undefined;
+    const cached = getCached<object>(cacheKey);
+    if (cached) {
+      return NextResponse.json({ ...cached, fromCache: true });
+    }
+
+    // ── Build Prisma where clause (no raw SQL) ──
+    const where: Record<string, unknown> = { isApproved: true };
+
+    if (specialization && specialization !== "all") {
+      where.specialization = { contains: specialization, mode: "insensitive" };
+    }
 
     if (city && city !== "all") {
-      const cityLower = city.toLowerCase();
-      const rawIds: { id: string }[] = await prisma.$queryRaw`SELECT id FROM Doctor WHERE LOWER(city) LIKE '%' || ${cityLower} || '%'`;
-      validIds = rawIds.map((r) => r.id);
+      where.city = { contains: city, mode: "insensitive" };
     }
 
     if (search) {
-      const searchLower = search.toLowerCase();
-      const searchRawIds: { id: string }[] = await prisma.$queryRaw`
-        SELECT d.id 
-        FROM Doctor d 
-        JOIN User u ON d.userId = u.id 
-        WHERE LOWER(u.name) LIKE '%' || ${searchLower} || '%' 
-           OR LOWER(d.specialization) LIKE '%' || ${searchLower} || '%' 
-           OR LOWER(d.clinicName) LIKE '%' || ${searchLower} || '%'
-      `;
-      const searchIds = searchRawIds.map((r) => r.id);
-      
-      if (validIds) {
-        validIds = validIds.filter(id => searchIds.includes(id));
-      } else {
-        validIds = searchIds;
-      }
+      where.OR = [
+        { specialization: { contains: search, mode: "insensitive" } },
+        { clinicName: { contains: search, mode: "insensitive" } },
+        { city: { contains: search, mode: "insensitive" } },
+        { user: { name: { contains: search, mode: "insensitive" } } },
+      ];
     }
 
-    if (validIds !== undefined) {
-      where.id = { in: validIds };
-    }
-
-    if (specialization && specialization !== "all") {
-      where.specialization = { contains: specialization };
-    }
-
-    let orderBy: Record<string, string>[] | Record<string, string> = {};
-    if (sortBy === "experience_reviews") {
-      orderBy = [{ experience: "desc" }, { totalReviews: "desc" }, { rating: "desc" }];
-    } else if (sortBy === "rating") {
+    // ── Sort order ──
+    let orderBy: Record<string, string>[] | Record<string, string> = [];
+    if (sortBy === "rating") {
       orderBy = { rating: "desc" };
     } else if (sortBy === "fees_low") {
       orderBy = { fees: "asc" };
@@ -64,13 +61,24 @@ export async function GET(request: NextRequest) {
     } else if (sortBy === "experience") {
       orderBy = { experience: "desc" };
     } else {
-      orderBy = [{ experience: "desc" }, { totalReviews: "desc" }];
+      orderBy = [{ experience: "desc" }, { totalReviews: "desc" }, { rating: "desc" }];
     }
 
+    // ── Run Prisma query with limited select ──
     const [doctors, total] = await Promise.all([
       prisma.doctor.findMany({
         where,
-        include: {
+        select: {
+          id: true,
+          specialization: true,
+          city: true,
+          rating: true,
+          fees: true,
+          experience: true,
+          totalReviews: true,
+          consultationType: true,
+          bio: true,
+          clinicName: true,
           user: {
             select: { id: true, name: true, email: true, avatar: true },
           },
@@ -82,7 +90,7 @@ export async function GET(request: NextRequest) {
       prisma.doctor.count({ where }),
     ]);
 
-    return NextResponse.json({
+    const result = {
       success: true,
       data: doctors,
       pagination: {
@@ -90,8 +98,14 @@ export async function GET(request: NextRequest) {
         limit,
         total,
         totalPages: Math.ceil(total / limit),
+        hasMore: page * limit < total,
       },
-    });
+    };
+
+    // Cache for 60 seconds (short enough to stay fresh)
+    setCached(cacheKey, result, 60);
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Doctors list error:", error);
     return NextResponse.json(
