@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import Fuse from "fuse.js";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,7 @@ const fuseIndex = new Fuse<Medicine>(MEDICINES, {
   minMatchCharLength: 2,
   ignoreLocation: true,
 });
-import { Pill, Search, ShoppingCart, Shield, Truck, Clock, RotateCcw } from "lucide-react";
+import { Pill, Search, ShoppingCart, Shield, Truck, Clock, RotateCcw, ChevronRight } from "lucide-react";
 
 export default function MedicinesPage() {
   const [search, setSearch] = useState("");
@@ -67,16 +68,23 @@ export default function MedicinesPage() {
               Search from thousands of medicines by name or salt composition. Genuine medicines, best prices, free delivery.
             </p>
 
-            {/* Search */}
-            <div className="mt-7 relative max-w-xl">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="medicine-search"
-                placeholder="Search by medicine name or salt..."
-                className="pl-11 h-12 rounded-xl text-sm"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+            {/* Search & Condition Browse */}
+            <div className="mt-7 flex flex-col sm:flex-row gap-3 max-w-2xl">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="medicine-search"
+                  placeholder="Search by medicine name or salt..."
+                  className="pl-11 h-12 rounded-xl text-sm bg-white"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <Link href="/health-conditions">
+                <Button className="h-12 px-6 rounded-xl gap-2 font-bold shadow-lg shadow-primary/10">
+                  Browse by Condition <ChevronRight className="h-4 w-4" />
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

@@ -27,6 +27,7 @@ import {
   BookOpen,
   Plus,
   ShoppingCart,
+  Activity,
 } from "lucide-react";
 import { useState } from "react";
 import NotificationBell from "@/components/layout/NotificationBell";
@@ -49,6 +50,7 @@ export default function Navbar() {
 
   const serviceLinks = [
     { href: "/online-consultation", label: "Online Consultation", icon: Globe },
+    { href: "/health-conditions", label: "Health Conditions", icon: Activity },
     { href: "/medicines", label: "Order Medicines", icon: Pill },
     { href: "/lab-tests", label: "Book Lab Tests", icon: FlaskConical },
     { href: "/nutrition", label: "Diet & Nutrition", icon: Salad },
