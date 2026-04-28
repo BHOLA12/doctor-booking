@@ -16,6 +16,7 @@ export type ConditionMedicine = {
   brandId: string;
   conditionId: string;
   imageEmoji: string;
+  image?: string;
   availability: "In Stock" | "Out of Stock";
 };
 
@@ -57,7 +58,7 @@ export const BRANDS: Brand[] = [
 
 export const CONDITION_MEDICINES: ConditionMedicine[] = [
   // Diabetes
-  { id: "cm1", name: "Metformin 500", salt: "Metformin", price: 45, mrp: 60, discount: 25, brandId: "b1", conditionId: "c1", imageEmoji: "💊", availability: "In Stock" },
+  { id: "cm1", name: "Metformin 500", salt: "Metformin", price: 45, mrp: 60, discount: 25, brandId: "b1", conditionId: "c1", imageEmoji: "💊", image: "/images/medicines/metformin.png", availability: "In Stock" },
   { id: "cm2", name: "Glycomet GP1", salt: "Glimepiride + Metformin", price: 98, mrp: 130, discount: 25, brandId: "b6", conditionId: "c1", imageEmoji: "🧪", availability: "In Stock" },
   { id: "cm3", name: "Janumet 50/500", salt: "Sitagliptin + Metformin", price: 350, mrp: 420, discount: 16, brandId: "b4", conditionId: "c1", imageEmoji: "💊", availability: "In Stock" },
   { id: "cm4", name: "Galvus Met", salt: "Vildagliptin + Metformin", price: 280, mrp: 350, discount: 20, brandId: "b3", conditionId: "c1", imageEmoji: "🧪", availability: "In Stock" },

@@ -50,6 +50,10 @@ export async function POST(request: NextRequest) {
           licenseNumber: licenseNumber || null,
           fees: 500,
           isApproved: false,
+          degree: body.degree || null,
+          college: body.college || null,
+          experienceHospitals: body.experienceHospitals || null,
+          currentHospitalName: body.currentHospitalName || null,
         },
       });
     }
@@ -73,17 +77,19 @@ export async function POST(request: NextRequest) {
           role: user.role,
           isVerified: user.isVerified,
         },
-        message: "Registration successful!",
+        message: role === "DOCTOR" 
+          ? "Registration successful! Your account is pending admin approval." 
+          : "Registration successful!",
       },
       { status: 201 }
     );
 
     response.cookies.set(cookieOptions.name, token, cookieOptions);
     return response;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Registration error:", error);
     return NextResponse.json(
-      { success: false, error: "Internal server error" },
+      { success: false, error: error.message || "Internal server error" },
       { status: 500 }
     );
   }

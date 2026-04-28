@@ -17,22 +17,34 @@ export default function ConditionMedicineCard({
   const { addItem } = useCart();
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 border-slate-200">
+    <Card className="group hover:shadow-xl transition-all duration-500 border-slate-200 overflow-hidden bg-white">
       <CardContent className="p-4">
         <div className="flex gap-4">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-slate-50 text-3xl group-hover:bg-primary/5 transition-colors">
-            {medicine.imageEmoji}
+          <div className="relative flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-slate-50 group-hover:bg-white transition-colors duration-500 overflow-hidden border border-slate-100 p-2">
+            {medicine.image ? (
+              <img 
+                src={medicine.image} 
+                alt={medicine.name} 
+                className="h-full w-full object-contain drop-shadow-sm group-hover:scale-110 transition-transform duration-500" 
+              />
+            ) : (
+              <span className="text-4xl drop-shadow-sm group-hover:scale-110 transition-transform duration-500">
+                {medicine.imageEmoji}
+              </span>
+            )}
           </div>
-          <div className="flex-1 min-w-0">
-            <h4 className="font-bold text-slate-800 truncate group-hover:text-primary transition-colors">
+          <div className="flex-1 min-w-0 flex flex-col justify-center">
+            <h4 className="font-bold text-slate-800 text-lg leading-tight group-hover:text-primary transition-colors">
               {medicine.name}
             </h4>
-            <p className="text-xs text-slate-500 truncate mt-0.5">{medicine.salt}</p>
+            <p className="text-xs font-medium text-slate-500 mt-1">{medicine.salt}</p>
             
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-lg font-bold text-primary">₹{medicine.price}</span>
-              <span className="text-xs text-slate-400 line-through">₹{medicine.mrp}</span>
-              <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 text-[10px] px-1.5 py-0 border-emerald-100">
+            <div className="mt-3 flex items-center gap-3">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-xl font-black text-slate-900">₹{medicine.price}</span>
+                <span className="text-xs text-slate-400 line-through font-medium">₹{medicine.mrp}</span>
+              </div>
+              <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 text-[10px] px-2 py-0.5 border-none font-bold rounded-full">
                 {medicine.discount}% OFF
               </Badge>
             </div>

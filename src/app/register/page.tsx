@@ -28,6 +28,10 @@ function RegisterContent() {
     specialization: "",
     experience: 0,
     licenseNumber: "",
+    degree: "",
+    college: "",
+    experienceHospitals: "",
+    currentHospitalName: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -53,12 +57,16 @@ function RegisterContent() {
 
     const result = await register(form);
     if (result.success) {
-      toast.success(
-        form.role === "DOCTOR"
-          ? "Registration successful! Complete your profile."
-          : "Registration successful!"
-      );
-      router.push(form.role === "DOCTOR" ? "/dashboard/doctor" : "/dashboard/patient");
+      if (form.role === "DOCTOR") {
+        toast.success(
+          "Registration successful! Your account is pending admin approval. You'll be notified once approved.",
+          { duration: 6000 }
+        );
+        router.push("/dashboard/doctor");
+      } else {
+        toast.success("Registration successful!");
+        router.push("/dashboard/patient");
+      }
     } else {
       toast.error(result.error || "Registration failed");
     }
@@ -171,6 +179,52 @@ function RegisterContent() {
                       required
                       className="h-11"
                     />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="degree">Current Education / Degree</Label>
+                      <Input
+                        id="degree"
+                        placeholder="e.g. MBBS, MD"
+                        value={form.degree}
+                        onChange={(e) => setForm({ ...form, degree: e.target.value })}
+                        required
+                        className="h-11"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="college">MBBS College</Label>
+                      <Input
+                        id="college"
+                        placeholder="Medical college name"
+                        value={form.college}
+                        onChange={(e) => setForm({ ...form, college: e.target.value })}
+                        required
+                        className="h-11"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="experienceHospitals">Experience (Past Hospitals)</Label>
+                      <Input
+                        id="experienceHospitals"
+                        placeholder="Former hospitals"
+                        value={form.experienceHospitals}
+                        onChange={(e) => setForm({ ...form, experienceHospitals: e.target.value })}
+                        className="h-11"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="currentHospitalName">Current Hospital</Label>
+                      <Input
+                        id="currentHospitalName"
+                        placeholder="Current workplace"
+                        value={form.currentHospitalName}
+                        onChange={(e) => setForm({ ...form, currentHospitalName: e.target.value })}
+                        className="h-11"
+                      />
+                    </div>
                   </div>
                 </>
               )}

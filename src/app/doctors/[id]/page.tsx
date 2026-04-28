@@ -231,8 +231,47 @@ export default function DoctorProfilePage({
                 </div>
               </div>
 
+              {/* Education & Experience Section */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                <div className="space-y-4">
+                  <h2 className="text-xl font-bold flex items-center gap-2">
+                    <Award className="h-5 w-5 text-primary" />
+                    Education & Degree
+                  </h2>
+                  <div className="bg-background rounded-3xl p-6 border border-border/50 shadow-sm space-y-3">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Qualification</p>
+                      <p className="text-lg font-bold">{doctor.degree || "General Medical Practitioner"}</p>
+                    </div>
+                    <Separator className="bg-border/50" />
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Medical College</p>
+                      <p className="font-semibold text-foreground/80">{doctor.college || "Information not provided"}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h2 className="text-xl font-bold flex items-center gap-2">
+                    <Building2 className="h-5 w-5 text-primary" />
+                    Professional History
+                  </h2>
+                  <div className="bg-background rounded-3xl p-6 border border-border/50 shadow-sm space-y-3">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Current Workplace</p>
+                      <p className="text-lg font-bold">{doctor.currentHospitalName || doctor.clinicName || "Independent Practice"}</p>
+                    </div>
+                    <Separator className="bg-border/50" />
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Past Experience</p>
+                      <p className="font-semibold text-foreground/80 leading-relaxed">{doctor.experienceHospitals || "Established career in healthcare"}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* About Section */}
-              <div className="space-y-4">
+              <div className="space-y-4 pt-4">
                 <h2 className="text-xl font-bold flex items-center gap-2">
                   <Info className="h-5 w-5 text-primary" />
                   About Specialist

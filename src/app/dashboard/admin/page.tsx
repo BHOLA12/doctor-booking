@@ -25,7 +25,19 @@ import {
   XCircle,
   TrendingUp,
   Activity,
+  Eye,
+  FileText,
+  MapPin,
+  ShieldCheck,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
 interface Stats {
@@ -46,7 +58,16 @@ interface DoctorEntry {
   isApproved: boolean;
   rating: number;
   city: string;
-  user: { id: string; name: string; email: string; phone: string | null };
+  licenseNumber: string | null;
+  bio: string | null;
+  clinicName: string | null;
+  clinicAddress: string | null;
+  consultationType: string;
+  degree: string | null;
+  college: string | null;
+  experienceHospitals: string | null;
+  currentHospitalName: string | null;
+  user: { id: string; name: string; email: string; phone: string | null; avatar: string | null };
   _count: { appointments: number; reviews: number };
 }
 
@@ -67,6 +88,7 @@ export default function AdminDashboard() {
   const [doctors, setDoctors] = useState<DoctorEntry[]>([]);
   const [users, setUsers] = useState<UserEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedDoctor, setSelectedDoctor] = useState<DoctorEntry | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) router.push("/login");
@@ -101,10 +123,10 @@ export default function AdminDashboard() {
 
   async function handleApproval(doctorId: string, isApproved: boolean) {
     try {
-      const res = await fetch("/api/admin/stats", {
+      const res = await fetch(`/api/admin/doctors/${doctorId}/approve`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ doctorId, isApproved }),
+        body: JSON.stringify({ isApproved }),
       });
       const data = await res.json();
       if (data.success) {
@@ -266,20 +288,31 @@ export default function AdminDashboard() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {!doc.isApproved ? (
-                          <div className="flex gap-1">
-                            <Button size="sm" variant="default" onClick={() => handleApproval(doc.id, true)}>
-                              <CheckCircle2 className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button size="sm" variant="outline" className="text-destructive" onClick={() => handleApproval(doc.id, false)}>
-                              <XCircle className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        ) : (
-                          <Button size="sm" variant="outline" className="text-destructive text-xs" onClick={() => handleApproval(doc.id, false)}>
-                            Revoke
+                        <div className="flex gap-1">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="h-8 w-8 p-0"
+                            onClick={() => setSelectedDoctor(doc)}
+                            title="View Details"
+                          >
+                            <Eye className="h-4 w-4" />
                           </Button>
-                        )}
+                          {!doc.isApproved ? (
+                            <>
+                              <Button size="sm" variant="default" className="h-8 w-8 p-0" onClick={() => handleApproval(doc.id, true)} title="Approve">
+                                <CheckCircle2 className="h-4 w-4" />
+                              </Button>
+                              <Button size="sm" variant="outline" className="h-8 w-8 p-0 text-destructive" onClick={() => handleApproval(doc.id, false)} title="Reject">
+                                <XCircle className="h-4 w-4" />
+                              </Button>
+                            </>
+                          ) : (
+                            <Button size="sm" variant="outline" className="text-destructive text-xs h-8 px-2" onClick={() => handleApproval(doc.id, false)}>
+                              Revoke
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -330,6 +363,169 @@ export default function AdminDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Doctor Details Dialog */}
+      <Dialog open={!!selectedDoctor} onOpenChange={(open) => !open && setSelectedDoctor(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-2xl">
+              Doctor Verification Details
+              <Badge variant={selectedDoctor?.isApproved ? "default" : "outline"} className={selectedDoctor?.isApproved ? "bg-green-100 text-green-800" : "text-amber-600 ml-2"}>
+                {selectedDoctor?.isApproved ? "Approved" : "Pending Approval"}
+              </Badge>
+            </DialogTitle>
+            <DialogDescription>
+              Review doctor credentials and clinic information for verification.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedDoctor && (
+            <div className="space-y-6 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Personal & Professional Info */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
+                      <Users className="h-4 w-4" /> Personal Information
+                    </h3>
+                    <div className="space-y-1">
+                      <p className="text-lg font-semibold">{selectedDoctor.user.name}</p>
+                      <p className="text-sm text-muted-foreground">{selectedDoctor.user.email}</p>
+                      <p className="text-sm text-muted-foreground">{selectedDoctor.user.phone || "No phone provided"}</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
+                      <ShieldCheck className="h-4 w-4" /> Professional Credentials
+                    </h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>License Number:</span>
+                        <span className="font-mono font-medium text-primary bg-primary/5 px-2 rounded">
+                          {selectedDoctor.licenseNumber || "N/A"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Specialization:</span>
+                        <span className="font-medium">{selectedDoctor.specialization}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Experience:</span>
+                        <span className="font-medium">{selectedDoctor.experience} Years</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Clinic & Practice Info */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
+                      <MapPin className="h-4 w-4" /> Clinic Details
+                    </h3>
+                    <div className="space-y-1">
+                      <p className="font-medium">{selectedDoctor.clinicName || "N/A"}</p>
+                      <p className="text-sm text-muted-foreground">{selectedDoctor.clinicAddress || "N/A"}</p>
+                      <p className="text-sm text-muted-foreground">{selectedDoctor.city || "N/A"}</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
+                      <Activity className="h-4 w-4" /> Practice Info
+                    </h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Consultation:</span>
+                        <Badge variant="secondary" className="capitalize">{selectedDoctor.consultationType.toLowerCase()}</Badge>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Consultation Fee:</span>
+                        <span className="font-medium">₹{selectedDoctor.fees}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
+                    <FileText className="h-4 w-4" /> Education & Background
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Degree:</span>
+                      <span className="font-medium">{selectedDoctor.degree || "N/A"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">MBBS College:</span>
+                      <span className="font-medium">{selectedDoctor.college || "N/A"}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
+                    <Activity className="h-4 w-4" /> Workplace History
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Past Exp:</span>
+                      <span className="font-medium">{selectedDoctor.experienceHospitals || "N/A"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Current:</span>
+                      <span className="font-medium text-primary">{selectedDoctor.currentHospitalName || "N/A"}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
+                  <FileText className="h-4 w-4" /> Professional Bio
+                </h3>
+                <p className="text-sm leading-relaxed text-muted-foreground bg-muted/30 p-4 rounded-lg italic">
+                  "{selectedDoctor.bio || "No bio provided."}"
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <Button variant="outline" onClick={() => setSelectedDoctor(null)}>
+                  Close
+                </Button>
+                {!selectedDoctor.isApproved ? (
+                  <Button 
+                    className="bg-green-600 hover:bg-green-700"
+                    onClick={() => {
+                      void handleApproval(selectedDoctor.id, true);
+                      setSelectedDoctor(null);
+                    }}
+                  >
+                    Approve Doctor
+                  </Button>
+                ) : (
+                  <Button 
+                    variant="destructive"
+                    onClick={() => {
+                      void handleApproval(selectedDoctor.id, false);
+                      setSelectedDoctor(null);
+                    }}
+                  >
+                    Revoke Approval
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

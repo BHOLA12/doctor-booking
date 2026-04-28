@@ -14,6 +14,10 @@ export const registerSchema = z.object({
   specialization: z.string().optional(),
   experience: z.number().int().min(0).max(60).optional(),
   licenseNumber: z.string().optional().or(z.literal("")),
+  degree: z.string().optional().or(z.literal("")),
+  college: z.string().optional().or(z.literal("")),
+  experienceHospitals: z.string().optional().or(z.literal("")),
+  currentHospitalName: z.string().optional().or(z.literal("")),
 }).superRefine((data, ctx) => {
   if (data.role === "DOCTOR") {
     if (!data.specialization) {
@@ -57,6 +61,10 @@ export const doctorProfileSchema = z.object({
   state: z.string().default(""),
   country: z.string().default(""),
   consultationType: z.enum(["ONLINE", "OFFLINE", "BOTH"]).default("BOTH"),
+  degree: z.string().optional(),
+  college: z.string().optional(),
+  experienceHospitals: z.string().optional(),
+  currentHospitalName: z.string().optional(),
 });
 
 export const appointmentSchema = z.object({

@@ -31,29 +31,43 @@ export default function MedicineCard({ medicine }: Props) {
           </Badge>
         </div>
       )}
-      <CardContent className="flex flex-col flex-1 p-5">
-        {/* Emoji + Category */}
-        <div className="flex items-center gap-2 mb-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/8 text-2xl shrink-0">
-            {medicine.imageEmoji}
-          </div>
-          <Badge variant="secondary" className="text-[10px] font-medium">
+      <CardContent className="flex flex-col flex-1 p-4">
+        {/* Image Container */}
+        <div className="relative h-40 w-full mb-4 rounded-lg bg-slate-50/50 flex items-center justify-center p-4 group-hover:bg-slate-100/50 transition-colors duration-300">
+          {medicine.image ? (
+            <img
+              src={medicine.image}
+              alt={medicine.name}
+              className="h-full w-full object-contain drop-shadow-sm group-hover:scale-110 transition-transform duration-500"
+            />
+          ) : (
+            <div className="text-5xl drop-shadow-sm group-hover:scale-110 transition-transform duration-500">
+              {medicine.imageEmoji}
+            </div>
+          )}
+        </div>
+
+        {/* Category Badge */}
+        <div className="flex justify-center mb-3">
+          <Badge variant="secondary" className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-none">
             {medicine.category}
           </Badge>
         </div>
 
         {/* Name & Salt */}
-        <h3 className="font-semibold text-sm leading-tight group-hover:text-primary transition-colors">
-          {medicine.name}
-        </h3>
-        <p className="text-xs text-muted-foreground mt-0.5">{medicine.salt}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{medicine.dosage}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{medicine.manufacturer}</p>
+        <div className="text-center mb-3">
+          <h3 className="font-bold text-[15px] leading-tight text-slate-800 group-hover:text-primary transition-colors">
+            {medicine.name}
+          </h3>
+          <p className="text-[11px] font-medium text-slate-500 mt-1">{medicine.salt}</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">{medicine.dosage}</p>
+          <p className="text-[11px] text-slate-400 mt-0.5 uppercase tracking-wider font-semibold">{medicine.manufacturer}</p>
+        </div>
 
         <div className="flex-1" />
 
         {/* Availability */}
-        <div className="mt-3 flex items-center gap-1.5">
+        <div className="mt-2 flex items-center gap-1.5 justify-start px-1">
           <div
             className={`h-1.5 w-1.5 rounded-full ${
               medicine.availability === "In Stock"
@@ -64,7 +78,7 @@ export default function MedicineCard({ medicine }: Props) {
             }`}
           />
           <span
-            className={`text-xs font-medium ${
+            className={`text-[11px] font-semibold ${
               medicine.availability === "In Stock"
                 ? "text-emerald-600"
                 : medicine.availability === "Limited Stock"
@@ -76,32 +90,33 @@ export default function MedicineCard({ medicine }: Props) {
           </span>
         </div>
 
-        {/* Price */}
-        <div className="mt-2 flex items-baseline gap-2">
-          <span className="text-lg font-bold text-foreground">₹{medicine.price}</span>
-          <span className="text-xs text-muted-foreground line-through">₹{medicine.mrp}</span>
+        {/* Price & Action */}
+        <div className="mt-2 flex items-center justify-between px-1">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-lg font-black text-slate-900">₹{medicine.price}</span>
+            <span className="text-xs text-slate-400 line-through font-medium">₹{medicine.mrp}</span>
+          </div>
+          
+          <Button
+            size="icon"
+            variant={inCart ? "secondary" : "outline"}
+            className={`h-8 w-8 rounded-full transition-all duration-300 ${
+              !inCart ? "hover:bg-primary hover:text-white hover:border-primary" : "bg-emerald-100 text-emerald-700 border-emerald-200"
+            }`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              addItem(medicine);
+            }}
+            disabled={medicine.availability === "Out of Stock"}
+          >
+            {inCart ? (
+              <CheckCircle2 className="h-4 w-4" />
+            ) : (
+              <Plus className="h-4 w-4" />
+            )}
+          </Button>
         </div>
-
-        {/* Add to Cart */}
-        <Button
-          size="sm"
-          variant={inCart ? "secondary" : "default"}
-          className="w-full mt-3 gap-1.5 transition-all"
-          onClick={() => addItem(medicine)}
-          disabled={medicine.availability === "Out of Stock"}
-        >
-          {inCart ? (
-            <>
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              Added
-            </>
-          ) : (
-            <>
-              <Plus className="h-3.5 w-3.5" />
-              Add to Cart
-            </>
-          )}
-        </Button>
       </CardContent>
     </Card>
   );

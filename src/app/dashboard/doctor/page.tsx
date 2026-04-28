@@ -188,13 +188,23 @@ export default function DoctorDashboard() {
         <h1 className="text-3xl font-bold">Doctor Dashboard 🩺</h1>
         <p className="text-muted-foreground mt-1">
           Manage your appointments and profile
-          {doctorProfile && !(doctorProfile as { isApproved: boolean }).isApproved && (
-            <Badge variant="outline" className="ml-2 text-amber-600 border-amber-300">
-              ⏳ Pending Approval
-            </Badge>
-          )}
         </p>
       </div>
+
+      {/* Pending Approval Banner */}
+      {doctorProfile && !(doctorProfile as { isApproved: boolean }).isApproved && (
+        <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700 p-4 flex items-start gap-3">
+          <span className="text-2xl">⏳</span>
+          <div>
+            <p className="font-semibold text-amber-800 dark:text-amber-300">
+              Your account is pending admin approval
+            </p>
+            <p className="text-sm text-amber-700 dark:text-amber-400 mt-0.5">
+              Your profile has been submitted and is under review. You will be able to receive appointment bookings once an admin approves your account. Please complete your profile in the meantime.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">

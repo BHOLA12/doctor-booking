@@ -40,6 +40,10 @@ export interface DoctorProfile {
   rating: number;
   totalReviews: number;
   consultationType: string;
+  degree?: string;
+  college?: string;
+  experienceHospitals?: string;
+  currentHospitalName?: string;
   hospitalId?: string;
   hospital?: HospitalInfo;
   slots?: SlotInfo[];

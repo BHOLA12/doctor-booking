@@ -11,6 +11,7 @@ export type Medicine = {
   requiresPrescription: boolean;
   dosage: string;
   imageEmoji: string;
+  image?: string;
 };
 
 export const MEDICINE_CATEGORIES = [
@@ -39,6 +40,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: false,
     dosage: "500mg, 15 Tablets",
     imageEmoji: "💊",
+    image: "/images/medicines/crocin.png",
   },
   {
     id: "m2",
@@ -53,6 +55,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: false,
     dosage: "650mg, 15 Tablets",
     imageEmoji: "💊",
+    image: "/images/medicines/dolo.png",
   },
   {
     id: "m3",
@@ -67,6 +70,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: true,
     dosage: "500mg, 5 Tablets",
     imageEmoji: "🔬",
+    image: "/images/medicines/azithral.png",
   },
   {
     id: "m4",
@@ -81,6 +85,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: true,
     dosage: "500mg, 10 Tablets",
     imageEmoji: "🩺",
+    image: "/images/medicines/metformin.png",
   },
   {
     id: "m5",
@@ -95,6 +100,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: false,
     dosage: "60,000 IU, 4 Capsules",
     imageEmoji: "☀️",
+    image: "/images/medicines/vitamin_d3.png",
   },
   {
     id: "m6",
