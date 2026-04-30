@@ -50,6 +50,10 @@ model Doctor {
   rating           Float    @default(0)
   totalReviews     Int      @default(0)
   consultationType String   @default("BOTH") // ONLINE, OFFLINE, BOTH
+  degree           String?
+  college          String?
+  experienceHospitals String?
+  currentHospitalName String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
