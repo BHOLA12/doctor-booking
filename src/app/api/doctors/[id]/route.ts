@@ -84,6 +84,10 @@ export async function PUT(
       state: body.state,
       country: body.country,
       consultationType: body.consultationType,
+      degree: body.degree,
+      college: body.college,
+      experienceHospitals: body.experienceHospitals,
+      currentHospitalName: body.currentHospitalName,
     });
 
     if (!validation.success) {
@@ -107,6 +111,10 @@ export async function PUT(
         state: validation.data.state,
         country: validation.data.country,
         consultationType: validation.data.consultationType,
+        degree: validation.data.degree,
+        college: validation.data.college,
+        experienceHospitals: validation.data.experienceHospitals,
+        currentHospitalName: validation.data.currentHospitalName,
       },
     });
 
