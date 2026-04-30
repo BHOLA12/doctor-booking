@@ -160,10 +160,13 @@ export default function DoctorProfilePage({
   return (
     <div className="min-h-screen bg-muted/30 pb-24">
       {/* Dynamic Header/Banner */}
-      <div className="bg-background border-b pt-6 pb-20 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-primary/5 to-transparent pointer-events-none" />
+      <div className="bg-background border-b pt-12 pb-32 relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/10 to-transparent pointer-events-none animate-pulse" />
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-teal-500/5 rounded-full blur-3xl animate-bounce duration-[10s]" />
         
-        <div className="container mx-auto px-4 max-w-7xl">
+        <div className="container mx-auto px-4 max-w-7xl relative z-10">
           <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest mb-8">
             <Link href="/doctors" className="hover:text-primary transition-colors">Find Doctors</Link>
             <ChevronRight className="h-3 w-3" />
@@ -172,49 +175,51 @@ export default function DoctorProfilePage({
 
           <div className="flex flex-col lg:flex-row gap-10 items-start">
             {/* Profile Info */}
-            <div className="flex-1 space-y-8">
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8">
-                <div className="relative h-40 w-40 rounded-[2.5rem] overflow-hidden border-8 border-background shadow-2xl shrink-0 group">
+            <div className="flex-1 space-y-10">
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-10">
+                <div className="relative h-56 w-56 rounded-[3.5rem] overflow-hidden border-[12px] border-background shadow-[0_20px_50px_rgba(0,0,0,0.15)] shrink-0 group transition-all duration-500 hover:rotate-2 hover:scale-105">
                   <Image
-                    src={doctor.user.avatar || `https://i.pravatar.cc/250?u=${doctor.id}`}
+                    src={doctor.user.avatar || `https://i.pravatar.cc/400?u=${doctor.id}`}
                     alt={doctor.user.name}
                     fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-60" />
                 </div>
                 
-                <div className="text-center sm:text-left pt-2">
-                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mb-4">
-                    <Badge className="rounded-full px-4 py-1.5 bg-primary/10 text-primary border-none text-[10px] font-bold uppercase tracking-wider">
+                <div className="text-center md:text-left pt-4">
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-6">
+                    <Badge className="rounded-full px-6 py-2 bg-primary text-primary-foreground border-none text-[12px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20">
                       {doctor.specialization}
                     </Badge>
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-bold uppercase tracking-wider">
-                      <ShieldCheck className="h-3.5 w-3.5" />
-                      Verified
+                    <div className="flex items-center gap-2 px-5 py-2 rounded-full bg-emerald-100 text-emerald-700 text-[12px] font-black uppercase tracking-wider shadow-sm">
+                      <ShieldCheck className="h-4 w-4" />
+                      Verified Specialist
                     </div>
                   </div>
                   
-                  <h1 className="text-4xl sm:text-5xl font-black tracking-tight mb-4">{doctor.user.name}</h1>
+                  <h1 className="text-5xl sm:text-7xl font-black tracking-tight mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                    {doctor.user.name.startsWith("Dr.") ? doctor.user.name : `Dr. ${doctor.user.name}`}
+                  </h1>
                   
-                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-8 gap-y-4 text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center">
-                        <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-12 gap-y-6 text-muted-foreground">
+                    <div className="flex items-center gap-3 group/stat">
+                      <div className="h-14 w-14 rounded-2xl bg-muted flex items-center justify-center transition-transform group-hover/stat:-translate-y-1">
+                        <Star className="h-7 w-7 text-yellow-500 fill-yellow-500" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-tighter">Rating</p>
-                        <p className="text-sm font-bold text-foreground">{doctor.rating.toFixed(1)} <span className="font-normal text-muted-foreground">({doctor.totalReviews})</span></p>
+                        <p className="text-[12px] font-black uppercase tracking-tighter text-muted-foreground/60">Rating</p>
+                        <p className="text-xl font-black text-foreground">{doctor.rating.toFixed(1)} <span className="font-normal text-muted-foreground text-sm">({doctor.totalReviews})</span></p>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-2">
-                      <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center">
-                        <Award className="h-5 w-5 text-primary" />
+                    <div className="flex items-center gap-3 group/stat">
+                      <div className="h-14 w-14 rounded-2xl bg-muted flex items-center justify-center transition-transform group-hover/stat:-translate-y-1">
+                        <Award className="h-7 w-7 text-primary" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-tighter">Experience</p>
-                        <p className="text-sm font-bold text-foreground">{doctor.experience} Years</p>
+                        <p className="text-[12px] font-black uppercase tracking-tighter text-muted-foreground/60">Experience</p>
+                        <p className="text-xl font-black text-foreground">{doctor.experience} Years</p>
                       </div>
                     </div>
 
@@ -243,39 +248,39 @@ export default function DoctorProfilePage({
               </div>
 
               {/* Education & Experience Section */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6">
                 <div className="space-y-4">
-                  <h2 className="text-xl font-bold flex items-center gap-2">
-                    <Award className="h-5 w-5 text-primary" />
-                    Education & Degree
+                  <h2 className="text-2xl font-black flex items-center gap-2">
+                    <Award className="h-6 w-6 text-primary" />
+                    Expertise
                   </h2>
-                  <div className="bg-background rounded-3xl p-6 border border-border/50 shadow-sm space-y-3">
+                  <div className="bg-background rounded-[2.5rem] p-8 border-2 border-primary/5 shadow-[0_10px_40px_rgba(0,0,0,0.03)] space-y-4 hover:border-primary/20 transition-colors">
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Qualification</p>
-                      <p className="text-lg font-bold">{doctor.degree || "General Medical Practitioner"}</p>
+                      <p className="text-[11px] font-black uppercase tracking-[0.2em] text-primary mb-2">Qualification</p>
+                      <p className="text-2xl font-black">{doctor.degree || "Specialized Medical Practitioner"}</p>
                     </div>
                     <Separator className="bg-border/50" />
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Medical College</p>
-                      <p className="font-semibold text-foreground/80">{doctor.college || "Information not provided"}</p>
+                      <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-2">Alumni</p>
+                      <p className="text-lg font-bold text-foreground/70">{doctor.college || "Information not provided"}</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <h2 className="text-xl font-bold flex items-center gap-2">
-                    <Building2 className="h-5 w-5 text-primary" />
-                    Professional History
+                  <h2 className="text-2xl font-black flex items-center gap-2">
+                    <Building2 className="h-6 w-6 text-primary" />
+                    Background
                   </h2>
-                  <div className="bg-background rounded-3xl p-6 border border-border/50 shadow-sm space-y-3">
+                  <div className="bg-background rounded-[2.5rem] p-8 border-2 border-primary/5 shadow-[0_10px_40px_rgba(0,0,0,0.03)] space-y-4 hover:border-primary/20 transition-colors">
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Current Workplace</p>
-                      <p className="text-lg font-bold">{doctor.currentHospitalName || doctor.clinicName || "Independent Practice"}</p>
+                      <p className="text-[11px] font-black uppercase tracking-[0.2em] text-primary mb-2">Practice</p>
+                      <p className="text-2xl font-black">{doctor.currentHospitalName || doctor.clinicName || "Private Practice"}</p>
                     </div>
                     <Separator className="bg-border/50" />
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Past Experience</p>
-                      <p className="font-semibold text-foreground/80 leading-relaxed">{doctor.experienceHospitals || "Established career in healthcare"}</p>
+                      <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-2">Previous Roles</p>
+                      <p className="text-lg font-bold text-foreground/70 leading-relaxed line-clamp-1">{doctor.experienceHospitals || "Established career in healthcare"}</p>
                     </div>
                   </div>
                 </div>
@@ -322,13 +327,14 @@ export default function DoctorProfilePage({
             </div>
 
             {/* Sticky Sidebar */}
-            <div className="w-full lg:w-[400px] shrink-0 space-y-6 lg:-mt-32 relative z-20">
-              <Card className="rounded-[2.5rem] border-none shadow-2xl overflow-hidden">
-                <div className="bg-primary p-8 text-primary-foreground">
-                  <h3 className="text-2xl font-bold mb-1">Book Appointment</h3>
-                  <p className="text-primary-foreground/70 text-sm">Select your preferred date & time</p>
+            <div className="w-full lg:w-[450px] shrink-0 space-y-8 lg:-mt-48 relative z-20">
+              <Card className="rounded-[3rem] border-none shadow-[0_30px_60px_rgba(0,0,0,0.12)] overflow-hidden transition-transform duration-500 hover:-translate-y-2">
+                <div className="bg-gradient-to-br from-primary to-primary/80 p-10 text-primary-foreground relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl" />
+                  <h3 className="text-3xl font-black mb-2">Book Appointment</h3>
+                  <p className="text-primary-foreground/80 text-sm font-medium">Select your preferred date & time</p>
                 </div>
-                <CardContent className="p-8 space-y-8 bg-background">
+                <CardContent className="p-10 space-y-10 bg-background">
                   {/* Consultation Mode */}
                   <div className="grid grid-cols-2 gap-3">
                     <button
