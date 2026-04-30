@@ -191,8 +191,12 @@ function DoctorsContent() {
                 <Card className="group hover:shadow-xl hover:border-primary/20 transition-all duration-300 h-full">
                   <CardContent className="p-5">
                     <div className="flex items-start gap-4">
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-lg font-bold">
-                        {doctor.user.name.charAt(0)}
+                      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-primary/10 shadow-sm">
+                        <img 
+                          src={doctor.user.avatar || `https://images.unsplash.com/photo-${doctor.experience % 2 === 0 ? "1537368910025-700350fe46c7" : "1559839734-2b71f1536783"}?auto=format&fit=crop&q=80&w=200&h=200`} 
+                          alt={doctor.user.name}
+                          className="h-full w-full object-cover"
+                        />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold truncate group-hover:text-primary transition-colors">

@@ -176,7 +176,7 @@ export default function DoctorProfilePage({
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8">
                 <div className="relative h-40 w-40 rounded-[2.5rem] overflow-hidden border-8 border-background shadow-2xl shrink-0 group">
                   <Image
-                    src={doctor.user.avatar || "/doctor-placeholder.jpg"}
+                    src={doctor.user.avatar || `https://images.unsplash.com/photo-${doctor.experience % 2 === 0 ? "1537368910025-700350fe46c7" : "1559839734-2b71f1536783"}?auto=format&fit=crop&q=80&w=400&h=400`}
                     alt={doctor.user.name}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-110"

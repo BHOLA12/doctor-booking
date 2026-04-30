@@ -81,11 +81,15 @@ export default function DoctorsCarousel({ doctors }: { doctors: Doctor[] }) {
                     <CardContent className="p-4 flex flex-col items-center text-center gap-2">
                       {/* Avatar */}
                       <div className="relative">
-                        <div className={`h-16 w-16 rounded-full bg-gradient-to-br ${GRADIENT_COLORS[i % GRADIENT_COLORS.length]} flex items-center justify-center text-white text-xl font-bold shadow-md`}>
-                          {initials}
+                        <div className="h-16 w-16 rounded-full overflow-hidden border-2 border-white shadow-md ring-2 ring-primary/5">
+                          <img 
+                            src={doctor.user.avatar || `https://images.unsplash.com/photo-${doctor.experience % 2 === 0 ? "1537368910025-700350fe46c7" : "1559839734-2b71f1536783"}?auto=format&fit=crop&q=80&w=200&h=200`} 
+                            alt={doctor.user.name}
+                            className="h-full w-full object-cover"
+                          />
                         </div>
                         {/* Online dot */}
-                        <div className="absolute bottom-0 right-0 h-4 w-4 rounded-full bg-emerald-500 border-2 border-white" />
+                        <div className="absolute bottom-0 right-0 h-4 w-4 rounded-full bg-emerald-500 border-2 border-white shadow-sm" />
                       </div>
 
                       {/* Rating Badge */}
