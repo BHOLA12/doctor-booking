@@ -1,6 +1,11 @@
 import "server-only";
 
 import { ReportAnalysisResult, SymptomCheckerResult } from "@/types";
+import { 
+  getLocalSymptomAnalysis, 
+  getLocalReportAnalysis, 
+  getLocalPrescriptionSuggestion 
+} from "./symptom-checker-local";
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4.1-mini";
@@ -51,6 +56,10 @@ async function callOpenAI<T>(prompt: string, fallback: T): Promise<T> {
 }
 
 export async function analyzeSymptoms(symptoms: string): Promise<SymptomCheckerResult> {
+  if (!OPENAI_API_KEY) {
+    return getLocalSymptomAnalysis(symptoms);
+  }
+
   const fallback: SymptomCheckerResult = {
     possibleDiseases: [
       { name: "Viral infection", probability: 0.46, reason: "Symptoms overlap with common viral patterns." },
@@ -69,6 +78,10 @@ export async function analyzeSymptoms(symptoms: string): Promise<SymptomCheckerR
 }
 
 export async function analyzeReportText(reportText: string): Promise<ReportAnalysisResult> {
+  if (!OPENAI_API_KEY) {
+    return getLocalReportAnalysis(reportText);
+  }
+
   const fallback: ReportAnalysisResult = {
     keyFindings: [
       "This report needs clinician review for final interpretation.",
@@ -89,6 +102,10 @@ export async function generatePrescriptionSuggestion(input: {
   symptoms: string;
   diagnosis: string;
 }) {
+  if (!OPENAI_API_KEY) {
+    return getLocalPrescriptionSuggestion(input);
+  }
+
   const fallback = {
     medicines: [
       {
