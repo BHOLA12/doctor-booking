@@ -26,6 +26,7 @@ import {
   Save,
   Star,
   Navigation2,
+  Trash2,
 } from "lucide-react";
 import { AppointmentInfo } from "@/types";
 import { APPOINTMENT_STATUSES, APPOINTMENT_TYPES, SPECIALIZATIONS } from "@/lib/constants";
@@ -147,6 +148,25 @@ export default function DoctorDashboard() {
       toast.error("Failed to save");
     }
     setSaving(false);
+  }
+
+  async function deleteAccount() {
+    if (!window.confirm("Are you sure you want to delete your doctor profile and account? This action is permanent and all your appointments and data will be removed.")) {
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/user/delete", { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Account deleted successfully");
+        router.push("/register");
+      } else {
+        toast.error(data.error || "Failed to delete account");
+      }
+    } catch {
+      toast.error("An error occurred while deleting your account");
+    }
   }
 
   const detectLocation = () => {
@@ -435,10 +455,31 @@ export default function DoctorDashboard() {
                 <Label>Bio / About</Label>
                 <Textarea value={profileForm.bio} onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })} rows={4} />
               </div>
-              <Button onClick={saveProfile} disabled={saving} className="gap-2">
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                 Save Profile
               </Button>
+
+              <div className="mt-12 pt-8 border-t">
+                <div className="rounded-2xl border border-red-200 bg-red-50/50 p-6">
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-red-800 flex items-center gap-2">
+                        <Trash2 className="h-5 w-5" />
+                        Danger Zone
+                      </h3>
+                      <p className="text-sm text-red-600/80">
+                        Delete your doctor profile and user account permanently.
+                      </p>
+                    </div>
+                    <Button 
+                      variant="destructive" 
+                      onClick={deleteAccount}
+                      className="font-bold"
+                    >
+                      Delete Account
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

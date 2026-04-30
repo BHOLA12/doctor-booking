@@ -79,9 +79,9 @@ model Slot {
 model Appointment {
   id               String   @id @default(cuid())
   patientId        String
-  patient          User     @relation("PatientAppointments", fields: [patientId], references: [id])
+  patient          User     @relation("PatientAppointments", fields: [patientId], references: [id], onDelete: Cascade)
   doctorId         String
-  doctor           Doctor   @relation(fields: [doctorId], references: [id])
+  doctor           Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   date             String // "2024-03-15"
   startTime        String // "09:00"
   endTime          String // "09:30"
@@ -108,9 +108,9 @@ model Review {
   rating    Int // 1-5
   comment   String?
   patientId String
-  patient   User     @relation(fields: [patientId], references: [id])
+  patient   User     @relation(fields: [patientId], references: [id], onDelete: Cascade)
   doctorId  String
-  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 
   @@unique([patientId, doctorId])
