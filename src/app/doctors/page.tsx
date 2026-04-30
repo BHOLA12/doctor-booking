@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Star, MapPin, Clock, Filter, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Star, MapPin, Clock, Filter, Loader2, ChevronLeft, ChevronRight, Building2 } from "lucide-react";
 import { SPECIALIZATIONS, CITIES } from "@/lib/constants";
 import { useDebounce } from "@/hooks/useDebounce";
 import { DoctorProfile } from "@/types";
@@ -193,7 +193,7 @@ function DoctorsContent() {
                     <div className="flex items-start gap-4">
                       <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-primary/10 shadow-sm">
                         <img 
-                          src={doctor.user.avatar || `https://images.unsplash.com/photo-${doctor.experience % 2 === 0 ? "1537368910025-700350fe46c7" : "1559839734-2b71f1536783"}?auto=format&fit=crop&q=80&w=200&h=200`} 
+                          src={doctor.user.avatar || `https://i.pravatar.cc/250?u=${doctor.id}`} 
                           alt={doctor.user.name}
                           className="h-full w-full object-cover"
                         />
@@ -202,9 +202,17 @@ function DoctorsContent() {
                         <h3 className="font-semibold truncate group-hover:text-primary transition-colors">
                           {doctor.user.name}
                         </h3>
-                        <Badge variant="secondary" className="mt-1 text-xs">
-                          {doctor.specialization}
-                        </Badge>
+                        <div className="flex flex-col gap-0.5 mt-1">
+                          <Badge variant="secondary" className="w-fit text-[10px] h-5">
+                            {doctor.specialization}
+                          </Badge>
+                          {(doctor.currentHospitalName || doctor.hospital?.name) && (
+                            <p className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
+                              <Building2 className="h-3 w-3 text-primary" />
+                              <span className="truncate">{doctor.currentHospitalName || doctor.hospital?.name}</span>
+                            </p>
+                          )}
+                        </div>
                         <div className="flex items-center gap-3 mt-2">
                           <span className="flex items-center gap-1 text-sm">
                             <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />

@@ -83,7 +83,7 @@ export default function DoctorsCarousel({ doctors }: { doctors: Doctor[] }) {
                       <div className="relative">
                         <div className="h-16 w-16 rounded-full overflow-hidden border-2 border-white shadow-md ring-2 ring-primary/5">
                           <img 
-                            src={doctor.user.avatar || `https://images.unsplash.com/photo-${doctor.experience % 2 === 0 ? "1537368910025-700350fe46c7" : "1559839734-2b71f1536783"}?auto=format&fit=crop&q=80&w=200&h=200`} 
+                            src={doctor.user.avatar || `https://i.pravatar.cc/250?u=${doctor.id}`} 
                             alt={doctor.user.name}
                             className="h-full w-full object-cover"
                           />
@@ -103,7 +103,12 @@ export default function DoctorsCarousel({ doctors }: { doctors: Doctor[] }) {
                         <p className="font-semibold text-xs leading-tight group-hover:text-primary transition-colors line-clamp-1">
                           {doctor.user.name.startsWith("Dr.") ? doctor.user.name : `Dr. ${doctor.user.name}`}
                         </p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{doctor.specialization}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1 font-medium">{doctor.specialization}</p>
+                        {(doctor as any).currentHospitalName && (
+                          <p className="text-[9px] text-primary font-bold mt-0.5 line-clamp-1 uppercase tracking-tighter">
+                            🏥 {(doctor as any).currentHospitalName}
+                          </p>
+                        )}
                       </div>
 
                       {/* Meta */}
