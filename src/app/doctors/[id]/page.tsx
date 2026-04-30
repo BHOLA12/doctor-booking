@@ -224,7 +224,18 @@ export default function DoctorProfilePage({
                       </div>
                       <div>
                         <p className="text-[10px] font-bold uppercase tracking-tighter">Availability</p>
-                        <p className="text-sm font-bold text-emerald-600">Mon - Sat</p>
+                        <p className="text-sm font-bold text-emerald-600">
+                          {doctor.slots && doctor.slots.length > 0 ? (
+                            (() => {
+                              const sortedSlots = [...doctor.slots].sort((a, b) => a.startTime.localeCompare(b.startTime));
+                              const minTime = formatTime(sortedSlots[0].startTime);
+                              const maxTime = formatTime([...sortedSlots].sort((a, b) => b.endTime.localeCompare(a.endTime))[0].endTime);
+                              return `${minTime} - ${maxTime}`;
+                            })()
+                          ) : (
+                            "Not specified"
+                          )}
+                        </p>
                       </div>
                     </div>
                   </div>

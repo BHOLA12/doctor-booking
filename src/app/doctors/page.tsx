@@ -41,6 +41,13 @@ function DoctorsContent() {
   const debouncedSearch = useDebounce(search, 300);
   const debouncedCity = useDebounce(city, 300);
 
+  const formatTime = (time: string) => {
+    const [hour, min] = time.split(":").map(Number);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const h = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    return `${h}:${min.toString().padStart(2, "0")} ${ampm}`;
+  };
+
   const fetchDoctors = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams();
@@ -239,6 +246,18 @@ function DoctorsContent() {
                           <MapPin className="h-3.5 w-3.5" />
                           {doctor.city}
                         </span>
+                        {(doctor as any).slots && (doctor as any).slots.length > 0 && (
+                          <span className="flex items-center gap-1 text-emerald-600 font-medium">
+                            <Clock className="h-3.5 w-3.5" />
+                            {(() => {
+                              const slots = (doctor as any).slots;
+                              const sorted = [...slots].sort((a, b) => a.startTime.localeCompare(b.startTime));
+                              const min = formatTime(sorted[0].startTime);
+                              const max = [...slots].sort((a, b) => b.endTime.localeCompare(a.endTime))[0].endTime;
+                              return `${min} - ${formatTime(max)}`;
+                            })()}
+                          </span>
+                        )}
                       </div>
                       <span className="font-bold text-primary">₹{doctor.fees}</span>
                     </div>

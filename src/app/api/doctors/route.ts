@@ -82,6 +82,9 @@ export async function GET(request: NextRequest) {
           user: {
             select: { id: true, name: true, email: true, avatar: true },
           },
+          slots: {
+            select: { startTime: true, endTime: true },
+          },
         },
         orderBy,
         skip: (page - 1) * limit,
