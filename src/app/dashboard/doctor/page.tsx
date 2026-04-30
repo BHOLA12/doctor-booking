@@ -455,6 +455,8 @@ export default function DoctorDashboard() {
                 <Label>Bio / About</Label>
                 <Textarea value={profileForm.bio} onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })} rows={4} />
               </div>
+              <Button onClick={saveProfile} disabled={saving} className="gap-2">
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                 Save Profile
               </Button>
 

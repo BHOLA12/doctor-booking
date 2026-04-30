@@ -265,7 +265,7 @@ export default function PatientDashboard() {
             ))}
           </div>
         </div>
-      </div>
+      )}
 
       {/* Account Management */}
       <div className="mt-12 pt-8 border-t">
