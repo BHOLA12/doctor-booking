@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +36,24 @@ export default function DoctorsCarousel({ doctors }: { doctors: Doctor[] }) {
     const gap = 16; // gap-4
     ref.current.scrollBy({ left: dir === "left" ? -(cardWidth + gap) : (cardWidth + gap), behavior: "smooth" });
   };
+
+  useEffect(() => {
+    if (doctors.length === 0) return;
+    
+    const interval = setInterval(() => {
+      if (!ref.current) return;
+      const { scrollLeft, scrollWidth, clientWidth } = ref.current;
+      
+      // If reached the end, scroll back to start
+      if (scrollLeft + clientWidth >= scrollWidth - 10) {
+        ref.current.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        scroll("right");
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [doctors.length]);
 
   if (doctors.length === 0) return null;
 
