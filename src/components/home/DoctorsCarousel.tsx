@@ -32,7 +32,9 @@ export default function DoctorsCarousel({ doctors }: { doctors: Doctor[] }) {
 
   const scroll = (dir: "left" | "right") => {
     if (!ref.current) return;
-    ref.current.scrollBy({ left: dir === "left" ? -300 : 300, behavior: "smooth" });
+    const cardWidth = ref.current.children[0]?.clientWidth || 250;
+    const gap = 16; // gap-4
+    ref.current.scrollBy({ left: dir === "left" ? -(cardWidth + gap) : (cardWidth + gap), behavior: "smooth" });
   };
 
   if (doctors.length === 0) return null;
@@ -64,7 +66,7 @@ export default function DoctorsCarousel({ doctors }: { doctors: Doctor[] }) {
 
           <div
             ref={ref}
-            className="flex gap-4 overflow-x-auto pb-3 scroll-smooth"
+            className="flex gap-4 overflow-x-auto pb-3 scroll-smooth snap-x snap-mandatory"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {doctors.map((doctor, i) => {
@@ -76,12 +78,12 @@ export default function DoctorsCarousel({ doctors }: { doctors: Doctor[] }) {
                 .slice(0, 2) || doctor.user.name.charAt(0);
 
               return (
-                <Link key={doctor.id} href={`/doctors/${doctor.id}`} className="shrink-0">
-                  <Card className="w-[160px] sm:w-[175px] cursor-pointer hover:shadow-lg hover:border-primary/20 transition-all duration-300 overflow-hidden group">
-                    <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                <Link key={doctor.id} href={`/doctors/${doctor.id}`} className="shrink-0 snap-start">
+                  <Card className="w-[220px] sm:w-[250px] cursor-pointer hover:shadow-lg hover:border-primary/20 transition-all duration-300 overflow-hidden group">
+                    <CardContent className="p-5 flex flex-col items-center text-center gap-3">
                       {/* Avatar */}
                       <div className="relative">
-                        <div className="h-16 w-16 rounded-full overflow-hidden border-2 border-white shadow-md ring-2 ring-primary/5">
+                        <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full overflow-hidden border-2 border-white shadow-md ring-2 ring-primary/5">
                           <img 
                             src={doctor.user.avatar || `https://i.pravatar.cc/250?u=${doctor.id}`} 
                             alt={doctor.user.name}
@@ -100,30 +102,30 @@ export default function DoctorsCarousel({ doctors }: { doctors: Doctor[] }) {
 
                       {/* Name */}
                       <div>
-                        <p className="font-semibold text-xs leading-tight group-hover:text-primary transition-colors line-clamp-1">
+                        <p className="font-bold text-sm sm:text-base leading-tight group-hover:text-primary transition-colors line-clamp-1">
                           {doctor.user.name.startsWith("Dr.") ? doctor.user.name : `Dr. ${doctor.user.name}`}
                         </p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1 font-medium">{doctor.specialization}</p>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-1 font-medium">{doctor.specialization}</p>
                         {(doctor as any).currentHospitalName && (
-                          <p className="text-[9px] text-primary font-bold mt-0.5 line-clamp-1 uppercase tracking-tighter">
+                          <p className="text-[10px] sm:text-xs text-primary font-bold mt-1 line-clamp-1 uppercase tracking-tighter">
                             🏥 {(doctor as any).currentHospitalName}
                           </p>
                         )}
                       </div>
 
                       {/* Meta */}
-                      <div className="w-full space-y-1">
-                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                          <MapPin className="h-3 w-3 shrink-0 text-primary/60" />
+                      <div className="w-full space-y-2 mt-1">
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <MapPin className="h-3.5 w-3.5 shrink-0 text-primary/60" />
                           <span className="truncate">{doctor.city}</span>
                         </div>
-                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                          <Clock className="h-3 w-3 shrink-0" />
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <Clock className="h-3.5 w-3.5 shrink-0" />
                           {doctor.experience} Yrs Exp.
                         </div>
                       </div>
 
-                      <Button size="sm" variant="outline" className="w-full h-7 text-[11px] mt-1 group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all rounded-lg">
+                      <Button size="sm" variant="outline" className="w-full h-9 text-xs sm:text-sm mt-2 group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all rounded-lg">
                         Book Now
                       </Button>
                     </CardContent>
