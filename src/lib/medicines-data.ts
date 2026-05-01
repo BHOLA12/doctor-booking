@@ -115,6 +115,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: false,
     dosage: "1000mg, 60 Softgels",
     imageEmoji: "🐟",
+    image: "https://images.unsplash.com/photo-1622434641406-a158123450f9?q=80&w=400&auto=format&fit=crop",
   },
   {
     id: "m7",
@@ -129,6 +130,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: true,
     dosage: "40mg, 10 Tablets",
     imageEmoji: "❤️",
+    image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=400&auto=format&fit=crop",
   },
   {
     id: "m8",
@@ -143,6 +145,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: false,
     dosage: "40mg, 15 Tablets",
     imageEmoji: "🟡",
+    image: "https://images.unsplash.com/photo-1550572017-edb774b7c6cb?q=80&w=400&auto=format&fit=crop",
   },
   {
     id: "m9",
@@ -157,6 +160,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: false,
     dosage: "120mg, 10 Tablets",
     imageEmoji: "🌸",
+    image: "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?q=80&w=400&auto=format&fit=crop",
   },
   {
     id: "m10",
@@ -171,6 +175,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: false,
     dosage: "20g Ointment",
     imageEmoji: "🧴",
+    image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?q=80&w=400&auto=format&fit=crop",
   },
   {
     id: "m11",
@@ -185,6 +190,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: false,
     dosage: "400mg+325mg, 20 Tablets",
     imageEmoji: "💊",
+    image: "https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?q=80&w=400&auto=format&fit=crop",
   },
   {
     id: "m12",
@@ -199,6 +205,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: false,
     dosage: "500g Powder",
     imageEmoji: "🍊",
+    image: "https://images.unsplash.com/photo-1559415053-ec8d7a12cc93?q=80&w=400&auto=format&fit=crop",
   },
   {
     id: "m13",
@@ -213,6 +220,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: true,
     dosage: "625mg, 10 Tablets",
     imageEmoji: "🔬",
+    image: "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?q=80&w=400&auto=format&fit=crop",
   },
   {
     id: "m14",
@@ -227,6 +235,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: true,
     dosage: "1mg+500mg, 15 Tablets",
     imageEmoji: "🩺",
+    image: "https://images.unsplash.com/photo-1583324113626-70df0f4deaab?q=80&w=400&auto=format&fit=crop",
   },
   {
     id: "m15",
@@ -241,6 +250,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: true,
     dosage: "10mg, 10 Tablets",
     imageEmoji: "❤️",
+    image: "https://images.unsplash.com/photo-1576086213369-97a306d36557?q=80&w=400&auto=format&fit=crop",
   },
   {
     id: "m16",
@@ -255,6 +265,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: false,
     dosage: "170ml Suspension",
     imageEmoji: "🟢",
+    image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=400&auto=format&fit=crop",
   },
   {
     id: "m17",
@@ -269,6 +280,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: false,
     dosage: "50g Cream",
     imageEmoji: "🧴",
+    image: "https://images.unsplash.com/photo-1556228578-8d89b6a43588?q=80&w=400&auto=format&fit=crop",
   },
   {
     id: "m18",
@@ -283,6 +295,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: false,
     dosage: "10mg, 10 Tablets",
     imageEmoji: "🌿",
+    image: "https://images.unsplash.com/photo-1628771065518-0d82f1938462?q=80&w=400&auto=format&fit=crop",
   },
   {
     id: "m19",
@@ -297,6 +310,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: false,
     dosage: "30 Tablets",
     imageEmoji: "🌟",
+    image: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?q=80&w=400&auto=format&fit=crop",
   },
   {
     id: "m20",
@@ -311,5 +325,6 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: false,
     dosage: "120ml Lotion",
     imageEmoji: "🌸",
+    image: "https://images.unsplash.com/photo-1556228720-1c2a033c46b5?q=80&w=400&auto=format&fit=crop",
   },
 ];
