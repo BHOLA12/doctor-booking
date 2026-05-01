@@ -57,7 +57,7 @@ export const LAB_TESTS: LabTest[] = [
     homeCollection: true,
     popular: true,
     emoji: "🩸",
-    image: "https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=400&q=80",
+    image: "https://images.unsplash.com/photo-1530497610245-94d3c16cda28?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: "lt3",
@@ -121,7 +121,7 @@ export const LAB_TESTS: LabTest[] = [
     homeCollection: true,
     popular: false,
     emoji: "🫀",
-    image: "https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=400&q=80",
+    image: "https://images.unsplash.com/photo-1530497610245-94d3c16cda28?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: "lt7",
@@ -185,7 +185,7 @@ export const LAB_TESTS: LabTest[] = [
     homeCollection: true,
     popular: false,
     emoji: "💓",
-    image: "https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=400&q=80",
+    image: "https://images.unsplash.com/photo-1530497610245-94d3c16cda28?auto=format&fit=crop&w=400&q=80",
   },
   {
     id: "lt11",
