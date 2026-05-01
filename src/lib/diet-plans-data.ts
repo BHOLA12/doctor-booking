@@ -10,6 +10,7 @@ export type DietPlan = {
   features: string[];
   targetFor: string[];
   emoji: string;
+  image?: string;
   accent: string;
   popular: boolean;
 };
@@ -35,6 +36,7 @@ export const DIET_PLANS: DietPlan[] = [
     ],
     targetFor: ["Obesity", "PCOS", "High cholesterol", "Sedentary lifestyle"],
     emoji: "🏃",
+    image: "https://images.unsplash.com/photo-1490645935967-10de6ba82647?auto=format&fit=crop&w=400&q=80",
     accent: "from-orange-100 to-amber-50 text-orange-600",
     popular: true,
   },
@@ -58,6 +60,7 @@ export const DIET_PLANS: DietPlan[] = [
     ],
     targetFor: ["Athletes", "Gym beginners", "Skinny fat", "Underweight"],
     emoji: "💪",
+    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=400&q=80",
     accent: "from-blue-100 to-sky-50 text-blue-600",
     popular: false,
   },
@@ -81,6 +84,7 @@ export const DIET_PLANS: DietPlan[] = [
     ],
     targetFor: ["Type 2 Diabetes", "Pre-diabetes", "Insulin resistance", "Metabolic syndrome"],
     emoji: "🩺",
+    image: "https://images.unsplash.com/photo-1498837167922-41c012202392?auto=format&fit=crop&w=400&q=80",
     accent: "from-teal-100 to-emerald-50 text-teal-600",
     popular: true,
   },
@@ -104,6 +108,7 @@ export const DIET_PLANS: DietPlan[] = [
     ],
     targetFor: ["High BP", "High cholesterol", "Post-cardiac surgery", "Family history of heart disease"],
     emoji: "❤️",
+    image: "https://images.unsplash.com/photo-1505253758473-96b7015fcd40?auto=format&fit=crop&w=400&q=80",
     accent: "from-rose-100 to-pink-50 text-rose-600",
     popular: false,
   },
@@ -127,6 +132,7 @@ export const DIET_PLANS: DietPlan[] = [
     ],
     targetFor: ["PCOS/PCOD", "Hormonal imbalance", "Irregular periods", "Fertility support"],
     emoji: "🌸",
+    image: "https://images.unsplash.com/photo-1490645935967-10de6ba82647?auto=format&fit=crop&w=400&q=80",
     accent: "from-violet-100 to-purple-50 text-violet-600",
     popular: false,
   },
@@ -150,6 +156,7 @@ export const DIET_PLANS: DietPlan[] = [
     ],
     targetFor: ["Underweight children", "Low immunity", "Picky eaters", "Growing teenagers"],
     emoji: "👶",
+    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=400&q=80",
     accent: "from-green-100 to-lime-50 text-green-600",
     popular: false,
   },

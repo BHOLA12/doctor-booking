@@ -23,9 +23,13 @@ export default function DietPlanCard({ plan, onSelect }: Props) {
       )}
 
       <CardContent className="flex flex-col flex-1 p-5">
-        {/* Icon + accent gradient */}
-        <div className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${plan.accent} mb-4 text-2xl shadow-sm`}>
-          {plan.emoji}
+        {/* Image / Icon + accent gradient */}
+        <div className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${plan.accent} mb-4 text-2xl shadow-sm overflow-hidden`}>
+          {plan.image ? (
+            <img src={plan.image} alt={plan.title} className="h-full w-full object-cover" />
+          ) : (
+            plan.emoji
+          )}
         </div>
 
         {/* Header */}

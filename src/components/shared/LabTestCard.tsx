@@ -30,10 +30,14 @@ export default function LabTestCard({ test, onBook }: Props) {
       )}
 
       <CardContent className="flex flex-col flex-1 p-5">
-        {/* Icon + Category */}
+        {/* Image / Icon + Category */}
         <div className="flex items-center gap-2 mb-3 mt-1">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/8 text-2xl shrink-0">
-            {test.emoji}
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/8 text-2xl shrink-0 overflow-hidden">
+            {test.image ? (
+              <img src={test.image} alt={test.name} className="h-full w-full object-cover" />
+            ) : (
+              test.emoji
+            )}
           </div>
           <Badge variant="secondary" className="text-[10px] font-medium">
             {test.category}
