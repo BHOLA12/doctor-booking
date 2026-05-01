@@ -25,7 +25,7 @@ export default function CartDrawer({ open, onOpenChange }: Props) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:w-[400px] p-0 flex flex-col">
+      <SheetContent side="right" showCloseButton={false} className="w-full sm:w-[400px] p-0 flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b">
           <div className="flex items-center gap-2">
