@@ -7,8 +7,9 @@ import PharmacyHero from "@/components/pharmacy/PharmacyHero";
 import PharmacyMedicineCard from "@/components/pharmacy/PharmacyMedicineCard";
 import StoreCard from "@/components/pharmacy/StoreCard";
 import Footer from "@/components/layout/Footer";
-import { MEDICINES } from "@/lib/medicines-data";
+import { MEDICINES, type Medicine } from "@/lib/medicines-data";
 import { PHARMACY_STORES, PHARMACY_CATEGORIES } from "@/lib/pharmacy-data";
+import ComparePricesModal from "@/components/pharmacy/ComparePricesModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -26,6 +27,13 @@ import Link from "next/link";
 
 export default function PharmacyPage() {
   const [activeCategory, setActiveCategory] = useState("All");
+  const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null);
+  const [showComparison, setShowComparison] = useState(false);
+
+  const handleCompare = (medicine: Medicine) => {
+    setSelectedMedicine(medicine);
+    setShowComparison(true);
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50/30">
@@ -204,7 +212,11 @@ export default function PharmacyPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {MEDICINES.slice(0, 10).map((medicine) => (
-              <PharmacyMedicineCard key={medicine.id} medicine={medicine} />
+              <PharmacyMedicineCard 
+                key={medicine.id} 
+                medicine={medicine} 
+                onCompare={handleCompare} 
+              />
             ))}
           </div>
 
@@ -252,6 +264,12 @@ export default function PharmacyPage() {
       </main>
 
       <Footer />
+
+      <ComparePricesModal 
+        isOpen={showComparison} 
+        onClose={() => setShowComparison(false)} 
+        medicine={selectedMedicine} 
+      />
     </div>
   );
 }
