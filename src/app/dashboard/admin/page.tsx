@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import Image from "next/image";
 
 interface Stats {
   totalUsers: number;
@@ -269,9 +270,18 @@ export default function AdminDashboard() {
                   {doctors.map((doc) => (
                     <TableRow key={doc.id}>
                       <TableCell>
-                        <div>
-                          <p className="font-medium">{doc.user.name}</p>
-                          <p className="text-xs text-muted-foreground">{doc.user.email}</p>
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 font-bold shrink-0 overflow-hidden relative border border-slate-200">
+                             {doc.user.avatar ? (
+                               <Image src={doc.user.avatar} alt={doc.user.name} fill className="object-cover" />
+                             ) : (
+                               doc.user.name.charAt(0)
+                             )}
+                          </div>
+                          <div>
+                            <p className="font-medium">{doc.user.name}</p>
+                            <p className="text-xs text-muted-foreground">{doc.user.email}</p>
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>{doc.specialization}</TableCell>

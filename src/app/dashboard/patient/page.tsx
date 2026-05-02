@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { formatDisplayTime, formatWaitTime } from "@/lib/formatters";
 import MedicalReportsPanel from "@/components/dashboard/MedicalReportsPanel";
 import PatientAiPanel from "@/components/dashboard/PatientAiPanel";
+import Image from "next/image";
 
 export default function PatientDashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -154,8 +155,12 @@ export default function PatientDashboard() {
                 <CardContent className="p-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex items-start gap-4">
-                        <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0 relative">
-                          {apt.doctor?.user?.name?.charAt(0) || "D"}
+                        <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0 relative overflow-hidden">
+                          {apt.doctor?.user?.avatar ? (
+                            <Image src={apt.doctor.user.avatar} alt="Doctor" fill className="object-cover" />
+                          ) : (
+                            apt.doctor?.user?.name?.charAt(0) || "D"
+                          )}
                           {apt.isEmergency && (
                             <div className="absolute -top-1 -right-1 h-4 w-4 bg-red-600 rounded-full flex items-center justify-center border-2 border-background">
                               <AlertCircle className="h-2 w-2 text-white" />
@@ -246,8 +251,12 @@ export default function PatientDashboard() {
                 <CardContent className="p-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground font-semibold text-sm">
-                        {apt.doctor?.user?.name?.charAt(0) || "D"}
+                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground font-semibold text-sm overflow-hidden relative">
+                        {apt.doctor?.user?.avatar ? (
+                          <Image src={apt.doctor.user.avatar} alt="Doctor" fill className="object-cover" />
+                        ) : (
+                          apt.doctor?.user?.name?.charAt(0) || "D"
+                        )}
                       </div>
                       <div>
                         <p className="font-medium text-sm">{apt.doctor?.user?.name}</p>

@@ -33,6 +33,7 @@ import { APPOINTMENT_STATUSES, APPOINTMENT_TYPES, SPECIALIZATIONS } from "@/lib/
 import { toast } from "sonner";
 import { formatDisplayTime, formatWaitTime } from "@/lib/formatters";
 import DoctorPrescriptionPanel from "@/components/dashboard/DoctorPrescriptionPanel";
+import Image from "next/image";
 
 export default function DoctorDashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -298,8 +299,12 @@ export default function DoctorDashboard() {
                 <CardContent className="p-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-start gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0 relative">
-                        {apt.patient?.name?.charAt(0) || "P"}
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0 relative overflow-hidden">
+                        {apt.patient?.avatar ? (
+                          <Image src={apt.patient.avatar} alt="Patient" fill className="object-cover" />
+                        ) : (
+                          apt.patient?.name?.charAt(0) || "P"
+                        )}
                         {apt.isEmergency && (
                           <div className="absolute -top-1 -right-1 h-3.5 w-3.5 bg-red-600 rounded-full flex items-center justify-center border-2 border-background">
                             <Clock className="h-2 w-2 text-white" />

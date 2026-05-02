@@ -12,6 +12,7 @@ import { AppointmentInfo } from "@/types";
 import { APPOINTMENT_STATUSES, APPOINTMENT_TYPES } from "@/lib/constants";
 import { toast } from "sonner";
 import { formatDisplayTime, formatWaitTime } from "@/lib/formatters";
+import Image from "next/image";
 
 export default function PatientAppointmentsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -87,8 +88,12 @@ export default function PatientAppointmentsPage() {
             <CardContent className="p-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-start gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0">
-                    {apt.doctor?.user?.name?.charAt(0) || "D"}
+                  <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0 overflow-hidden relative">
+                    {apt.doctor?.user?.avatar ? (
+                      <Image src={apt.doctor.user.avatar} alt="Doctor" fill className="object-cover" />
+                    ) : (
+                      apt.doctor?.user?.name?.charAt(0) || "D"
+                    )}
                   </div>
                   <div>
                     <p className="font-semibold">{apt.doctor?.user?.name}</p>
