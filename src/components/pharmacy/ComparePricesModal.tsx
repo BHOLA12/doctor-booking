@@ -55,79 +55,80 @@ export default function ComparePricesModal({ isOpen, onClose, medicine }: Compar
           />
           
           <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="relative bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden"
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 100 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="relative bg-white w-full max-w-2xl mx-auto rounded-[2rem] md:rounded-[3rem] shadow-2xl overflow-hidden"
           >
             {/* Header */}
-            <div className="bg-slate-50 p-8 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                <div className="h-16 w-16 bg-white rounded-2xl flex items-center justify-center border border-slate-100 shadow-sm overflow-hidden">
-                  <img src={medicine.image} alt={medicine.name} className="h-12 w-12 object-contain" />
+            <div className="bg-slate-50 p-6 md:p-8 border-b border-slate-100 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4 md:gap-6">
+                <div className="h-12 w-12 md:h-16 md:w-16 bg-white rounded-xl md:rounded-2xl flex items-center justify-center border border-slate-100 shadow-sm overflow-hidden shrink-0">
+                  <img src={medicine.image || ""} alt={medicine.name} className="h-10 w-10 md:h-12 md:w-12 object-contain" />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black text-slate-900 leading-tight">{medicine.name}</h3>
-                  <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{medicine.manufacturer} • {medicine.dosage}</p>
+                  <h3 className="text-lg md:text-2xl font-black text-slate-900 leading-tight">{medicine.name}</h3>
+                  <p className="text-[10px] md:text-sm font-bold text-slate-400 uppercase tracking-widest">{medicine.manufacturer} • {medicine.dosage}</p>
                 </div>
               </div>
-              <button onClick={onClose} className="h-12 w-12 flex items-center justify-center rounded-2xl bg-white border border-slate-100 hover:bg-slate-50 transition-colors">
-                <X className="h-6 w-6 text-slate-400" />
+              <button onClick={onClose} className="h-10 w-10 md:h-12 md:w-12 flex items-center justify-center rounded-xl md:rounded-2xl bg-white border border-slate-100 hover:bg-slate-50 transition-colors shrink-0">
+                <X className="h-5 w-5 md:h-6 md:w-6 text-slate-400" />
               </button>
             </div>
 
             {/* Comparison List */}
-            <div className="p-8 space-y-4 max-h-[60vh] overflow-y-auto no-scrollbar">
+            <div className="p-6 md:p-8 space-y-4 max-h-[60vh] overflow-y-auto no-scrollbar">
                <div className="flex items-center justify-between mb-2">
-                 <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Compare Stores Near You</p>
-                 <Badge variant="outline" className="text-[10px] font-black border-slate-200">3 STORES FOUND</Badge>
+                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Compare Stores Near You</p>
+                 <Badge variant="outline" className="text-[9px] md:text-[10px] font-black border-slate-200">3 STORES FOUND</Badge>
                </div>
 
                {COMPARISON_DATA.map((item, i) => (
                  <motion.div 
-                   key={i}
-                   initial={{ opacity: 0, x: -20 }}
-                   animate={{ opacity: 1, x: 0 }}
-                   transition={{ delay: i * 0.1 }}
-                   className="group p-6 rounded-[2rem] bg-white border border-slate-100 hover:border-primary/30 hover:bg-slate-50 transition-all flex items-center justify-between"
-                 >
-                    <div className="flex items-center gap-5">
-                       <div className={`h-12 w-12 rounded-2xl flex items-center justify-center ${i === 1 ? "bg-primary text-white" : "bg-slate-100 text-slate-400"}`}>
-                          <ShoppingCart className="h-6 w-6" />
+                    key={i}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="group p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] bg-white border border-slate-100 hover:border-primary/30 hover:bg-slate-50 transition-all flex items-center justify-between gap-4"
+                  >
+                    <div className="flex items-center gap-3 md:gap-5">
+                       <div className={`h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 ${i === 1 ? "bg-primary text-white" : "bg-slate-100 text-slate-400"}`}>
+                          <ShoppingCart className="h-5 w-5 md:h-6 md:w-6" />
                        </div>
-                       <div className="space-y-1">
+                       <div className="space-y-0.5 md:space-y-1">
                           <div className="flex items-center gap-2">
-                             <h4 className="font-black text-slate-900">{item.store}</h4>
-                             {item.verified && <ShieldCheck className="h-4 w-4 text-emerald-500" />}
+                             <h4 className="font-black text-slate-900 text-sm md:text-base">{item.store}</h4>
+                             {item.verified && <ShieldCheck className="h-3.5 w-3.5 md:h-4 md:w-4 text-emerald-500" />}
                           </div>
-                          <div className="flex items-center gap-3 text-[10px] font-black text-slate-400 uppercase tracking-tight">
-                             <span className="flex items-center gap-1"><Star className="h-3 w-3 fill-amber-500 text-amber-500" /> {item.rating}</span>
-                             <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-primary" /> {item.delivery}</span>
+                          <div className="flex flex-wrap items-center gap-2 md:gap-3 text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-tight">
+                             <span className="flex items-center gap-1"><Star className="h-2.5 w-2.5 md:h-3 md:w-3 fill-amber-500 text-amber-500" /> {item.rating}</span>
+                             <span className="flex items-center gap-1"><Clock className="h-2.5 w-2.5 md:h-3 md:w-3 text-primary" /> {item.delivery}</span>
                              <span className={item.stock === "Low" ? "text-amber-500" : "text-emerald-500"}>{item.stock} Stock</span>
                           </div>
                        </div>
                     </div>
 
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-3 md:gap-6">
                        <div className="text-right">
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Price</p>
-                          <p className="text-xl font-black text-slate-900">₹{Math.round(medicine.price * item.price)}</p>
+                          <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Price</p>
+                          <p className="text-base md:text-xl font-black text-slate-900">₹{Math.round(medicine.price * item.price)}</p>
                        </div>
-                       <Button className="h-12 rounded-xl px-5 font-black gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                       <Button className="h-9 md:h-12 rounded-xl px-3 md:px-5 font-black gap-2 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex">
                           Order <ArrowRight className="h-4 w-4" />
                        </Button>
                     </div>
-                 </motion.div>
+                  </motion.div>
                ))}
             </div>
 
             {/* Footer */}
-            <div className="p-8 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-               <div className="flex items-center gap-2 text-slate-500 text-xs font-bold">
+            <div className="p-6 md:p-8 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+               <div className="flex items-center gap-2 text-slate-500 text-[10px] md:text-xs font-bold">
                  <MapPin className="h-4 w-4" />
                  Delivering to: <span className="text-slate-900">Sector 18, Noida</span>
                </div>
-               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Prices may vary by location</p>
+               <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">Prices may vary by location</p>
             </div>
           </motion.div>
         </div>
