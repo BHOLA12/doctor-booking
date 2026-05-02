@@ -1,29 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { memo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Plus, ArrowRightLeft } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import type { Medicine } from "@/lib/medicines-data";
-import { motion, AnimatePresence } from "framer-motion";
-import ComparePricesModal from "./ComparePricesModal";
+import { motion } from "framer-motion";
 import Image from "next/image";
 
 type Props = {
   medicine: Medicine;
+  onCompare: (medicine: Medicine) => void;
 };
 
-export default function PharmacyMedicineCard({ medicine }: Props) {
-  const [showComparison, setShowComparison] = useState(false);
+export const PharmacyMedicineCard = memo(function PharmacyMedicineCard({ medicine, onCompare }: Props) {
   const { addItem, isInCart } = useCart();
   const inCart = isInCart(medicine.id);
 
   return (
     <motion.div
-      onHoverStart={() => {}}
-      onHoverEnd={() => {}}
       className="group relative flex flex-col h-full bg-white hover:shadow-xl hover:shadow-slate-200/60 hover:-translate-y-1 transition-all duration-500 border-border/50 rounded-2xl overflow-hidden"
     >
       {/* Badges Overlay */}
@@ -59,14 +55,9 @@ export default function PharmacyMedicineCard({ medicine }: Props) {
         )}
         
         {/* Quick Actions Overlay */}
-        <AnimatePresence>
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            whileHover={{ opacity: 1, y: 0 }}
-            className="absolute bottom-4 right-4 flex gap-2"
-          >
+        <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <button 
-              onClick={() => setShowComparison(true)}
+              onClick={() => onCompare(medicine)}
               className="h-10 w-10 bg-white/90 backdrop-blur-md text-slate-700 rounded-xl flex items-center justify-center hover:bg-white transition-all border border-slate-100 shadow-lg"
             >
               <ArrowRightLeft className="h-5 w-5" />
@@ -77,8 +68,7 @@ export default function PharmacyMedicineCard({ medicine }: Props) {
             >
               <Plus className="h-5 w-5" />
             </button>
-          </motion.div>
-        </AnimatePresence>
+        </div>
       </div>
 
       {/* Card Body */}
@@ -128,7 +118,7 @@ export default function PharmacyMedicineCard({ medicine }: Props) {
             <Button 
               variant="ghost" 
               className="w-full h-8 mt-1 text-[10px] font-black text-slate-400 hover:text-primary"
-              onClick={() => setShowComparison(true)}
+              onClick={() => onCompare(medicine)}
             >
               <ArrowRightLeft className="h-3 w-3 mr-2" />
               Compare Prices
@@ -136,12 +126,10 @@ export default function PharmacyMedicineCard({ medicine }: Props) {
           </div>
         </div>
       </div>
-
-      <ComparePricesModal 
-        isOpen={showComparison} 
-        onClose={() => setShowComparison(false)} 
-        medicine={medicine} 
-      />
     </motion.div>
   );
-}
+});
+
+PharmacyMedicineCard.displayName = "PharmacyMedicineCard";
+
+export default PharmacyMedicineCard;

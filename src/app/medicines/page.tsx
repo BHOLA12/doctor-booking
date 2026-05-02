@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Fuse from "fuse.js";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import PharmacyMedicineCard from "@/components/pharmacy/PharmacyMedicineCard";
 import StoreCard from "@/components/pharmacy/StoreCard";
 import CartDrawer from "@/components/shared/CartDrawer";
 import MedicineFilters from "@/components/pharmacy/MedicineFilters";
+import ComparePricesModal from "@/components/pharmacy/ComparePricesModal";
 import { useCart } from "@/context/CartContext";
 import { MEDICINES, MEDICINE_CATEGORIES, type Medicine } from "@/lib/medicines-data";
 import { PHARMACY_STORES, PHARMACY_CATEGORIES } from "@/lib/pharmacy-data";
@@ -54,6 +55,8 @@ export default function MedicinesPage() {
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([10, 500]);
   const [discountOnly, setDiscountOnly] = useState(false);
+  const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null);
+  const [showComparison, setShowComparison] = useState(false);
   const { cartCount } = useCart();
 
   const debouncedSearch = useDebounce(search, 300);
@@ -87,6 +90,11 @@ export default function MedicinesPage() {
 
     setFiltered(results);
   }, [debouncedSearch, activeCategory, selectedBrands, priceRange, discountOnly]);
+
+  const handleCompare = useCallback((medicine: Medicine) => {
+    setSelectedMedicine(medicine);
+    setShowComparison(true);
+  }, []);
 
   const toggleBrand = (brand: string) => {
     setSelectedBrands(prev => 
@@ -271,7 +279,11 @@ export default function MedicinesPage() {
               {filtered.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                   {filtered.map((medicine) => (
-                    <PharmacyMedicineCard key={medicine.id} medicine={medicine} />
+                    <PharmacyMedicineCard 
+                      key={medicine.id} 
+                      medicine={medicine} 
+                      onCompare={handleCompare}
+                    />
                   ))}
                 </div>
               ) : (
@@ -324,6 +336,12 @@ export default function MedicinesPage() {
       </main>
 
       <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
+      
+      <ComparePricesModal 
+        isOpen={showComparison} 
+        onClose={() => setShowComparison(false)} 
+        medicine={selectedMedicine} 
+      />
 
       {/* Prescription Upload Simulation Modal */}
       <AnimatePresence>
