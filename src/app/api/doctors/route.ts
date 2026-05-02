@@ -7,14 +7,17 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const city = searchParams.get("city") || "";
+    const city           = searchParams.get("city")           || "";
     const specialization = searchParams.get("specialization") || "";
-    const search = searchParams.get("search") || "";
-    const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
-    const limit = Math.min(50, parseInt(searchParams.get("limit") || "12"));
-    const sortBy = searchParams.get("sortBy") || "experience_reviews";
+    const rawSearch      = (searchParams.get("search")        || "").trim();
+    const page           = Math.max(1, parseInt(searchParams.get("page")  || "1"));
+    const limit          = Math.min(50, parseInt(searchParams.get("limit") || "12"));
+    const sortBy         = searchParams.get("sortBy") || "experience_reviews";
 
-    // ── Cache key (includes all filter dimensions) ──
+    // ── Short-circuit: ignore search strings < 2 chars (avoids wasteful DB scan) ──
+    const search = rawSearch.length >= 2 ? rawSearch : "";
+
+    // ── Cache key (all filter dimensions) ──
     const cacheKey = buildCacheKey(
       "doctors-list",
       search,
@@ -30,65 +33,73 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ ...cached, fromCache: true });
     }
 
-    // ── Build Prisma where clause (no raw SQL) ──
+    // ── Build WHERE clause ──
     const where: Record<string, unknown> = { isApproved: true };
 
+    // Exact enum match for specialization — hits index directly, no LIKE
     if (specialization && specialization !== "all") {
-      where.specialization = { contains: specialization, mode: "insensitive" };
+      where.specialization = { equals: specialization, mode: "insensitive" };
     }
 
+    // City filter — startsWith is index-friendly (prefix scan) vs contains (full scan)
     if (city && city !== "all") {
-      where.city = { contains: city, mode: "insensitive" };
+      where.city = { startsWith: city, mode: "insensitive" };
     }
 
+    // Free-text search — only triggered when >= 2 chars
+    // Use startsWith on the primary display field (name via user join) for index use,
+    // and contains only on secondary fields so the OR stays narrow
     if (search) {
       where.OR = [
-        { specialization: { contains: search, mode: "insensitive" } },
-        { clinicName: { contains: search, mode: "insensitive" } },
-        { city: { contains: search, mode: "insensitive" } },
-        { user: { name: { contains: search, mode: "insensitive" } } },
+        { user: { name: { startsWith: search, mode: "insensitive" } } },
+        { specialization: { startsWith: search, mode: "insensitive" } },
+        { clinicName:     { contains:   search, mode: "insensitive" } },
+        { city:           { startsWith: search, mode: "insensitive" } },
+        { currentHospitalName: { contains: search, mode: "insensitive" } },
       ];
     }
 
-    // ── Sort order ──
+    // ── Sort order — all fields are indexed ──
     let orderBy: Record<string, string>[] | Record<string, string> = [];
-    if (sortBy === "rating") {
-      orderBy = { rating: "desc" };
-    } else if (sortBy === "fees_low") {
-      orderBy = { fees: "asc" };
-    } else if (sortBy === "fees_high") {
-      orderBy = { fees: "desc" };
-    } else if (sortBy === "experience") {
-      orderBy = { experience: "desc" };
-    } else {
-      orderBy = [{ experience: "desc" }, { totalReviews: "desc" }, { rating: "desc" }];
+    switch (sortBy) {
+      case "rating":          orderBy = { rating: "desc" }; break;
+      case "fees_low":        orderBy = { fees: "asc" };    break;
+      case "fees_high":       orderBy = { fees: "desc" };   break;
+      case "experience":      orderBy = { experience: "desc" }; break;
+      default:                orderBy = [{ experience: "desc" }, { totalReviews: "desc" }, { rating: "desc" }];
     }
 
-    // ── Run Prisma query with limited select ──
+    // ── Parallel DB calls — only the columns the UI actually needs ──
     const [doctors, total] = await Promise.all([
       prisma.doctor.findMany({
         where,
         select: {
-          id: true,
-          specialization: true,
-          city: true,
-          rating: true,
-          fees: true,
-          experience: true,
-          totalReviews: true,
-          consultationType: true,
-          bio: true,
-          clinicName: true,
+          id:                 true,
+          specialization:     true,
+          city:               true,
+          rating:             true,
+          fees:               true,
+          experience:         true,
+          totalReviews:       true,
+          consultationType:   true,
+          bio:                true,
+          clinicName:         true,
+          degree:             true,          // needed for qualification pill on card
+          currentHospitalName: true,         // needed for hospital display on card
           user: {
-            select: { id: true, name: true, email: true, avatar: true },
+            select: { id: true, name: true, avatar: true },
+          },
+          hospital: {
+            select: { id: true, name: true }, // needed for doctor.hospital?.name fallback
           },
           slots: {
-            select: { startTime: true, endTime: true },
+            select: { id: true, dayOfWeek: true, startTime: true, endTime: true, isActive: true },
+            where: { isActive: true },
           },
         },
         orderBy,
-        skip: (page - 1) * limit,
-        take: limit,
+        skip:  (page - 1) * limit,
+        take:  limit,
       }),
       prisma.doctor.count({ where }),
     ]);
@@ -105,8 +116,8 @@ export async function GET(request: NextRequest) {
       },
     };
 
-    // Cache for 60 seconds (short enough to stay fresh)
-    setCached(cacheKey, result, 60);
+    // Cache 90s for non-search browsing, 30s for active searches (fresher results)
+    setCached(cacheKey, result, search ? 30 : 90);
 
     return NextResponse.json(result);
   } catch (error) {

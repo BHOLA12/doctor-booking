@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Stethoscope, Mail, Phone, MapPin } from "lucide-react";
+import { Stethoscope } from "lucide-react";
+import ContactSection from "./ContactSection";
 
 export default function Footer() {
   return (
@@ -42,23 +43,7 @@ export default function Footer() {
           </div>
 
           {/* Contact */}
-          <div>
-            <h3 className="font-semibold mb-4">Contact</h3>
-            <ul className="space-y-3 text-sm text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-primary" />
-                Worldwide
-              </li>
-              <li className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-primary" />
-                +91 98765 43210
-              </li>
-              <li className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-primary" />
-                support@docbook.in
-              </li>
-            </ul>
-          </div>
+          <ContactSection />
         </div>
 
         <div className="mt-10 pt-6 border-t text-center text-sm text-muted-foreground">

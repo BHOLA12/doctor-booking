@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 export default async function HospitalsPage({
   searchParams,
 }: {
-  searchParams: { q?: string; city?: string };
+  searchParams: Promise<{ q?: string; city?: string }>;
 }) {
-  const query = searchParams.q || "";
+  const { q } = await searchParams;
+  const query = q || "";
   
   const hospitals = await prisma.hospital.findMany({
     where: {

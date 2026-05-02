@@ -10,6 +10,7 @@ if (typeof WebSocket === "undefined") {
 
 const globalForPrisma = globalThis as unknown as {
   prismaNew: PrismaClient | undefined;
+  neonPool:  Pool | undefined;
 };
 
 function createPrismaClient() {
@@ -17,13 +18,17 @@ function createPrismaClient() {
   if (!connectionString) {
     throw new Error("DATABASE_URL environment variable is not set");
   }
-  // PrismaNeon internally handles the pool when given a config object
-  const adapter = new PrismaNeon({ connectionString });
+
+  // Singleton pool — prevents opening a new TCP connection on every invocation
+  if (!globalForPrisma.neonPool) {
+    globalForPrisma.neonPool = new Pool({ connectionString, max: 5 });
+  }
+
+  const adapter = new PrismaNeon(globalForPrisma.neonPool);
   return new PrismaClient({ adapter });
 }
 
 export const prisma =
   globalForPrisma.prismaNew ??
-  createPrismaClient();
+  (globalForPrisma.prismaNew = createPrismaClient());
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prismaNew = prisma;

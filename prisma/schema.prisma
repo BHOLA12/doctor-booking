@@ -61,6 +61,15 @@ model Doctor {
   appointments Appointment[]
   prescriptions Prescription[] @relation("DoctorPrescriptions")
   reviews      Review[]
+
+  // ── Indexes for fast search + sort (list API) ──
+  @@index([isApproved, specialization])                          // filter by spec
+  @@index([isApproved, city])                                    // filter by city
+  @@index([isApproved, rating(sort: Desc)])                      // sort: top rated
+  @@index([isApproved, experience(sort: Desc)])                  // sort: most experienced
+  @@index([isApproved, fees])                                    // sort: fees asc/desc
+  @@index([isApproved, experience(sort: Desc), totalReviews(sort: Desc), rating(sort: Desc)]) // default sort
+  @@index([isApproved, specialization, city])                    // spec + city combined filter
 }
 
 model Slot {

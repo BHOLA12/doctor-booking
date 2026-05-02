@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { doctorProfileSchema } from "@/lib/validations";
+import { getCached, setCached, searchCache } from "@/lib/search-cache";
 
 export async function GET(
   request: NextRequest,
@@ -9,22 +10,58 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+
+    // ── Cache: return instantly if same doctor was recently fetched ──
+    const cacheKey = `doctor-profile:${id}`;
+    const cached = getCached<object>(cacheKey);
+    if (cached) {
+      return NextResponse.json({ ...(cached as object), fromCache: true });
+    }
+
     const doctor = await prisma.doctor.findUnique({
       where: { id },
-      include: {
+      select: {
+        id: true,
+        specialization: true,
+        experience: true,
+        rating: true,
+        totalReviews: true,
+        fees: true,
+        bio: true,
+        clinicName: true,
+        clinicAddress: true,
+        city: true,
+        state: true,
+        country: true,
+        consultationType: true,
+        degree: true,
+        college: true,
+        licenseNumber: true,
+        experienceHospitals: true,
+        currentHospitalName: true,
+        isApproved: true,
+        hospitalId: true,
         user: {
           select: { id: true, name: true, email: true, avatar: true, phone: true },
         },
-        hospital: true,
+        hospital: {
+          select: {
+            id: true, name: true, address: true, city: true,
+            image: true, rating: true, totalReviews: true,
+          },
+        },
         slots: {
           where: { isActive: true },
+          select: {
+            id: true, dayOfWeek: true, startTime: true,
+            endTime: true, isActive: true,
+          },
           orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
         },
         reviews: {
-          include: {
-            patient: {
-              select: { id: true, name: true, avatar: true },
-            },
+          select: {
+            id: true, rating: true, comment: true, createdAt: true,
+            patient: { select: { id: true, name: true, avatar: true } },
           },
           orderBy: { createdAt: "desc" },
           take: 10,
@@ -39,7 +76,12 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ success: true, data: doctor });
+    const result = { success: true, data: doctor };
+
+    // Cache for 5 minutes — doctor profiles rarely change mid-session
+    setCached(cacheKey, result, 300);
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Doctor detail error:", error);
     return NextResponse.json(
@@ -126,7 +168,11 @@ export async function PUT(
       });
     }
 
+    // Bust cached profile so next GET fetches fresh data
+    searchCache.delete(`doctor-profile:${id}`);
+
     return NextResponse.json({ success: true, data: updated });
+
   } catch (error) {
     console.error("Doctor update error:", error);
     return NextResponse.json(

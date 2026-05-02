@@ -1,4 +1,9 @@
+const fs = require('fs');
+const path = require('path');
 
+const targetPath = path.join(__dirname, 'src/app/doctors/[id]/page.tsx');
+
+const importsPart = `
 "use client";
 
 import { useState, useEffect, use } from "react";
@@ -27,9 +32,11 @@ function nameToGradient(name: string): string {
 }
 
 function getInitials(name: string) {
-  return name.replace(/^Dr\.?\s*/i, "").split(" ").filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("");
+  return name.replace(/^Dr\\.?\\s*/i, "").split(" ").filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("");
 }
+`;
 
+const componentStartPart = `
 export default function DoctorProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { user } = useAuth();
@@ -44,7 +51,7 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
   useEffect(() => {
     async function fetchDoctor() {
       try {
-        const res = await fetch(`/api/doctors/${id}`);
+        const res = await fetch(\`/api/doctors/\${id}\`);
         const data = await res.json();
         if (data.success) setDoctor(data.data);
       } catch (error) {
@@ -64,7 +71,7 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
   const handleBooking = async () => {
     if (!user) {
       toast.error("Please login to book an appointment");
-      router.push(`/login?redirect=/doctors/${id}`);
+      router.push(\`/login?redirect=/doctors/\${id}\`);
       return;
     }
     if (!selectedDate || !selectedSlot) {
@@ -88,7 +95,7 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
       });
       const data = await res.json();
       if (data.success) {
-        toast.success(`Successfully booked! Queue Position: ${data.data.queuePositionSnapshot}`);
+        toast.success(\`Successfully booked! Queue Position: \${data.data.queuePositionSnapshot}\`);
         router.push("/dashboard/patient/appointments");
       } else {
         toast.error(data.error || "Booking failed");
@@ -103,7 +110,7 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
     const [hour, min] = time.split(":").map(Number);
     const ampm = hour >= 12 ? "PM" : "AM";
     const h = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    return `${h}:${min.toString().padStart(2, "0")} ${ampm}`;
+    return \`\${h}:\${min.toString().padStart(2, "0")} \${ampm}\`;
   };
 
   if (loading) {
@@ -132,7 +139,9 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
   }
 
   const availableSlots = getAvailableSlots();
+`;
 
+const renderPart1 = `
   return (
     <div className="min-h-screen bg-[#f8fafc] pb-24 pt-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -181,7 +190,7 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
                   </div>
 
                   <h1 className="text-3xl sm:text-[34px] font-bold text-slate-900 tracking-tight mb-3">
-                    {doctor.user.name.startsWith("Dr.") ? doctor.user.name : `Dr. ${doctor.user.name}`}
+                    {doctor.user.name.startsWith("Dr.") ? doctor.user.name : \`Dr. \${doctor.user.name}\`}
                   </h1>
 
                   <div className="flex flex-wrap items-center gap-6 text-sm text-slate-600 font-medium mb-5">
@@ -213,7 +222,7 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
                   </div>
 
                   <p className="text-sm text-slate-500 leading-relaxed max-w-2xl">
-                    {doctor.bio || `Highly skilled ${doctor.specialization} with extensive experience in comprehensive patient care and treatments.`}
+                    {doctor.bio || \`Highly skilled \${doctor.specialization} with extensive experience in comprehensive patient care and treatments.\`}
                   </p>
                 </div>
               </div>
@@ -288,10 +297,10 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
             {/* About Section */}
             <div className="bg-white rounded-[2rem] p-6 lg:p-8 shadow-sm border border-slate-100">
               <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-                <User className="h-5 w-5 text-teal-600" /> About {doctor.user.name.startsWith("Dr.") ? doctor.user.name : `Dr. ${doctor.user.name}`}
+                <User className="h-5 w-5 text-teal-600" /> About {doctor.user.name.startsWith("Dr.") ? doctor.user.name : \`Dr. \${doctor.user.name}\`}
               </h3>
               <p className="text-sm text-slate-500 leading-relaxed mb-6">
-                {doctor.bio || `Dr. ${doctor.user.name} is a compassionate and dedicated ${doctor.specialization} with over ${doctor.experience} years of experience. Known for a patient-centric approach and commitment to providing the best care.`}
+                {doctor.bio || \`Dr. \${doctor.user.name} is a compassionate and dedicated \${doctor.specialization} with over \${doctor.experience} years of experience. Known for a patient-centric approach and commitment to providing the best care.\`}
               </p>
               
               <div className="grid sm:grid-cols-2 gap-6">
@@ -328,7 +337,7 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
                   <div className="text-5xl font-black text-slate-900 mb-2">{doctor.rating.toFixed(1)}</div>
                   <div className="flex items-center gap-1 mb-2">
                     {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} className={`h-4 w-4 ${s <= Math.round(doctor.rating) ? "fill-amber-400 text-amber-400" : "fill-slate-100 text-slate-100"}`} />
+                      <Star key={s} className={\`h-4 w-4 \${s <= Math.round(doctor.rating) ? "fill-amber-400 text-amber-400" : "fill-slate-100 text-slate-100"}\`} />
                     ))}
                   </div>
                   <p className="text-xs text-slate-400 font-medium mb-6">({doctor.totalReviews} total)</p>
@@ -426,21 +435,21 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => setConsultationType("OFFLINE")}
-                    className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border transition-all ${
+                    className={\`flex flex-col items-center gap-1.5 p-3 rounded-2xl border transition-all \${
                       consultationType === "OFFLINE" ? "border-teal-600 bg-teal-50" : "border-slate-200 hover:border-teal-200"
-                    }`}
+                    }\`}
                   >
-                    <Building2 className={`h-5 w-5 ${consultationType === "OFFLINE" ? "text-teal-600" : "text-slate-400"}`} />
-                    <span className={`text-xs font-bold ${consultationType === "OFFLINE" ? "text-teal-700" : "text-slate-500"}`}>In-Clinic Visit</span>
+                    <Building2 className={\`h-5 w-5 \${consultationType === "OFFLINE" ? "text-teal-600" : "text-slate-400"}\`} />
+                    <span className={\`text-xs font-bold \${consultationType === "OFFLINE" ? "text-teal-700" : "text-slate-500"}\`}>In-Clinic Visit</span>
                   </button>
                   <button
                     onClick={() => setConsultationType("ONLINE")}
-                    className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border transition-all ${
+                    className={\`flex flex-col items-center gap-1.5 p-3 rounded-2xl border transition-all \${
                       consultationType === "ONLINE" ? "border-teal-600 bg-teal-50" : "border-slate-200 hover:border-teal-200"
-                    }`}
+                    }\`}
                   >
-                    <Video className={`h-5 w-5 ${consultationType === "ONLINE" ? "text-teal-600" : "text-slate-400"}`} />
-                    <span className={`text-xs font-bold ${consultationType === "ONLINE" ? "text-teal-700" : "text-slate-500"}`}>Video Consultation</span>
+                    <Video className={\`h-5 w-5 \${consultationType === "ONLINE" ? "text-teal-600" : "text-slate-400"}\`} />
+                    <span className={\`text-xs font-bold \${consultationType === "ONLINE" ? "text-teal-700" : "text-slate-500"}\`}>Video Consultation</span>
                   </button>
                 </div>
 
@@ -480,11 +489,11 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
                         <button
                           key={slot.id}
                           onClick={() => setSelectedSlot(slot)}
-                          className={`py-2.5 rounded-full text-[13px] font-bold border transition-all ${
+                          className={\`py-2.5 rounded-full text-[13px] font-bold border transition-all \${
                             selectedSlot?.id === slot.id 
                             ? "border-teal-600 bg-teal-600 text-white shadow-md shadow-teal-500/20" 
                             : "border-slate-200 text-slate-600 hover:border-teal-400 hover:text-teal-700 bg-white"
-                          }`}
+                          }\`}
                         >
                           {formatTime(slot.startTime)}
                         </button>
@@ -540,3 +549,9 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
     </div>
   );
 }
+`;
+
+const content = importsPart + componentStartPart + renderPart1;
+
+fs.writeFileSync(targetPath, content, 'utf8');
+console.log('Profile page redesigned successfully!');
