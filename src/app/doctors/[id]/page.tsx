@@ -353,7 +353,7 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
                         <div className="flex items-center gap-3">
                           <div className="h-10 w-10 rounded-full bg-slate-200 overflow-hidden relative">
                              {review.patient?.avatar ? (
-                               <Image src={review.patient.avatar} alt="User" fill className="object-cover" />
+                               <Image src={review.patient.avatar!} alt="User" fill className="object-cover" />
                              ) : (
                                <div className="h-full w-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold">{getInitials(review.patient?.name || "User")}</div>
                              )}

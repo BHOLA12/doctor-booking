@@ -234,7 +234,7 @@ function DoctorsContent() {
                         <div className="relative shrink-0">
                           <div className={`relative h-[72px] w-[72px] rounded-[20px] bg-gradient-to-br ${gradient} flex items-center justify-center text-white font-black text-[26px] shadow-md overflow-hidden`}>
                             {doctor.user.avatar
-                              ? <Image src={doctor.user.avatar} alt={displayName} fill sizes="72px" className="object-cover" />
+                              ? <Image src={doctor.user.avatar!} alt={displayName} fill sizes="72px" className="object-cover" />
                               : <span>{initials}</span>
                             }
                           </div>
