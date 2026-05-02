@@ -68,7 +68,7 @@ export default function ComparePricesModal({ isOpen, onClose, medicine }: Compar
                 </div>
                 <div>
                   <h3 className="text-2xl font-black text-slate-900 leading-tight">{medicine.name}</h3>
-                  <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{medicine.brand} • {medicine.dosage}</p>
+                  <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{medicine.manufacturer} • {medicine.dosage}</p>
                 </div>
               </div>
               <button onClick={onClose} className="h-12 w-12 flex items-center justify-center rounded-2xl bg-white border border-slate-100 hover:bg-slate-50 transition-colors">
