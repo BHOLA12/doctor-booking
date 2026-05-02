@@ -13,13 +13,13 @@ const trustItems = [
 
 export default function TrustBar() {
   return (
-    <div className="bg-slate-50 border-b border-border/40 py-2 hidden md:block">
+    <div className="bg-white border-b border-slate-100 py-3 hidden md:block">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           {trustItems.map(({ icon: Icon, label }) => (
-            <div key={label} className="flex items-center gap-1.5">
-              <Icon className="h-3.5 w-3.5 text-teal-600" />
-              <span className="text-[10px] lg:text-[11px] font-medium text-slate-600 uppercase tracking-tight">
+            <div key={label} className="flex items-center gap-2">
+              <Icon className="h-4 w-4 text-teal-600" />
+              <span className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest">
                 {label}
               </span>
             </div>
