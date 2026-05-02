@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
 import { useCart } from "@/context/CartContext";
 import type { Medicine } from "@/lib/medicines-data";
 import { CheckCircle2, Plus, ShoppingCart } from "lucide-react";
@@ -35,10 +36,12 @@ export default function MedicineCard({ medicine }: Props) {
         {/* Image Container */}
         <div className="relative h-40 w-full mb-4 rounded-lg bg-slate-50/50 flex items-center justify-center p-4 group-hover:bg-slate-100/50 transition-colors duration-300">
           {medicine.image ? (
-            <img
+            <Image
               src={medicine.image}
               alt={medicine.name}
-              className="h-full w-full object-contain drop-shadow-sm group-hover:scale-110 transition-transform duration-500"
+              fill
+              sizes="(max-width: 768px) 100vw, 300px"
+              className="object-contain drop-shadow-sm group-hover:scale-110 transition-transform duration-500"
             />
           ) : (
             <div className="text-5xl drop-shadow-sm group-hover:scale-110 transition-transform duration-500">

@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
 import type { LabTest } from "@/lib/lab-tests-data";
 import { Clock, FlaskConical, Home } from "lucide-react";
 
@@ -32,9 +33,9 @@ export default function LabTestCard({ test, onBook }: Props) {
       <CardContent className="flex flex-col flex-1 p-5">
         {/* Image / Icon + Category */}
         <div className="flex items-center gap-2 mb-3 mt-1">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/8 text-2xl shrink-0 overflow-hidden">
+          <div className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-primary/8 text-2xl shrink-0 overflow-hidden">
             {test.image ? (
-              <img src={test.image} alt={test.name} className="h-full w-full object-cover" />
+              <Image src={test.image} alt={test.name} fill sizes="48px" className="object-cover" />
             ) : (
               test.emoji
             )}

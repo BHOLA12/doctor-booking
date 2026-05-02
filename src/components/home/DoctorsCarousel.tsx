@@ -2,6 +2,7 @@
 
 import { useRef, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -101,11 +102,13 @@ export default function DoctorsCarousel({ doctors }: { doctors: Doctor[] }) {
                     <CardContent className="p-5 flex flex-col items-center text-center gap-3">
                       {/* Avatar */}
                       <div className="relative">
-                        <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full overflow-hidden border-2 border-white shadow-md ring-2 ring-primary/5">
-                          <img 
+                        <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-full overflow-hidden border-2 border-white shadow-md ring-2 ring-primary/5">
+                          <Image 
                             src={doctor.user.avatar || `https://i.pravatar.cc/250?u=${doctor.id}`} 
                             alt={doctor.user.name}
-                            className="h-full w-full object-cover"
+                            fill
+                            sizes="(max-width: 640px) 80px, 96px"
+                            className="object-cover"
                           />
                         </div>
                         {/* Online dot */}

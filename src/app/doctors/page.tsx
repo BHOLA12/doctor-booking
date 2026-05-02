@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -231,9 +232,9 @@ function DoctorsContent() {
 
                         {/* iOS-style square-rounded avatar */}
                         <div className="relative shrink-0">
-                          <div className={`h-[72px] w-[72px] rounded-[20px] bg-gradient-to-br ${gradient} flex items-center justify-center text-white font-black text-[26px] shadow-md overflow-hidden`}>
+                          <div className={`relative h-[72px] w-[72px] rounded-[20px] bg-gradient-to-br ${gradient} flex items-center justify-center text-white font-black text-[26px] shadow-md overflow-hidden`}>
                             {doctor.user.avatar
-                              ? <img src={doctor.user.avatar} alt={displayName} className="h-full w-full object-cover" />
+                              ? <Image src={doctor.user.avatar} alt={displayName} fill sizes="72px" className="object-cover" />
                               : <span>{initials}</span>
                             }
                           </div>

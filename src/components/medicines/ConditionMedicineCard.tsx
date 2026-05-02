@@ -4,6 +4,7 @@ import { ShoppingCart, ExternalLink, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
 import { type ConditionMedicine } from "@/lib/problem-categories-data";
 import { useCart } from "@/context/CartContext";
 
@@ -22,10 +23,12 @@ export default function ConditionMedicineCard({
         <div className="flex gap-4">
           <div className="relative flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-slate-50 group-hover:bg-white transition-colors duration-500 overflow-hidden border border-slate-100 p-2">
             {medicine.image ? (
-              <img 
+              <Image 
                 src={medicine.image} 
                 alt={medicine.name} 
-                className="h-full w-full object-contain drop-shadow-sm group-hover:scale-110 transition-transform duration-500" 
+                fill
+                sizes="96px"
+                className="object-contain drop-shadow-sm group-hover:scale-110 transition-transform duration-500" 
               />
             ) : (
               <span className="text-4xl drop-shadow-sm group-hover:scale-110 transition-transform duration-500">

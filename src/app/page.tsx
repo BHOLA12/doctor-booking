@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 
 export default async function HomePage() {
+  console.log("🏠 HomePage rendering, DATABASE_URL exists:", !!process.env.DATABASE_URL);
   const featuredDoctors = await prisma.doctor.findMany({
     where: { isApproved: true },
     include: { user: { select: { name: true, avatar: true } } },

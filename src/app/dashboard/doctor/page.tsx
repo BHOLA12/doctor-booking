@@ -174,18 +174,48 @@ export default function DoctorDashboard() {
       toast.error("Geolocation is not supported by your browser");
       return;
     }
-    toast.info("Detecting location...");
+    toast.info("Detecting exact location...");
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setProfileForm({
-          ...profileForm,
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        });
-        toast.success("Location detected!");
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+          const data = await res.json();
+          
+          if (data && data.address) {
+            const addr = data.address;
+            const city = addr.city || addr.town || addr.village || addr.county || "";
+            const state = addr.state || "";
+            const country = addr.country || "";
+            
+            // Generate a shorter address without country code etc.
+            const shortAddress = [
+              addr.road, addr.suburb, addr.city || addr.town || addr.village, state
+            ].filter(Boolean).join(", ");
+
+            setProfileForm(prev => ({
+              ...prev,
+              latitude: lat,
+              longitude: lon,
+              city: city || prev.city,
+              state: state || prev.state,
+              country: country || prev.country,
+              clinicAddress: shortAddress || data.display_name || prev.clinicAddress,
+            }));
+            toast.success("Exact location & address detected!");
+          } else {
+            setProfileForm(prev => ({ ...prev, latitude: lat, longitude: lon }));
+            toast.success("Coordinates detected, but address not found.");
+          }
+        } catch (err) {
+          setProfileForm(prev => ({ ...prev, latitude: lat, longitude: lon }));
+          toast.success("Coordinates detected!");
+        }
       },
       () => {
-        toast.error("Unable to retrieve your location");
+        toast.error("Unable to retrieve your location. Please check browser permissions.");
       }
     );
   };

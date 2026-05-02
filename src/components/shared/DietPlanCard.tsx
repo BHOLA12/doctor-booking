@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
 import type { DietPlan } from "@/lib/diet-plans-data";
 import { CheckCircle2, Clock, ArrowRight } from "lucide-react";
 
@@ -24,9 +25,9 @@ export default function DietPlanCard({ plan, onSelect }: Props) {
 
       <CardContent className="flex flex-col flex-1 p-5">
         {/* Image / Icon + accent gradient */}
-        <div className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${plan.accent} mb-4 text-2xl shadow-sm overflow-hidden`}>
+        <div className={`relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${plan.accent} mb-4 text-2xl shadow-sm overflow-hidden`}>
           {plan.image ? (
-            <img src={plan.image} alt={plan.title} className="h-full w-full object-cover" />
+            <Image src={plan.image} alt={plan.title} fill sizes="56px" className="object-cover" />
           ) : (
             plan.emoji
           )}
