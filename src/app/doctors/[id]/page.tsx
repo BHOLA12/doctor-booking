@@ -352,15 +352,15 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-3">
                           <div className="h-10 w-10 rounded-full bg-slate-200 overflow-hidden relative">
-                             {review.patient.avatar ? (
+                             {review.patient?.avatar ? (
                                <Image src={review.patient.avatar} alt="User" fill className="object-cover" />
                              ) : (
-                               <div className="h-full w-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold">{getInitials(review.patient.name)}</div>
+                               <div className="h-full w-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold">{getInitials(review.patient?.name || "User")}</div>
                              )}
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <p className="text-sm font-bold text-slate-900">{review.patient.name}</p>
+                              <p className="text-sm font-bold text-slate-900">{review.patient?.name || "Patient"}</p>
                               <span className="text-[9px] text-slate-400 bg-white border border-slate-200 px-1.5 py-0.5 rounded-full">Verified Patient</span>
                             </div>
                             <p className="text-xs text-slate-400">2 weeks ago</p>
