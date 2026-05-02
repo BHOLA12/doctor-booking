@@ -28,7 +28,8 @@ import {
   ShieldCheck,
   Star,
   Clock,
-  XCircle
+  XCircle,
+  Link as LinkIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -118,7 +119,7 @@ export default function MedicinesPage() {
               <div className="space-y-10">
                 <div className="space-y-6">
                   <Badge variant="secondary" className="bg-white/80 text-teal-700 border-teal-100 px-5 py-2 text-[10px] font-black uppercase tracking-[0.2em] rounded-full shadow-sm">
-                    <Link className="h-3 w-3 mr-2" />
+                    <LinkIcon className="h-3 w-3 mr-2" />
                     Online Pharmacy
                   </Badge>
                   <h1 className="text-6xl lg:text-8xl font-black text-slate-900 leading-[0.9] tracking-tighter">
