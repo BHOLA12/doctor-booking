@@ -163,15 +163,41 @@ export default function MedicinesPage() {
                   </div>
                 </div>
 
-                <Button 
-                  className="h-14 rounded-2xl bg-primary/20 text-primary font-black hover:bg-primary/30 px-10 text-sm tracking-widest uppercase"
-                  onClick={() => setFindingPharmacy(true)}
-                >
-                  Simulate Smart Order
-                </Button>
+                <div className="flex flex-col sm:flex-row items-center gap-6 pt-4">
+                  <Button 
+                    className="h-14 rounded-2xl bg-primary/20 text-primary font-black hover:bg-primary/30 px-10 text-sm tracking-widest uppercase shrink-0"
+                    onClick={() => setFindingPharmacy(true)}
+                  >
+                    Simulate Smart Order
+                  </Button>
+
+                  {/* Floating Prescription Card (Moved to Left) */}
+                  <motion.div 
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    className="relative z-10 bg-white/90 backdrop-blur-xl p-6 rounded-[2.5rem] shadow-xl border border-white/60 flex items-center gap-6 max-w-md"
+                  >
+                      <div className="text-3xl bg-orange-50 h-14 w-14 flex items-center justify-center rounded-2xl shadow-inner shrink-0">📦</div>
+                      <div className="space-y-3">
+                         <Badge variant="secondary" className="bg-teal-50 text-teal-700 border-teal-100 px-3 py-0.5 text-[9px] font-black uppercase tracking-widest">
+                            Prescription Order
+                         </Badge>
+                         <p className="text-slate-500 font-bold text-xs leading-tight">
+                            Upload your prescription and we'll find stores for you.
+                         </p>
+                         <Button 
+                           size="sm"
+                           className="h-9 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20"
+                           onClick={() => setPrescriptionOpen(true)}
+                         >
+                           Upload Now
+                         </Button>
+                      </div>
+                  </motion.div>
+                </div>
               </div>
 
-              {/* Right Side: Prescription Card + 3D Image */}
+              {/* Right Side: Only 3D Image */}
               <div className="relative h-[500px] flex items-center justify-center lg:justify-end">
                  {/* 3D Illustration */}
                  <div className="absolute right-0 bottom-0 w-full h-full pointer-events-none select-none">
@@ -183,30 +209,6 @@ export default function MedicinesPage() {
                       priority
                     />
                  </div>
-
-                 {/* Floating Prescription Card */}
-                 <motion.div 
-                   initial={{ y: 20, opacity: 0 }}
-                   animate={{ y: 0, opacity: 1 }}
-                   transition={{ delay: 0.5 }}
-                   className="relative z-10 bg-white/90 backdrop-blur-xl p-8 rounded-[3rem] shadow-2xl border border-white/60 max-w-sm mr-12 lg:mr-32 -mt-20"
-                 >
-                    <div className="flex items-center gap-4 mb-6">
-                       <div className="text-4xl bg-orange-50 h-16 w-16 flex items-center justify-center rounded-2xl shadow-inner">📦</div>
-                       <Badge variant="secondary" className="bg-teal-50 text-teal-700 border-teal-100 px-4 py-1 text-[10px] font-black uppercase tracking-widest">
-                          Prescription Order
-                       </Badge>
-                    </div>
-                    <p className="text-slate-500 font-bold mb-8 leading-relaxed">
-                       Upload your prescription and we will find the best nearby stores for you.
-                    </p>
-                    <Button 
-                      className="w-full h-14 rounded-[1.25rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/20"
-                      onClick={() => setPrescriptionOpen(true)}
-                    >
-                      Upload Now
-                    </Button>
-                 </motion.div>
               </div>
             </div>
           </div>
