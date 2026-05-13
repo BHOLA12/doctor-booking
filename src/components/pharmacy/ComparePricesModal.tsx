@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { type Medicine } from "@/lib/medicines-data";
+import { useCart } from "@/context/CartContext";
+import { toast } from "sonner";
 
 interface ComparePricesModalProps {
   isOpen: boolean;
@@ -40,6 +42,8 @@ const COMPARISON_DATA = [
 ];
 
 export default function ComparePricesModal({ isOpen, onClose, medicine }: ComparePricesModalProps) {
+  const { addItem } = useCart();
+
   if (!medicine) return null;
 
   return (
@@ -114,7 +118,15 @@ export default function ComparePricesModal({ isOpen, onClose, medicine }: Compar
                           <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Price</p>
                           <p className="text-base md:text-xl font-black text-slate-900">₹{Math.round(medicine.price * item.price)}</p>
                        </div>
-                       <Button className="h-9 md:h-12 rounded-xl px-3 md:px-5 font-black gap-2 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex">
+                       <Button 
+                         className="h-9 md:h-12 rounded-xl px-3 md:px-5 font-black gap-2 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex"
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           addItem(medicine);
+                           toast.success(`Added ${medicine.name} from ${item.store} to cart!`);
+                           onClose();
+                         }}
+                       >
                           Order <ArrowRight className="h-4 w-4" />
                        </Button>
                     </div>
