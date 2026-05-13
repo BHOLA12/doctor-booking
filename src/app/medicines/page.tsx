@@ -54,6 +54,8 @@ export default function MedicinesPage() {
   const [findingPharmacy, setFindingPharmacy] = useState(false);
   const [prescriptionOpen, setPrescriptionOpen] = useState(false);
   const [scanning, setScanning] = useState(false);
+  const [ocrProgress, setOcrProgress] = useState({ status: "", progress: 0 });
+  const [detectedMedicines, setDetectedMedicines] = useState<Medicine[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([10, 500]);
   const [discountOnly, setDiscountOnly] = useState(false);
@@ -430,9 +432,46 @@ export default function MedicinesPage() {
                       type="file" 
                       className="hidden" 
                       accept="image/*,application/pdf"
-                      onChange={(e) => {
+                      onChange={async (e) => {
                         if (e.target.files && e.target.files.length > 0) {
+                          const file = e.target.files[0];
                           setScanning(true);
+                          setOcrProgress({ status: "Loading AI Engine...", progress: 0 });
+                          setDetectedMedicines([]);
+                          
+                          try {
+                            const Tesseract = (await import('tesseract.js')).default;
+                            const result = await Tesseract.recognize(file, 'eng', {
+                              logger: (m) => {
+                                if (m.status === "recognizing text") {
+                                  setOcrProgress({ status: "Extracting Text...", progress: Math.round(m.progress * 100) });
+                                } else {
+                                  setOcrProgress({ status: "Processing...", progress: 0 });
+                                }
+                              }
+                            });
+                            
+                            const extractedText = result.data.text;
+                            
+                            // Fuzzy search against our medicines database
+                            const words = extractedText.replace(/\n/g, " ").split(" ").filter(w => w.length > 3);
+                            const matchedMeds = new Map<string, Medicine>();
+                            
+                            words.forEach(word => {
+                              const matches = fuseIndex.search(word);
+                              // Using a slightly more lenient threshold for OCR errors
+                              if (matches.length > 0 && matches[0].score && matches[0].score < 0.25) {
+                                matchedMeds.set(matches[0].item.id, matches[0].item);
+                              }
+                            });
+                            
+                            setDetectedMedicines(Array.from(matchedMeds.values()));
+                            setOcrProgress({ status: "Complete", progress: 100 });
+                            
+                          } catch (err) {
+                            console.error(err);
+                            setOcrProgress({ status: "Error scanning", progress: 0 });
+                          }
                         }
                       }}
                     />
@@ -446,41 +485,56 @@ export default function MedicinesPage() {
                ) : (
                  <div className="space-y-8 py-10">
                     <div className="relative h-64 w-full bg-slate-50 rounded-[2.5rem] overflow-hidden flex items-center justify-center">
-                       <div className="absolute inset-0 bg-gradient-to-b from-primary/20 to-transparent animate-scan z-10" />
+                       {ocrProgress.status !== "Complete" && (
+                         <div className="absolute inset-0 bg-gradient-to-b from-primary/20 to-transparent animate-scan z-10" />
+                       )}
                        <div className="text-8xl opacity-20 grayscale">📄</div>
                        
-                       {/* Detected Elements Mock */}
-                       <motion.div 
-                         initial={{ opacity: 0 }}
-                         animate={{ opacity: 1 }}
-                         transition={{ delay: 1 }}
-                         className="absolute top-10 left-10 p-2 bg-emerald-500 text-white rounded-lg text-[10px] font-black uppercase shadow-lg"
-                       >
-                         Dolo 650 Detected
-                       </motion.div>
-                       <motion.div 
-                         initial={{ opacity: 0 }}
-                         animate={{ opacity: 1 }}
-                         transition={{ delay: 2 }}
-                         className="absolute bottom-12 right-8 p-2 bg-emerald-500 text-white rounded-lg text-[10px] font-black uppercase shadow-lg"
-                       >
-                         Crocin Detected
-                       </motion.div>
+                       {/* Detected Elements Actual */}
+                       {detectedMedicines.map((med, i) => {
+                         const positions = [
+                           'top-10 left-10', 'bottom-12 right-8', 'top-20 right-10', 'bottom-20 left-8'
+                         ];
+                         return (
+                           <motion.div 
+                             key={med.id}
+                             initial={{ opacity: 0 }}
+                             animate={{ opacity: 1 }}
+                             transition={{ delay: 0.5 + (i * 0.2) }}
+                             className={`absolute ${positions[i % positions.length]} p-2 bg-emerald-500 text-white rounded-lg text-[10px] font-black uppercase shadow-lg z-20`}
+                           >
+                             {med.name} Detected
+                           </motion.div>
+                         );
+                       })}
                     </div>
 
                     <div className="text-center space-y-2">
-                       <h4 className="text-xl font-black text-slate-900">AI Scanning...</h4>
-                       <p className="text-slate-500 font-medium">Extracting medicines and searching nearby stores</p>
+                       <h4 className="text-xl font-black text-slate-900">
+                         {ocrProgress.status === "Complete" ? "Scan Complete!" : "AI Scanning..."}
+                       </h4>
+                       <p className="text-slate-500 font-medium">
+                         {ocrProgress.status === "Complete" 
+                           ? `Found ${detectedMedicines.length} medicines in your prescription.` 
+                           : `${ocrProgress.status} ${ocrProgress.progress > 0 ? ocrProgress.progress + '%' : ''}`}
+                       </p>
                     </div>
 
                     <motion.div 
                       initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 3 }}
+                      animate={{ opacity: ocrProgress.status === "Complete" ? 1 : 0.5 }}
+                      transition={{ delay: 0.5 }}
                     >
                        <Button 
                          className="w-full h-14 rounded-2xl font-black text-lg gap-2"
-                         onClick={() => { setPrescriptionOpen(false); setScanning(false); }}
+                         disabled={ocrProgress.status !== "Complete"}
+                         onClick={() => { 
+                           if (detectedMedicines.length > 0) {
+                             setSearch(detectedMedicines[0].name);
+                           }
+                           setPrescriptionOpen(false); 
+                           setScanning(false); 
+                         }}
                        >
                          Show Results <ArrowUpRight className="h-5 w-5" />
                        </Button>
