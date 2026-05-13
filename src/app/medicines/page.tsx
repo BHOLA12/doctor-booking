@@ -56,6 +56,7 @@ export default function MedicinesPage() {
   const [scanning, setScanning] = useState(false);
   const [ocrProgress, setOcrProgress] = useState({ status: "", progress: 0 });
   const [detectedMedicines, setDetectedMedicines] = useState<Medicine[]>([]);
+  const [prescriptionFilters, setPrescriptionFilters] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([10, 500]);
   const [discountOnly, setDiscountOnly] = useState(false);
@@ -72,6 +73,11 @@ export default function MedicinesPage() {
     // Search filter
     if (debouncedSearch.trim()) {
       results = fuseIndex.search(debouncedSearch).map((r) => r.item);
+    }
+
+    // Prescription filter override
+    if (prescriptionFilters.length > 0) {
+      results = results.filter(m => prescriptionFilters.includes(m.id));
     }
     
     // Category filter
@@ -93,7 +99,7 @@ export default function MedicinesPage() {
     }
 
     setFiltered(results);
-  }, [debouncedSearch, activeCategory, selectedBrands, priceRange, discountOnly]);
+  }, [debouncedSearch, activeCategory, selectedBrands, priceRange, discountOnly, prescriptionFilters]);
 
   const handleCompare = useCallback((medicine: Medicine) => {
     setSelectedMedicine(medicine);
@@ -279,7 +285,7 @@ export default function MedicinesPage() {
         </section>
 
         {/* Main Content Area with Sidebar */}
-        <section className="mx-auto max-w-[1600px] px-4 py-16">
+        <section id="medicine-results" className="mx-auto max-w-[1600px] px-4 py-16">
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Sidebar */}
             <aside className="w-full lg:w-72 shrink-0">
@@ -322,6 +328,23 @@ export default function MedicinesPage() {
                    </Button>
                 </div>
               </div>
+
+              {prescriptionFilters.length > 0 && (
+                <div className="mb-8 flex items-center justify-between bg-primary/10 p-4 rounded-2xl border border-primary/20">
+                   <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                         <Pill className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                         <p className="font-black text-slate-900 leading-tight">Showing Prescription Results</p>
+                         <p className="text-xs font-bold text-primary">We found these medicines based on your uploaded scan.</p>
+                      </div>
+                   </div>
+                   <Button variant="ghost" size="sm" onClick={() => setPrescriptionFilters([])} className="h-10 px-4 rounded-xl text-slate-500 hover:text-slate-900 font-bold bg-white/50 hover:bg-white shadow-sm">
+                      Clear Filter
+                   </Button>
+                </div>
+              )}
 
               {filtered.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
@@ -538,10 +561,15 @@ export default function MedicinesPage() {
                          disabled={ocrProgress.status !== "Complete"}
                          onClick={() => { 
                            if (detectedMedicines.length > 0) {
-                             setSearch(detectedMedicines[0].name);
+                             setPrescriptionFilters(detectedMedicines.map(m => m.id));
+                             setSearch("");
+                             setActiveCategory("All");
                            }
                            setPrescriptionOpen(false); 
                            setScanning(false); 
+                           setTimeout(() => {
+                             document.getElementById('medicine-results')?.scrollIntoView({ behavior: 'smooth' });
+                           }, 300);
                          }}
                        >
                          Show Results <ArrowUpRight className="h-5 w-5" />
