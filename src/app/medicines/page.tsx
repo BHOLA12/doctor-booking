@@ -176,33 +176,43 @@ export default function MedicinesPage() {
               {/* Right Side: 3D Image & Floating Card */}
               <div className="relative h-[500px] flex items-center justify-center lg:justify-end">
                  {/* 3D Illustration */}
-                 <div className="absolute right-0 bottom-0 w-full h-full pointer-events-none select-none">
-                    <Image 
-                      src="/pharmacy-hero.png" 
-                      alt="3D Medicines" 
-                      fill 
-                      className="object-contain object-right-bottom drop-shadow-[0_35px_35px_rgba(0,0,0,0.1)]"
-                      priority
-                    />
+                 <div className="absolute right-0 bottom-0 w-full max-w-[600px] h-full pointer-events-none select-none flex justify-end">
+                    <div className="relative h-full aspect-square">
+                      <Image 
+                        src="/pharmacy-hero.png" 
+                        alt="3D Medicines" 
+                        fill 
+                        className="object-contain object-right-bottom drop-shadow-[0_35px_35px_rgba(0,0,0,0.1)]"
+                        priority
+                      />
+                      
+                      {/* DocBook Text Overlay on Bag */}
+                      <div className="absolute z-10 flex flex-col items-center justify-center transform -rotate-1 pointer-events-none w-[20%] left-[32%] bottom-[35%]">
+                        <div className="bg-[#f2f4f3] w-full pt-1 pb-1 flex flex-col items-center shadow-[inset_0_0_10px_rgba(255,255,255,0.8)]">
+                           <span className="text-[#059669] font-black text-xs sm:text-lg tracking-tight leading-none mb-0.5" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>DocBook</span>
+                           <span className="text-[#059669] font-bold text-[4px] sm:text-[5px] tracking-[0.2em] uppercase opacity-80">Medicine & Care</span>
+                        </div>
+                      </div>
+                    </div>
                  </div>
 
                  {/* Floating Prescription Card */}
                  <motion.div 
                    initial={{ x: 20, opacity: 0 }}
                    animate={{ x: 0, opacity: 1 }}
-                   className="absolute bottom-10 left-0 lg:-left-12 z-10 bg-white/90 backdrop-blur-xl p-6 rounded-[2.5rem] shadow-2xl border border-white/60 flex items-center gap-6 max-w-sm"
+                   className="absolute bottom-10 left-0 lg:-left-12 z-10 bg-white/40 backdrop-blur-2xl p-6 rounded-[2.5rem] shadow-2xl border border-white/50 flex items-center gap-6 max-w-sm hover:bg-white/50 transition-colors"
                  >
-                     <div className="text-3xl bg-orange-50 h-14 w-14 flex items-center justify-center rounded-2xl shadow-inner shrink-0">📦</div>
+                     <div className="text-3xl bg-orange-50/80 h-14 w-14 flex items-center justify-center rounded-2xl shadow-inner shrink-0 backdrop-blur-sm">📦</div>
                      <div className="space-y-3">
-                        <Badge variant="secondary" className="bg-teal-50 text-teal-700 border-teal-100 px-3 py-0.5 text-[9px] font-black uppercase tracking-widest">
+                        <Badge variant="secondary" className="bg-teal-50/80 backdrop-blur-md text-teal-700 border-teal-100/50 px-3 py-0.5 text-[9px] font-black uppercase tracking-widest">
                            Prescription Order
                         </Badge>
-                        <p className="text-slate-500 font-bold text-xs leading-tight">
+                        <p className="text-slate-700 font-extrabold text-xs leading-tight drop-shadow-sm">
                            Upload your prescription and we'll find stores for you.
                         </p>
                         <Button 
                           size="sm"
-                          className="h-9 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20"
+                          className="h-9 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary/90 hover:bg-primary"
                           onClick={() => setPrescriptionOpen(true)}
                         >
                           Upload Now
