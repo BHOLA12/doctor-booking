@@ -416,7 +416,7 @@ export default function MedicinesPage() {
 
                {!scanning ? (
                  <div className="space-y-6">
-                    <div className="border-2 border-dashed border-slate-200 rounded-[2.5rem] p-12 text-center space-y-4 hover:border-primary/40 transition-colors cursor-pointer group">
+                    <label htmlFor="file-upload" className="block border-2 border-dashed border-slate-200 rounded-[2.5rem] p-12 text-center space-y-4 hover:border-primary/40 transition-colors cursor-pointer group">
                        <div className="h-20 w-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto text-slate-400 group-hover:text-primary transition-colors">
                           <Plus className="h-10 w-10" />
                        </div>
@@ -424,7 +424,18 @@ export default function MedicinesPage() {
                           <p className="text-lg font-black text-slate-900">Select Image or PDF</p>
                           <p className="text-sm font-bold text-slate-400">Drag and drop your prescription here</p>
                        </div>
-                    </div>
+                    </label>
+                    <input 
+                      id="file-upload" 
+                      type="file" 
+                      className="hidden" 
+                      accept="image/*,application/pdf"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files.length > 0) {
+                          setScanning(true);
+                        }
+                      }}
+                    />
                     <Button 
                       className="w-full h-14 rounded-2xl font-black text-lg"
                       onClick={() => setScanning(true)}
