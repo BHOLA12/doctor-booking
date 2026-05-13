@@ -170,34 +170,10 @@ export default function MedicinesPage() {
                   >
                     Simulate Smart Order
                   </Button>
-
-                  {/* Floating Prescription Card (Moved to Left) */}
-                  <motion.div 
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    className="relative z-10 bg-white/90 backdrop-blur-xl p-6 rounded-[2.5rem] shadow-xl border border-white/60 flex items-center gap-6 max-w-md"
-                  >
-                      <div className="text-3xl bg-orange-50 h-14 w-14 flex items-center justify-center rounded-2xl shadow-inner shrink-0">📦</div>
-                      <div className="space-y-3">
-                         <Badge variant="secondary" className="bg-teal-50 text-teal-700 border-teal-100 px-3 py-0.5 text-[9px] font-black uppercase tracking-widest">
-                            Prescription Order
-                         </Badge>
-                         <p className="text-slate-500 font-bold text-xs leading-tight">
-                            Upload your prescription and we'll find stores for you.
-                         </p>
-                         <Button 
-                           size="sm"
-                           className="h-9 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20"
-                           onClick={() => setPrescriptionOpen(true)}
-                         >
-                           Upload Now
-                         </Button>
-                      </div>
-                  </motion.div>
                 </div>
               </div>
 
-              {/* Right Side: Only 3D Image */}
+              {/* Right Side: 3D Image & Floating Card */}
               <div className="relative h-[500px] flex items-center justify-center lg:justify-end">
                  {/* 3D Illustration */}
                  <div className="absolute right-0 bottom-0 w-full h-full pointer-events-none select-none">
@@ -209,6 +185,30 @@ export default function MedicinesPage() {
                       priority
                     />
                  </div>
+
+                 {/* Floating Prescription Card */}
+                 <motion.div 
+                   initial={{ x: 20, opacity: 0 }}
+                   animate={{ x: 0, opacity: 1 }}
+                   className="absolute bottom-10 left-0 lg:-left-12 z-10 bg-white/90 backdrop-blur-xl p-6 rounded-[2.5rem] shadow-2xl border border-white/60 flex items-center gap-6 max-w-sm"
+                 >
+                     <div className="text-3xl bg-orange-50 h-14 w-14 flex items-center justify-center rounded-2xl shadow-inner shrink-0">📦</div>
+                     <div className="space-y-3">
+                        <Badge variant="secondary" className="bg-teal-50 text-teal-700 border-teal-100 px-3 py-0.5 text-[9px] font-black uppercase tracking-widest">
+                           Prescription Order
+                        </Badge>
+                        <p className="text-slate-500 font-bold text-xs leading-tight">
+                           Upload your prescription and we'll find stores for you.
+                        </p>
+                        <Button 
+                          size="sm"
+                          className="h-9 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20"
+                          onClick={() => setPrescriptionOpen(true)}
+                        >
+                          Upload Now
+                        </Button>
+                     </div>
+                 </motion.div>
               </div>
             </div>
           </div>
