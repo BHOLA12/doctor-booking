@@ -3,6 +3,10 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { neonConfig, Pool } from "@neondatabase/serverless";
 import ws from "ws";
+import { validateEnvironment } from "./validate-env";
+
+// Validate environment on startup
+validateEnvironment();
 
 // WebSocket setup for local development
 if (typeof WebSocket === "undefined") {
