@@ -53,13 +53,14 @@ export async function POST(request: NextRequest) {
 
     const accessToken = signAccessToken(payload);
     const refreshToken = signRefreshToken(payload);
-    const ipAddress = request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? undefined;
+    const ipAddress = request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? null;
+    const userAgent = request.headers.get("user-agent") ?? null;
 
     await createSession({
       userId: user.id,
       refreshToken,
       ipAddress,
-      userAgent: request.headers.get("user-agent") ?? undefined,
+      userAgent,
     });
 
     await logAuditEvent({
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest) {
       entity: "User",
       entityId: user.id,
       ipAddress,
-      userAgent: request.headers.get("user-agent") ?? undefined,
+      userAgent,
     });
 
     const response = NextResponse.json(
