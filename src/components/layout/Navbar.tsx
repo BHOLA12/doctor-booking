@@ -71,7 +71,7 @@ export default function Navbar() {
   const getDashboardLink = () => {
     if (!user) return "/login";
     if (user.role === "ADMIN") return "/dashboard/admin";
-    if (user.role === "DOCTOR") return "/dashboard/doctor";
+    if (user.role === "DOCTOR" || user.role === "PATHOLOGIST") return "/dashboard/doctor";
     return "/dashboard/patient";
   };
 
@@ -82,7 +82,7 @@ export default function Navbar() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group shrink-0">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md shadow-primary/20 transition-all group-hover:scale-105">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md shadow-primary/20 transition-all group-hover:scale-105">
               <Stethoscope className="h-5 w-5" />
             </div>
             <span className="text-xl font-extrabold tracking-tight text-foreground">
@@ -228,10 +228,12 @@ export default function Navbar() {
               <SheetContent side="right" className="w-80 p-0">
                 <div className="flex flex-col h-full">
                   <div className="p-5 border-b flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground">
+                    <div className="h-9 w-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
                       <Stethoscope className="h-5 w-5" />
                     </div>
-                    <span className="font-bold text-lg">DocBook</span>
+                    <span className="text-lg font-extrabold tracking-tight text-foreground">
+                      Doc<span className="text-primary">Book</span>
+                    </span>
                   </div>
                   <div className="flex-1 overflow-y-auto p-4 space-y-1">
                     {mobileLinks.map((link) => (

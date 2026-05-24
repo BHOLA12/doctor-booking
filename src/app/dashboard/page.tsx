@@ -15,7 +15,7 @@ export default function DashboardRedirect() {
         router.push("/login");
       } else if (user.role === "ADMIN") {
         router.push("/dashboard/admin");
-      } else if (user.role === "DOCTOR") {
+      } else if (user.role === "DOCTOR" || user.role === "PATHOLOGIST") {
         router.push("/dashboard/doctor");
       } else {
         router.push("/dashboard/patient");

@@ -29,7 +29,7 @@ export async function POST(
 ) {
   try {
     const session = await getSession();
-    if (!session || session.role !== "DOCTOR") {
+    if (!session || (session.role !== "DOCTOR" && session.role !== "PATHOLOGIST")) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
         { status: 403 }

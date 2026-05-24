@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { verifyPassword, signToken, getTokenCookieOptions } from "@/lib/auth";
+import {
+  verifyPassword,
+  signAccessToken,
+  signRefreshToken,
+  getAccessTokenCookieOptions,
+  getRefreshTokenCookieOptions,
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+} from "@/lib/auth";
 import { loginSchema } from "@/lib/validations";
+import { createSession } from "@/server/services/session-service";
+import { logAuditEvent } from "@/server/services/audit-service";
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,8 +26,8 @@ export async function POST(request: NextRequest) {
     }
 
     const { email, password } = validation.data;
-
     const user = await prisma.user.findUnique({ where: { email } });
+
     if (!user) {
       return NextResponse.json(
         { success: false, error: "Invalid email or password" },
@@ -33,29 +43,53 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const token = signToken({
+    const payload = {
       userId: user.id,
       email: user.email,
       role: user.role,
       name: user.name,
+      isVerified: user.isVerified,
+    };
+
+    const accessToken = signAccessToken(payload);
+    const refreshToken = signRefreshToken(payload);
+    const ipAddress = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || null;
+
+    await createSession({
+      userId: user.id,
+      refreshToken,
+      ipAddress,
+      userAgent: request.headers.get("user-agent") || null,
     });
 
-    const cookieOptions = getTokenCookieOptions();
-    const response = NextResponse.json({
-      success: true,
-      data: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        avatar: user.avatar,
-        isVerified: user.isVerified,
-        createdAt: user.createdAt.toISOString(),
+    await logAuditEvent({
+      userId: user.id,
+      action: "LOGIN",
+      entity: "User",
+      entityId: user.id,
+      ipAddress,
+      userAgent: request.headers.get("user-agent") || null,
+    });
+
+    const response = NextResponse.json(
+      {
+        success: true,
+        data: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          role: user.role,
+          avatar: user.avatar,
+          isVerified: user.isVerified,
+          createdAt: user.createdAt.toISOString(),
+        },
       },
-    });
+      { status: 200 }
+    );
 
-    response.cookies.set(cookieOptions.name, token, cookieOptions);
+    response.cookies.set(ACCESS_TOKEN_COOKIE, accessToken, getAccessTokenCookieOptions());
+    response.cookies.set(REFRESH_TOKEN_COOKIE, refreshToken, getRefreshTokenCookieOptions());
     return response;
   } catch (error) {
     console.error("Login error:", error);

@@ -1,20 +1,23 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Fuse from "fuse.js";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import TrustBar from "@/components/layout/TrustBar";
+import PharmacyHero from "@/components/pharmacy/PharmacyHero";
 import PharmacyMedicineCard from "@/components/pharmacy/PharmacyMedicineCard";
 import StoreCard from "@/components/pharmacy/StoreCard";
 import CartDrawer from "@/components/shared/CartDrawer";
 import MedicineFilters from "@/components/pharmacy/MedicineFilters";
 import ComparePricesModal from "@/components/pharmacy/ComparePricesModal";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useCart } from "@/context/CartContext";
 import { MEDICINES, MEDICINE_CATEGORIES, type Medicine } from "@/lib/medicines-data";
-import { PHARMACY_STORES, PHARMACY_CATEGORIES } from "@/lib/pharmacy-data";
+import { PHARMACY_STORES, PHARMACY_CATEGORIES, getCombinedStores } from "@/lib/pharmacy-data";
 import { useDebounce } from "@/hooks/useDebounce";
 import { 
   Search, 
@@ -47,10 +50,56 @@ const fuseIndex = new Fuse<Medicine>(MEDICINES, {
   ignoreLocation: true,
 });
 
-export default function MedicinesPage() {
+function MedicinesContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [stores, setStores] = useState(PHARMACY_STORES);
+  const storeId = searchParams.get("store");
+  const selectedStore = stores.find(s => s.id === storeId);
+
+  useEffect(() => {
+    async function loadStores() {
+      try {
+        const res = await fetch("/api/pharmacies");
+        if (res.ok) {
+          const result = await res.json();
+          if (result.success && Array.isArray(result.data)) {
+            const dbStores = result.data.map((pharmacy: any) => ({
+              id: `db-store-${pharmacy.id}`,
+              name: pharmacy.storeName,
+              image: pharmacy.user?.avatar || "https://images.unsplash.com/photo-1586015555751-63bb77f4322a?q=80&w=200&h=200&auto=format&fit=crop",
+              distance: "0.8 km",
+              rating: pharmacy.rating || 4.5,
+              reviews: pharmacy.totalReviews || 0,
+              isOpen: true,
+              isVerified: true,
+              hasGST: !!pharmacy.gstin,
+              medicineStock: "Available",
+              deliveryTime: "20-30 mins",
+              isFreeDelivery: true,
+              isPickupAvailable: true,
+              address: `${pharmacy.address}, ${pharmacy.pincode}, Jehanabad, Bihar`,
+            }));
+
+            if (dbStores.length > 0) {
+              setStores(dbStores);
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error loading pharmacies from database:", err);
+      }
+      setStores(PHARMACY_STORES);
+    }
+
+    loadStores();
+  }, []);
+
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [cartOpen, setCartOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
   const [findingPharmacy, setFindingPharmacy] = useState(false);
   const [prescriptionOpen, setPrescriptionOpen] = useState(false);
   const [scanning, setScanning] = useState(false);
@@ -63,6 +112,19 @@ export default function MedicinesPage() {
   const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null);
   const [showComparison, setShowComparison] = useState(false);
   const { cartCount } = useCart();
+
+  useEffect(() => {
+    if (searchParams.get("upload") === "true") {
+      setPrescriptionOpen(true);
+    }
+    if (searchParams.get("simulate") === "true") {
+      setFindingPharmacy(true);
+    }
+    const q = searchParams.get("q") || searchParams.get("search");
+    if (q) {
+      setSearch(q);
+    }
+  }, [searchParams]);
 
   const debouncedSearch = useDebounce(search, 300);
   const [filtered, setFiltered] = useState<Medicine[]>(MEDICINES);
@@ -98,8 +160,17 @@ export default function MedicinesPage() {
       results = results.filter((m) => m.discount >= 10);
     }
 
+    // Store pricing coefficient adjustment
+    if (storeId) {
+      const coef = storeId === "s2" ? 0.94 : storeId === "s4" ? 0.88 : storeId === "s3" ? 1.05 : 1.0;
+      results = results.map(m => ({
+        ...m,
+        price: Math.round(m.price * coef)
+      }));
+    }
+
     setFiltered(results);
-  }, [debouncedSearch, activeCategory, selectedBrands, priceRange, discountOnly, prescriptionFilters]);
+  }, [debouncedSearch, activeCategory, selectedBrands, priceRange, discountOnly, prescriptionFilters, storeId]);
 
   const handleCompare = useCallback((medicine: Medicine) => {
     setSelectedMedicine(medicine);
@@ -113,137 +184,29 @@ export default function MedicinesPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50/30">
+    <div className="flex flex-col min-h-screen bg-slate-50/20">
       <TrustBar />
       
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden bg-[#F1FAF9] py-12 lg:py-24">
-          {/* Subtle Background Pattern */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_#10b981_0.5px,_transparent_0.5px)] [background-size:32px_32px] opacity-[0.03]" />
-          
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              <div className="space-y-10">
-                <div className="space-y-6">
-                  <Badge variant="secondary" className="bg-white/80 text-teal-700 border-teal-100 px-5 py-2 text-[10px] font-black uppercase tracking-[0.2em] rounded-full shadow-sm">
-                    <LinkIcon className="h-3 w-3 mr-2" />
-                    Online Pharmacy
-                  </Badge>
-                  <h1 className="text-6xl lg:text-8xl font-black text-slate-900 leading-[0.9] tracking-tighter">
-                    Your Health, <br />
-                    <span className="text-primary italic font-serif">Delivered</span> Fast.
-                  </h1>
-                  <p className="text-lg text-slate-500 font-bold max-w-lg leading-relaxed">
-                    Search from thousands of medicines. Get them delivered from your favorite local pharmacies in under an hour.
-                  </p>
-                </div>
-
-                {/* Search Bar */}
-                <div className="relative group max-w-xl">
-                  <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-400 group-focus-within:text-primary transition-colors" />
-                  <Input 
-                    placeholder="Search by medicine name or salt..." 
-                    className="w-full h-16 pl-16 pr-6 rounded-[2rem] bg-white border-transparent shadow-2xl shadow-slate-200/50 focus:border-primary/30 transition-all text-lg font-bold placeholder:text-slate-300"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                  />
-                </div>
-
-                <div className="flex flex-wrap items-center gap-8 pt-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-50 shadow-inner">
-                      <ShieldCheck className="h-6 w-6 text-teal-600" />
-                    </div>
-                    <div>
-                       <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest leading-none">100% Genuine</p>
-                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Products</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-50 shadow-inner">
-                      <ShoppingCart className="h-6 w-6 text-teal-600" />
-                    </div>
-                    <div>
-                       <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest leading-none">Fast Delivery</p>
-                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Within 60 mins</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row items-center gap-6 pt-4">
-                  <Button 
-                    className="h-14 rounded-2xl bg-primary/20 text-primary font-black hover:bg-primary/30 px-10 text-sm tracking-widest uppercase shrink-0"
-                    onClick={() => setFindingPharmacy(true)}
-                  >
-                    Simulate Smart Order
-                  </Button>
-                </div>
-              </div>
-
-              {/* Right Side: 3D Image & Floating Card */}
-              <div className="relative h-[500px] flex items-center justify-center lg:justify-end">
-                 {/* 3D Illustration */}
-                 <div className="absolute right-0 bottom-0 w-full max-w-[600px] h-full pointer-events-none select-none flex justify-end">
-                    <div className="relative h-full aspect-square">
-                      <Image 
-                        src="/pharmacy-hero.png" 
-                        alt="3D Medicines" 
-                        fill 
-                        className="object-contain object-right-bottom drop-shadow-[0_35px_35px_rgba(0,0,0,0.1)]"
-                        priority
-                      />
-                      
-                      {/* DocBook Text Overlay on Bag */}
-                      <div className="absolute z-10 flex flex-col items-center justify-center transform -rotate-1 pointer-events-none w-[20%] left-[32%] bottom-[35%]">
-                        <div className="bg-[#f2f4f3] w-full pt-1 pb-1 flex flex-col items-center shadow-[inset_0_0_10px_rgba(255,255,255,0.8)]">
-                           <span className="text-[#059669] font-black text-xs sm:text-lg tracking-tight leading-none mb-0.5" style={{ textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>DocBook</span>
-                           <span className="text-[#059669] font-bold text-[4px] sm:text-[5px] tracking-[0.2em] uppercase opacity-80">Medicine & Care</span>
-                        </div>
-                      </div>
-                    </div>
-                 </div>
-
-                 {/* Floating Prescription Card */}
-                 <motion.div 
-                   initial={{ x: 20, opacity: 0 }}
-                   animate={{ x: 0, opacity: 1 }}
-                   className="absolute bottom-10 left-0 lg:-left-12 z-10 bg-white/40 backdrop-blur-2xl p-6 rounded-[2.5rem] shadow-2xl border border-white/50 flex items-center gap-6 max-w-sm hover:bg-white/50 transition-colors"
-                 >
-                     <div className="text-3xl bg-orange-50/80 h-14 w-14 flex items-center justify-center rounded-2xl shadow-inner shrink-0 backdrop-blur-sm">📦</div>
-                     <div className="space-y-3">
-                        <Badge variant="secondary" className="bg-teal-50/80 backdrop-blur-md text-teal-700 border-teal-100/50 px-3 py-0.5 text-[9px] font-black uppercase tracking-widest">
-                           Prescription Order
-                        </Badge>
-                        <p className="text-slate-700 font-extrabold text-xs leading-tight drop-shadow-sm">
-                           Upload your prescription and we'll find stores for you.
-                        </p>
-                        <Button 
-                          size="sm"
-                          className="h-9 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary/90 hover:bg-primary"
-                          onClick={() => setPrescriptionOpen(true)}
-                        >
-                          Upload Now
-                        </Button>
-                     </div>
-                 </motion.div>
-              </div>
-            </div>
-          </div>
-        </section>
+        <PharmacyHero 
+          onUploadPrescription={() => setPrescriptionOpen(true)}
+          onSimulateOrder={() => setFindingPharmacy(true)}
+          searchValue={search}
+          onSearchChange={setSearch}
+        />
 
         {/* Category Pills */}
-        <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-border/40">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-1">
+        <div className="sticky top-0 z-40 bg-white/70 backdrop-blur-lg border-b border-slate-100">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4">
+            <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-1">
               {PHARMACY_CATEGORIES.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-bold transition-all border ${
+                  className={`whitespace-nowrap px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 border ${
                     activeCategory === cat
-                      ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20"
-                      : "bg-white border-border/50 hover:border-primary/30 hover:bg-slate-50 text-slate-600"
+                      ? "bg-teal-600 text-white border-teal-600 shadow-md shadow-teal-600/10 scale-[1.02]"
+                      : "bg-white/80 border-slate-200/50 hover:border-teal-500/30 hover:bg-slate-50 text-slate-600"
                   }`}
                 >
                   {cat}
@@ -258,27 +221,27 @@ export default function MedicinesPage() {
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <div className="h-2 w-12 bg-primary rounded-full" />
-                <span className="text-xs font-black text-primary uppercase tracking-[0.2em]">Hyperlocal Marketplace</span>
+                <div className="h-2 w-12 bg-teal-600 rounded-full" />
+                <span className="text-xs font-black text-teal-600 uppercase tracking-[0.2em]">Hyperlocal Marketplace</span>
               </div>
-              <h2 className="text-4xl font-black text-slate-900 tracking-tight">Buy From Nearby Medical Stores</h2>
+              <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">Buy From Nearby Medical Stores</h2>
               <p className="text-slate-500 font-medium max-w-xl">
                 Order directly from trusted local pharmacies in your neighborhood.
               </p>
             </div>
-            <div className="flex items-center gap-3">
-               <Button variant="outline" className="rounded-2xl h-12 px-6 font-bold gap-2 border-border/60">
-                 <MapIcon className="h-4 w-4 text-primary" />
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+               <Button variant="outline" className="w-full sm:w-auto rounded-2xl h-12 px-6 font-bold gap-2 border-slate-200/80 hover:bg-slate-50">
+                 <MapIcon className="h-4 w-4 text-teal-600" />
                  View on Map
                </Button>
-               <Button className="rounded-2xl h-12 px-6 font-bold gap-2 shadow-lg shadow-primary/10">
+               <Button className="w-full sm:w-auto rounded-2xl h-12 px-6 font-bold gap-2 bg-teal-600 hover:bg-teal-500 text-white shadow-lg shadow-teal-600/10 hover:shadow-teal-500/20">
                  View All Stores <ChevronRight className="h-4 w-4" />
                </Button>
             </div>
           </div>
 
           <div className="grid gap-6">
-            {PHARMACY_STORES.slice(0, 3).map((store) => (
+            {stores.map((store) => (
               <StoreCard key={store.id} store={store} />
             ))}
           </div>
@@ -286,10 +249,10 @@ export default function MedicinesPage() {
 
         {/* Main Content Area with Sidebar */}
         <section id="medicine-results" className="mx-auto max-w-[1600px] px-4 py-16">
-          <div className="flex flex-col lg:flex-row gap-6">
+          <div className="flex flex-col lg:flex-row gap-8">
             {/* Sidebar */}
-            <aside className="w-full lg:w-72 shrink-0">
-               <div className="sticky top-24">
+            <aside className="hidden lg:block w-72 shrink-0">
+               <div className="sticky top-24 bg-white border border-slate-100 rounded-3xl p-6 shadow-xl shadow-slate-200/15">
                   <MedicineFilters 
                     activeCategory={activeCategory}
                     onCategoryChange={setActiveCategory}
@@ -304,24 +267,32 @@ export default function MedicinesPage() {
             </aside>
 
             {/* Results section */}
-            <div className="flex-1 bg-white rounded-3xl shadow-sm border border-slate-100 p-6 md:p-8">
-              <div className="flex items-center justify-between mb-8">
+            <div className="flex-1 bg-white rounded-3xl shadow-sm border border-slate-100 p-4 sm:p-6 md:p-8">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
                 <div className="space-y-1">
-                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">Available Medicines</h2>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-bold">
-                    Showing <span className="text-primary">{filtered.length}</span> products
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Available Medicines</h2>
+                  <p className="text-xs text-slate-400 uppercase tracking-wider font-extrabold">
+                    Showing <span className="text-teal-600">{filtered.length}</span> products
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                    <Button 
                      variant="outline" 
-                     className="rounded-xl font-bold gap-2 relative border-border/60"
+                     className="lg:hidden rounded-xl font-bold gap-2 border-slate-200/80 hover:bg-slate-50 transition-all text-xs h-10 px-3"
+                     onClick={() => setFilterOpen(true)}
+                   >
+                     <Filter className="h-3.5 w-3.5 text-slate-600" />
+                     Filters
+                   </Button>
+                   <Button 
+                     variant="outline" 
+                     className="rounded-xl font-bold gap-2 relative border-slate-200/80 hover:bg-slate-50 transition-all text-xs h-10 px-3"
                      onClick={() => setCartOpen(true)}
                    >
-                     <ShoppingCart className="h-4 w-4" />
+                     <ShoppingCart className="h-3.5 w-3.5 text-slate-600" />
                      Cart
                      {cartCount > 0 && (
-                        <Badge className="absolute -top-2 -right-2 h-5 min-w-5 flex items-center justify-center p-0 text-[10px] font-bold">
+                        <Badge className="absolute -top-2 -right-2 h-5 min-w-5 flex items-center justify-center p-0 text-[10px] font-bold bg-teal-600 text-white">
                           {cartCount}
                         </Badge>
                      )}
@@ -329,25 +300,48 @@ export default function MedicinesPage() {
                 </div>
               </div>
 
+              {selectedStore && (
+                <div className="mb-8 p-6 bg-teal-50/80 border border-teal-100 rounded-[2rem] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 bg-teal-600 rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg shadow-teal-600/10">
+                      🏪
+                    </div>
+                    <div>
+                      <p className="text-base font-black text-slate-900">Shopping from {selectedStore.name}</p>
+                      <p className="text-xs font-bold text-teal-700 uppercase tracking-wider mt-0.5">Dispatched from {selectedStore.address} • Delivery in {selectedStore.deliveryTime}</p>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    className="h-10 px-4 rounded-xl text-xs font-black text-slate-400 hover:text-red-500 hover:bg-red-50"
+                    onClick={() => {
+                      router.push("/medicines");
+                    }}
+                  >
+                    Clear Filter
+                  </Button>
+                </div>
+              )}
+
               {prescriptionFilters.length > 0 && (
-                <div className="mb-8 flex items-center justify-between bg-primary/10 p-4 rounded-2xl border border-primary/20">
+                <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center justify-between bg-teal-50/50 p-3.5 sm:p-4 rounded-2xl border border-teal-100/50 gap-3">
                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
-                         <Pill className="h-5 w-5 text-primary" />
+                      <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-100 shrink-0">
+                         <Pill className="h-5 w-5 text-teal-600" />
                       </div>
                       <div>
-                         <p className="font-black text-slate-900 leading-tight">Showing Prescription Results</p>
-                         <p className="text-xs font-bold text-primary">We found these medicines based on your uploaded scan.</p>
+                         <p className="font-black text-slate-950 leading-tight text-sm">Showing Prescription Results</p>
+                         <p className="text-[11px] sm:text-xs font-bold text-teal-600 mt-0.5">We found these medicines based on your uploaded scan.</p>
                       </div>
                    </div>
-                   <Button variant="ghost" size="sm" onClick={() => setPrescriptionFilters([])} className="h-10 px-4 rounded-xl text-slate-500 hover:text-slate-900 font-bold bg-white/50 hover:bg-white shadow-sm">
+                   <Button variant="ghost" size="sm" onClick={() => setPrescriptionFilters([])} className="h-9 sm:h-10 px-4 rounded-xl text-slate-500 hover:text-slate-900 font-bold bg-white hover:bg-slate-50 shadow-sm border border-slate-100 w-full sm:w-auto text-xs">
                       Clear Filter
                    </Button>
                 </div>
               )}
 
               {filtered.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
                   {filtered.map((medicine) => (
                     <PharmacyMedicineCard 
                       key={medicine.id} 
@@ -361,7 +355,7 @@ export default function MedicinesPage() {
                   <div className="text-5xl mb-4">🔍</div>
                   <p className="font-black text-xl text-slate-900">No medicines found</p>
                   <p className="text-slate-500 font-medium mt-1">Try searching for something else or clear filters.</p>
-                  <Button variant="outline" className="mt-6 rounded-xl" onClick={() => { setSearch(""); setActiveCategory("All"); setSelectedBrands([]); setPriceRange([10, 500]); setDiscountOnly(false); }}>
+                  <Button variant="outline" className="mt-6 rounded-xl border-slate-200/80 hover:bg-slate-50" onClick={() => { setSearch(""); setActiveCategory("All"); setSelectedBrands([]); setPriceRange([10, 500]); setDiscountOnly(false); }}>
                     Clear All Filters
                   </Button>
                 </div>
@@ -371,8 +365,8 @@ export default function MedicinesPage() {
         </section>
 
         {/* Trust & Safety Section */}
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20">
-          <div className="grid md:grid-cols-3 gap-8">
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
+          <div className="grid md:grid-cols-3 gap-6 sm:grid-cols-1 lg:grid-cols-3">
              {[
                { 
                  icon: ShieldCheck, 
@@ -393,12 +387,12 @@ export default function MedicinesPage() {
                  color: "bg-teal-50 text-teal-600"
                }
              ].map((item, i) => (
-               <div key={i} className="p-8 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm">
-                  <div className={`h-14 w-14 rounded-2xl flex items-center justify-center mb-6 ${item.color}`}>
-                    <item.icon className="h-7 w-7" />
+               <div key={i} className="p-6 sm:p-8 rounded-2xl sm:rounded-[2.5rem] bg-white border border-slate-100 shadow-sm">
+                  <div className={`h-12 w-12 sm:h-14 sm:w-14 rounded-2xl flex items-center justify-center mb-5 sm:mb-6 ${item.color} shrink-0`}>
+                    <item.icon className="h-6 w-6 sm:h-7 sm:w-7" />
                   </div>
-                  <h4 className="text-xl font-black text-slate-900 mb-3">{item.title}</h4>
-                  <p className="text-slate-500 font-medium leading-relaxed">{item.desc}</p>
+                  <h4 className="text-lg sm:text-xl font-black text-slate-900 mb-2 sm:mb-3">{item.title}</h4>
+                  <p className="text-slate-500 font-medium leading-relaxed text-sm sm:text-base">{item.desc}</p>
                </div>
              ))}
           </div>
@@ -406,7 +400,28 @@ export default function MedicinesPage() {
       </main>
 
       <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
-      
+
+      <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
+        <SheetContent side="right" className="p-6 overflow-y-auto max-w-sm w-full bg-white">
+          <SheetHeader className="px-0 pb-4 mb-4 border-b border-slate-100 pr-10">
+            <SheetTitle className="text-xl font-black text-slate-900">Filters</SheetTitle>
+          </SheetHeader>
+          <MedicineFilters 
+            activeCategory={activeCategory}
+            onCategoryChange={(cat) => {
+              setActiveCategory(cat);
+              setFilterOpen(false);
+            }}
+            selectedBrands={selectedBrands}
+            onBrandChange={toggleBrand}
+            priceRange={priceRange}
+            onPriceChange={setPriceRange}
+            discountOnly={discountOnly}
+            onDiscountChange={setDiscountOnly}
+          />
+        </SheetContent>
+      </Sheet>
+
       <ComparePricesModal 
         isOpen={showComparison} 
         onClose={() => setShowComparison(false)} 
@@ -420,34 +435,34 @@ export default function MedicinesPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-3.5 bg-slate-900/80 backdrop-blur-md"
           >
             <motion.div 
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
-              className="bg-white rounded-[3rem] p-10 max-w-lg w-full shadow-2xl space-y-8 relative overflow-hidden"
+              className="bg-white rounded-2xl sm:rounded-[3rem] p-4 sm:p-10 max-w-lg w-full shadow-2xl space-y-5 sm:space-y-8 relative overflow-hidden"
             >
                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                     <div className="h-12 w-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-                        <Pill className="h-6 w-6" />
+                  <div className="flex items-center gap-3 sm:gap-4">
+                     <div className="h-10 w-10 sm:h-12 sm:w-12 bg-primary/10 rounded-xl sm:rounded-2xl flex items-center justify-center text-primary shrink-0">
+                        <Pill className="h-5 w-5 sm:h-6 sm:w-6" />
                      </div>
-                     <h3 className="text-2xl font-black text-slate-900 tracking-tight">Prescription Upload</h3>
+                     <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Prescription Upload</h3>
                   </div>
-                  <button onClick={() => { setPrescriptionOpen(false); setScanning(false); }} className="text-slate-400 hover:text-slate-900">
+                  <button onClick={() => { setPrescriptionOpen(false); setScanning(false); }} className="text-slate-400 hover:text-slate-900 shrink-0">
                     <XCircle className="h-6 w-6" />
                   </button>
                </div>
 
                {!scanning ? (
-                 <div className="space-y-6">
-                    <label htmlFor="file-upload" className="block border-2 border-dashed border-slate-200 rounded-[2.5rem] p-12 text-center space-y-4 hover:border-primary/40 transition-colors cursor-pointer group">
-                       <div className="h-20 w-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto text-slate-400 group-hover:text-primary transition-colors">
-                          <Plus className="h-10 w-10" />
+                 <div className="space-y-5 sm:space-y-6">
+                    <label htmlFor="file-upload" className="block border-2 border-dashed border-slate-200 rounded-xl sm:rounded-[2.5rem] p-5 sm:p-12 text-center space-y-3 sm:space-y-4 hover:border-primary/40 transition-colors cursor-pointer group">
+                       <div className="h-14 w-14 sm:h-20 sm:w-20 bg-slate-50 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto text-slate-400 group-hover:text-primary transition-colors">
+                          <Plus className="h-8 w-8 sm:h-10 sm:w-10" />
                        </div>
                        <div>
-                          <p className="text-lg font-black text-slate-900">Select Image or PDF</p>
-                          <p className="text-sm font-bold text-slate-400">Drag and drop your prescription here</p>
+                          <p className="text-base sm:text-lg font-black text-slate-900">Select Image or PDF</p>
+                          <p className="text-xs sm:text-sm font-bold text-slate-400">Drag and drop your prescription here</p>
                        </div>
                     </label>
                     <input 
@@ -507,24 +522,24 @@ export default function MedicinesPage() {
                       }}
                     />
                     <Button 
-                      className="w-full h-14 rounded-2xl font-black text-lg"
+                      className="w-full h-12 sm:h-14 rounded-2xl font-black text-base sm:text-lg"
                       onClick={() => setScanning(true)}
                     >
                       Process Prescription
                     </Button>
                  </div>
                ) : (
-                 <div className="space-y-8 py-10">
-                    <div className="relative h-64 w-full bg-slate-50 rounded-[2.5rem] overflow-hidden flex items-center justify-center">
+                  <div className="space-y-6 sm:space-y-8 py-6 sm:py-10">
+                     <div className="relative h-48 sm:h-64 w-full bg-slate-50 rounded-2xl sm:rounded-[2.5rem] overflow-hidden flex items-center justify-center">
                        {ocrProgress.status !== "Complete" && (
                          <div className="absolute inset-0 bg-gradient-to-b from-primary/20 to-transparent animate-scan z-10" />
                        )}
-                       <div className="text-8xl opacity-20 grayscale">📄</div>
+                       <div className="text-6xl sm:text-8xl opacity-20 grayscale select-none">📄</div>
                        
                        {/* Detected Elements Actual */}
                        {detectedMedicines.map((med, i) => {
                          const positions = [
-                           'top-10 left-10', 'bottom-12 right-8', 'top-20 right-10', 'bottom-20 left-8'
+                           'top-6 left-6', 'bottom-8 right-6', 'top-12 right-6', 'bottom-12 left-6'
                          ];
                          return (
                            <motion.div 
@@ -532,50 +547,50 @@ export default function MedicinesPage() {
                              initial={{ opacity: 0 }}
                              animate={{ opacity: 1 }}
                              transition={{ delay: 0.5 + (i * 0.2) }}
-                             className={`absolute ${positions[i % positions.length]} p-2 bg-emerald-500 text-white rounded-lg text-[10px] font-black uppercase shadow-lg z-20`}
+                             className={`absolute ${positions[i % positions.length]} p-2 bg-emerald-500 text-white rounded-lg text-[9px] sm:text-[10px] font-black uppercase shadow-lg z-20`}
                            >
                              {med.name} Detected
                            </motion.div>
                          );
                        })}
-                    </div>
+                     </div>
 
-                    <div className="text-center space-y-2">
-                       <h4 className="text-xl font-black text-slate-900">
-                         {ocrProgress.status === "Complete" ? "Scan Complete!" : "AI Scanning..."}
-                       </h4>
-                       <p className="text-slate-500 font-medium">
-                         {ocrProgress.status === "Complete" 
-                           ? `Found ${detectedMedicines.length} medicines in your prescription.` 
-                           : `${ocrProgress.status} ${ocrProgress.progress > 0 ? ocrProgress.progress + '%' : ''}`}
-                       </p>
-                    </div>
+                     <div className="text-center space-y-1.5">
+                        <h4 className="text-lg sm:text-xl font-black text-slate-900">
+                          {ocrProgress.status === "Complete" ? "Scan Complete!" : "AI Scanning..."}
+                        </h4>
+                        <p className="text-xs sm:text-sm text-slate-500 font-medium">
+                          {ocrProgress.status === "Complete" 
+                            ? `Found ${detectedMedicines.length} medicines in your prescription.` 
+                            : `${ocrProgress.status} ${ocrProgress.progress > 0 ? ocrProgress.progress + '%' : ''}`}
+                        </p>
+                     </div>
 
-                    <motion.div 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: ocrProgress.status === "Complete" ? 1 : 0.5 }}
-                      transition={{ delay: 0.5 }}
-                    >
-                       <Button 
-                         className="w-full h-14 rounded-2xl font-black text-lg gap-2"
-                         disabled={ocrProgress.status !== "Complete"}
-                         onClick={() => { 
-                           if (detectedMedicines.length > 0) {
-                             setPrescriptionFilters(detectedMedicines.map(m => m.id));
-                             setSearch("");
-                             setActiveCategory("All");
-                           }
-                           setPrescriptionOpen(false); 
-                           setScanning(false); 
-                           setTimeout(() => {
-                             document.getElementById('medicine-results')?.scrollIntoView({ behavior: 'smooth' });
-                           }, 300);
-                         }}
-                       >
-                         Show Results <ArrowUpRight className="h-5 w-5" />
-                       </Button>
-                    </motion.div>
-                 </div>
+                     <motion.div 
+                       initial={{ opacity: 0 }}
+                       animate={{ opacity: ocrProgress.status === "Complete" ? 1 : 0.5 }}
+                       transition={{ delay: 0.5 }}
+                     >
+                        <Button 
+                          className="w-full h-12 sm:h-14 rounded-2xl font-black text-sm sm:text-lg gap-2"
+                          disabled={ocrProgress.status !== "Complete"}
+                          onClick={() => { 
+                            if (detectedMedicines.length > 0) {
+                              setPrescriptionFilters(detectedMedicines.map(m => m.id));
+                              setSearch("");
+                              setActiveCategory("All");
+                            }
+                            setPrescriptionOpen(false); 
+                            setScanning(false); 
+                            setTimeout(() => {
+                              document.getElementById('medicine-results')?.scrollIntoView({ behavior: 'smooth' });
+                            }, 300);
+                          }}
+                        >
+                          Show Results <ArrowUpRight className="h-5 w-5" />
+                        </Button>
+                     </motion.div>
+                  </div>
                )}
 
                <div className="bg-slate-50 p-6 rounded-2xl flex items-center gap-4 border border-slate-100">
@@ -596,13 +611,13 @@ export default function MedicinesPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-3.5 bg-slate-900/80 backdrop-blur-md"
           >
             <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="bg-white rounded-[3rem] p-10 max-w-md w-full shadow-2xl text-center space-y-8 relative overflow-hidden"
-            >
+               initial={{ scale: 0.9, opacity: 0 }}
+               animate={{ scale: 1, opacity: 1 }}
+               className="bg-white rounded-2xl sm:rounded-[3rem] p-4 sm:p-10 max-w-md w-full shadow-2xl text-center space-y-5 sm:space-y-8 relative overflow-hidden"
+             >
                <div className="absolute top-0 left-0 w-full h-2 bg-slate-100 overflow-hidden">
                   <motion.div 
                     initial={{ x: "-100%" }}
@@ -612,17 +627,17 @@ export default function MedicinesPage() {
                   />
                </div>
 
-               <div className="space-y-4">
-                  <div className="h-20 w-20 bg-teal-50 rounded-3xl flex items-center justify-center mx-auto text-primary animate-pulse">
-                     <MapIcon className="h-10 w-10" />
+               <div className="space-y-3 sm:space-y-4">
+                  <div className="h-14 w-14 sm:h-20 sm:w-20 bg-teal-50 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto text-primary animate-pulse">
+                     <MapIcon className="h-7 w-7 sm:h-10 sm:w-10" />
                   </div>
-                  <h3 className="text-3xl font-black text-slate-900 tracking-tight">Finding Nearest Pharmacy</h3>
-                  <p className="text-slate-500 font-medium leading-relaxed">
+                  <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Finding Nearest Pharmacy</h3>
+                  <p className="text-xs sm:text-base text-slate-500 font-medium leading-relaxed">
                     Our smart routing system is contacting the closest verified medical stores in your area...
                   </p>
                </div>
 
-               <div className="space-y-4">
+               <div className="space-y-3 sm:space-y-4">
                   {[
                     "Checking inventory at Apollo Pharmacy...",
                     "Routing request to Wellness Forever...",
@@ -633,18 +648,18 @@ export default function MedicinesPage() {
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 1.5 }}
-                      className="flex items-center gap-3 text-sm font-bold text-slate-600 bg-slate-50 p-4 rounded-2xl"
+                      className="flex items-center gap-2 sm:gap-3 text-xs font-bold text-slate-600 bg-slate-50 p-3 sm:p-4 rounded-xl sm:rounded-2xl"
                     >
-                       <div className="h-2 w-2 rounded-full bg-primary animate-ping" />
-                       {text}
+                       <div className="h-2 w-2 rounded-full bg-primary animate-ping shrink-0" />
+                       <span className="truncate">{text}</span>
                     </motion.div>
                   ))}
                </div>
 
-               <div className="pt-4">
+               <div className="pt-2 sm:pt-4">
                  <Link href="/orders/123/track">
                     <Button 
-                      className="w-full h-14 rounded-2xl font-black text-base shadow-xl shadow-primary/20"
+                      className="w-full h-12 sm:h-14 rounded-2xl font-black text-sm sm:text-base shadow-xl shadow-primary/20"
                       onClick={() => setFindingPharmacy(false)}
                     >
                       View Live Status
@@ -652,7 +667,7 @@ export default function MedicinesPage() {
                  </Link>
                  <Button 
                    variant="ghost" 
-                   className="w-full mt-4 text-slate-400 font-bold"
+                   className="w-full mt-3 sm:mt-4 text-slate-400 font-bold h-10 text-xs"
                    onClick={() => setFindingPharmacy(false)}
                  >
                    Cancel Request
@@ -663,5 +678,20 @@ export default function MedicinesPage() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function MedicinesPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="relative">
+          <div className="h-12 w-12 rounded-full border-2 border-teal-200" />
+          <div className="absolute inset-0 h-12 w-12 rounded-full border-2 border-t-primary animate-spin" />
+        </div>
+      </div>
+    }>
+      <MedicinesContent />
+    </Suspense>
   );
 }

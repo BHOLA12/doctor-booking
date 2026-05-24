@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
 import type { Medicine } from "@/lib/medicines-data";
 
 export type CartItem = {
@@ -21,8 +21,44 @@ type CartContextType = {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const CART_STORAGE_KEY = "docbook_cart_v1";
+
+function loadCartFromStorage(): CartItem[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const stored = localStorage.getItem(CART_STORAGE_KEY);
+    if (!stored) return [];
+    return JSON.parse(stored) as CartItem[];
+  } catch {
+    return [];
+  }
+}
+
+function saveCartToStorage(items: CartItem[]) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+  } catch {
+    // Storage quota exceeded or unavailable
+  }
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Load from localStorage on mount (client-side only)
+  useEffect(() => {
+    setCartItems(loadCartFromStorage());
+    setHydrated(true);
+  }, []);
+
+  // Persist to localStorage on every change (after hydration)
+  useEffect(() => {
+    if (hydrated) {
+      saveCartToStorage(cartItems);
+    }
+  }, [cartItems, hydrated]);
 
   const addItem = useCallback((medicine: Medicine) => {
     setCartItems((prev) => {
@@ -50,7 +86,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const clearCart = useCallback(() => setCartItems([]), []);
+  const clearCart = useCallback(() => {
+    setCartItems([]);
+  }, []);
 
   const isInCart = useCallback(
     (id: string) => cartItems.some((i) => i.medicine.id === id),

@@ -20,7 +20,7 @@ export async function listAppointments(request: NextRequest, session: { userId: 
 
   if (session.role === "PATIENT") {
     where.patientId = session.userId;
-  } else if (session.role === "DOCTOR") {
+  } else if (session.role === "DOCTOR" || session.role === "PATHOLOGIST") {
     const doctor = await prisma.doctor.findUnique({
       where: { userId: session.userId },
     });

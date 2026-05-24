@@ -18,6 +18,7 @@ async function main() {
   await prisma.appointment.deleteMany();
   await prisma.slot.deleteMany();
   await prisma.doctor.deleteMany();
+  await prisma.pharmacy.deleteMany();
   await prisma.hospital.deleteMany();
   await prisma.user.deleteMany();
 
@@ -108,6 +109,109 @@ async function main() {
     }),
   ]);
   console.log("✅ Patients created:", patients.length);
+
+  // Create Pharmacies
+  const pharmacyData = [
+    {
+      storeName: "Hindustan Medical Hall",
+      email: "hindustan.med@gmail.com",
+      ownerName: "Subhash Chandra Keshri",
+      pharmacistName: "Rakesh Kumar",
+      pharmacistRegNo: "REG-8390-PH",
+      dl20: "DL-20-9430B",
+      dl21: "DL-21-9430B",
+      gstin: "10ABCDE1234F1Z5",
+      address: "Jehanabad Court, Patna-Gaya Highway",
+      pincode: "804408",
+      latitude: 25.2165,
+      longitude: 84.9902,
+      rating: 4.8,
+      totalReviews: 180,
+    },
+    {
+      storeName: "Ajay Medical Hall",
+      email: "ajay.med@gmail.com",
+      ownerName: "Ajay Kumar Gupta",
+      pharmacistName: "Sanjay Kumar",
+      pharmacistRegNo: "REG-4321-PH",
+      dl20: "DL-20-3021B",
+      dl21: "DL-21-3021B",
+      gstin: "10GHIJK5678L2Z6",
+      address: "Main Market, Hospital Road",
+      pincode: "804408",
+      latitude: 25.2132,
+      longitude: 84.9858,
+      rating: 4.6,
+      totalReviews: 95,
+    },
+    {
+      storeName: "Gudvil Medical Hall",
+      email: "gudvil.med@gmail.com",
+      ownerName: "Vinay Prasad",
+      pharmacistName: "Aman Gupta",
+      pharmacistRegNo: "REG-7210-PH",
+      dl20: "DL-20-5821B",
+      dl21: "DL-21-5821B",
+      gstin: "10MNOPQ9012R3Z7",
+      address: "Rajabazar, NH-83, Patna-Gaya Road",
+      pincode: "804408",
+      latitude: 25.2215,
+      longitude: 84.9934,
+      rating: 4.5,
+      totalReviews: 64,
+    },
+    {
+      storeName: "Green Medical Hall",
+      email: "green.med@gmail.com",
+      ownerName: "Praveen Yadav",
+      pharmacistName: "Suresh Kumar",
+      pharmacistRegNo: "REG-1928-PH",
+      dl20: "DL-20-8321B",
+      dl21: "DL-21-8321B",
+      gstin: "10STUVW3456T4Z8",
+      address: "Main Market, Hospital Road",
+      pincode: "804408",
+      latitude: 25.2130,
+      longitude: 84.9848,
+      rating: 4.3,
+      totalReviews: 42,
+    }
+  ];
+
+  const pharmacyUsers = [];
+  for (const p of pharmacyData) {
+    const user = await prisma.user.create({
+      data: {
+        name: p.storeName,
+        email: p.email,
+        password: hashedPassword,
+        role: "PHARMACY",
+        isVerified: true,
+      },
+    });
+
+    const pharmacy = await prisma.pharmacy.create({
+      data: {
+        userId: user.id,
+        storeName: p.storeName,
+        ownerName: p.ownerName,
+        pharmacistName: p.pharmacistName,
+        pharmacistRegNo: p.pharmacistRegNo,
+        dl20: p.dl20,
+        dl21: p.dl21,
+        gstin: p.gstin,
+        address: p.address,
+        pincode: p.pincode,
+        latitude: p.latitude,
+        longitude: p.longitude,
+        rating: p.rating,
+        totalReviews: p.totalReviews,
+      },
+    });
+
+    pharmacyUsers.push({ user, pharmacy });
+  }
+  console.log("✅ Pharmacies created:", pharmacyUsers.length);
 
   // Doctor data
   const doctorData = [

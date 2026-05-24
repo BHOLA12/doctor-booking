@@ -12,7 +12,8 @@ import {
   PhoneCall, 
   Tag, 
   Grid2X2,
-  Stethoscope
+  Stethoscope,
+  Building2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +39,7 @@ export default function PharmacyNavbar() {
           
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group shrink-0">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md shadow-primary/20 transition-all group-hover:scale-105">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md shadow-primary/20 transition-all group-hover:scale-105">
               <Stethoscope className="h-5 w-5" />
             </div>
             <span className="hidden sm:inline text-xl font-extrabold tracking-tight text-foreground">
@@ -101,6 +102,14 @@ export default function PharmacyNavbar() {
                   {cartCount}
                 </Badge>
               )}
+            </Link>
+
+            {/* Store Portal */}
+            <Link href="/pharmacy/dashboard" className="hidden md:block">
+              <Button variant="outline" size="sm" className="font-bold text-teal-700 border-teal-100 hover:bg-teal-50 gap-1.5 h-10 rounded-xl">
+                <Building2 className="h-4 w-4" />
+                <span>Store Portal</span>
+              </Button>
             </Link>
 
             {/* User */}

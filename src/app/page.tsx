@@ -25,16 +25,74 @@ import {
   FileText,
   CreditCard,
   Headphones,
+  Video,
+  FolderHeart,
+  TrendingUp,
+  Home,
+  Store,
+  Eye,
+  BarChart3,
+  ThumbsUp,
+  ShoppingCart,
+  BadgeCheck,
 } from "lucide-react";
 
 export default async function HomePage() {
-  console.log("🏠 HomePage rendering, DATABASE_URL exists:", !!process.env.DATABASE_URL);
-  const featuredDoctors = await prisma.doctor.findMany({
-    where: { isApproved: true },
-    include: { user: { select: { name: true, avatar: true } } },
-    orderBy: { rating: "desc" },
-    take: 10,
-  });
+  let featuredDoctors: any[] = [];
+  try {
+    featuredDoctors = await prisma.doctor.findMany({
+      where: { isApproved: true },
+      include: { user: { select: { name: true, avatar: true } } },
+      orderBy: { rating: "desc" },
+      take: 10,
+    });
+  } catch (error) {
+    console.warn("⚠️ Database query failed on HomePage, loading mock fallback doctors.", error);
+    featuredDoctors = [
+      {
+        id: "mock-doc-1",
+        userId: "mock-user-1",
+        specialization: "Cardiologist",
+        experience: 15,
+        fees: 800,
+        rating: 4.8,
+        totalReviews: 120,
+        clinicName: "Sharma Heart Care Clinic",
+        user: {
+          name: "Dr. Rajesh Sharma",
+          avatar: "https://i.pravatar.cc/250?u=Rajesh"
+        }
+      },
+      {
+        id: "mock-doc-2",
+        userId: "mock-user-2",
+        specialization: "Gynecologist",
+        experience: 12,
+        fees: 600,
+        rating: 4.7,
+        totalReviews: 95,
+        clinicName: "Anita Women's Health Clinic",
+        user: {
+          name: "Dr. Anita Kumari",
+          avatar: "https://i.pravatar.cc/250?u=Anita"
+        }
+      },
+      {
+        id: "mock-doc-3",
+        userId: "mock-user-3",
+        specialization: "Pediatrician",
+        experience: 8,
+        fees: 500,
+        rating: 4.9,
+        totalReviews: 150,
+        clinicName: "Little Stars Child Care",
+        user: {
+          name: "Dr. Meena Devi",
+          avatar: "https://i.pravatar.cc/250?u=Meena"
+        }
+      }
+    ];
+  }
 
   const serviceLinks = [
     {
@@ -206,18 +264,200 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ============ CTA ============ */}
-      <section className="py-14 bg-primary text-primary-foreground">
-        <div className="mx-auto max-w-4xl px-4 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-3">Are you a Doctor?</h2>
-          <p className="opacity-90 text-lg mb-7 max-w-xl mx-auto">
-            Join DocBook and reach thousands of patients. Manage appointments & grow your practice.
-          </p>
-          <Link href="/register?role=DOCTOR">
-            <Button size="lg" variant="secondary" className="font-semibold px-8 rounded-full text-base">
-              Register as Doctor <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-          </Link>
+      {/* ============ DUAL CALL TO ACTION (CTA) ============ */}
+      <section className="py-28 bg-[#02090d] text-white relative overflow-hidden">
+        {/* Cinematographic layered neon glows */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-gradient-to-tr from-teal-500/10 via-[#0cd2b4]/10 to-emerald-500/5 rounded-full blur-[150px] pointer-events-none" />
+        <div className="absolute top-1/4 left-1/3 w-[300px] h-[300px] bg-[#0cd2b4]/5 rounded-full blur-[100px] pointer-events-none animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/3 w-[350px] h-[350px] bg-emerald-500/5 rounded-full blur-[110px] pointer-events-none animate-pulse delay-700" />
+
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            
+            {/* LEFT CARD: Patients */}
+            <div className="relative backdrop-blur-2xl border border-[#0cd2b4]/20 rounded-3xl p-8 sm:p-10 flex flex-col justify-between hover:border-[#0cd2b4]/45 hover:shadow-[0_0_60px_rgba(12,210,180,0.1)] transition-all duration-500 group overflow-hidden" style={{background: 'radial-gradient(ellipse at 20% 0%, rgba(12,210,180,0.08) 0%, rgba(7,18,28,0.98) 65%)'}}>
+              {/* Dot grid overlay */}
+              <div className="absolute inset-0 opacity-25 pointer-events-none" style={{backgroundImage: 'radial-gradient(rgba(12,210,180,0.5) 1px, transparent 1px)', backgroundSize: '26px 26px'}} />
+              {/* Top glow line */}
+              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#0cd2b4]/50 to-transparent" />
+              {/* Bottom left glow */}
+              <div className="absolute -bottom-16 -left-16 w-44 h-44 bg-teal-500/12 rounded-full blur-3xl pointer-events-none opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
+
+              {/* Patient Illustration */}
+              <div className="absolute right-4 bottom-16 w-36 h-44 pointer-events-none select-none">
+                <Image
+                  src="/patient-illustration.png"
+                  alt="Patient family"
+                  width={144}
+                  height={176}
+                  className="object-contain object-bottom drop-shadow-[0_0_20px_rgba(12,210,180,0.25)] opacity-95 group-hover:opacity-100 transition-all duration-500"
+                />
+              </div>
+
+              <div className="relative z-10 space-y-7">
+                {/* Card Icon */}
+                <div className="h-14 w-14 rounded-2xl bg-[#0cd2b4]/10 border border-[#0cd2b4]/30 flex items-center justify-center text-[#0cd2b4]">
+                  <Users className="h-6 w-6" />
+                </div>
+                <div className="space-y-3">
+                  <h3 className="text-2xl font-black tracking-tight text-white">For Patients</h3>
+                  <p className="text-slate-400 text-sm leading-relaxed max-w-[270px] font-medium">
+                    Consult with top verified doctors online, order medicines with home delivery, or book lab tests from the comfort of your home.
+                  </p>
+                </div>
+
+                {/* Sub Features */}
+                <div className="grid grid-cols-4 pt-6 border-t border-white/[0.07]">
+                  {[
+                    { icon: Stethoscope, label: "Online Doctor\nConsultation" },
+                    { icon: Pill, label: "Medicines\nDelivery" },
+                    { icon: FlaskConical, label: "Lab Tests\nat Home" },
+                    { icon: Home, label: "Home\nHealthcare" }
+                  ].map((item, i) => (
+                    <div key={i} className={`flex flex-col items-center text-center px-1 space-y-2.5 ${i < 3 ? 'border-r border-white/[0.07]' : ''}`}>
+                      <div className="h-10 w-10 rounded-full bg-[#0a1e2a] border border-[#0cd2b4]/25 flex items-center justify-center text-[#0cd2b4] group-hover:bg-[#0cd2b4]/15 transition-colors duration-300">
+                        <item.icon className="h-4 w-4" />
+                      </div>
+                      <span className="text-[9px] font-semibold text-slate-400 leading-tight tracking-wide max-w-[68px] whitespace-pre-line select-none">{item.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="relative z-10 pt-8">
+                <Link href="/register?role=PATIENT" className="w-full block">
+                  <button className="w-full h-14 bg-[#0cd2b4] hover:bg-[#0ec9ac] text-[#051016] font-extrabold text-sm tracking-widest rounded-2xl shadow-[0_4px_30px_rgba(12,210,180,0.3)] hover:shadow-[0_4px_45px_rgba(12,210,180,0.45)] transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-3 uppercase group/btn">
+                    Join as Patient
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+                  </button>
+                </Link>
+              </div>
+            </div>
+
+            {/* RIGHT CARD: Medical Professionals */}
+            <div className="relative backdrop-blur-2xl border border-[#0cd2b4]/20 rounded-3xl p-8 sm:p-10 flex flex-col justify-between hover:border-[#0cd2b4]/45 hover:shadow-[0_0_60px_rgba(12,210,180,0.1)] transition-all duration-500 group overflow-hidden" style={{background: 'radial-gradient(ellipse at 20% 0%, rgba(12,210,180,0.08) 0%, rgba(7,18,28,0.98) 65%)'}}>
+              {/* Dot grid overlay */}
+              <div className="absolute inset-0 opacity-25 pointer-events-none" style={{backgroundImage: 'radial-gradient(rgba(12,210,180,0.5) 1px, transparent 1px)', backgroundSize: '26px 26px'}} />
+              {/* Top glow line */}
+              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#0cd2b4]/50 to-transparent" />
+              {/* Bottom right glow */}
+              <div className="absolute -bottom-16 -right-16 w-44 h-44 bg-[#0cd2b4]/10 rounded-full blur-3xl pointer-events-none opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
+
+              {/* Doctor Illustration */}
+              <div className="absolute right-4 bottom-16 w-36 h-44 pointer-events-none select-none">
+                <Image
+                  src="/doctor-illustration.png"
+                  alt="Medical professional"
+                  width={144}
+                  height={176}
+                  className="object-contain object-bottom drop-shadow-[0_0_20px_rgba(12,210,180,0.25)] opacity-95 group-hover:opacity-100 transition-all duration-500"
+                />
+              </div>
+
+              <div className="relative z-10 space-y-7">
+                {/* Card Icon */}
+                <div className="h-14 w-14 rounded-2xl bg-[#0cd2b4]/10 border border-[#0cd2b4]/30 flex items-center justify-center text-[#0cd2b4]">
+                  <Stethoscope className="h-6 w-6" />
+                </div>
+                <div className="space-y-3">
+                  <h3 className="text-2xl font-black tracking-tight text-white">For Medical Professionals</h3>
+                  <p className="text-slate-400 text-sm leading-relaxed max-w-[270px] font-medium">
+                    Reach thousands of new patients, streamline your clinic appointments, handle video consultations, and manage digital health records smoothly.
+                  </p>
+                </div>
+
+                {/* Sub Features */}
+                <div className="grid grid-cols-4 pt-6 border-t border-white/[0.07]">
+                  {[
+                    { icon: CalendarDays, label: "Manage\nAppointments" },
+                    { icon: Video, label: "Video\nConsultations" },
+                    { icon: FolderHeart, label: "Digital Health\nRecords" },
+                    { icon: TrendingUp, label: "Grow Your\nPractice" }
+                  ].map((item, i) => (
+                    <div key={i} className={`flex flex-col items-center text-center px-1 space-y-2.5 ${i < 3 ? 'border-r border-white/[0.07]' : ''}`}>
+                      <div className="h-10 w-10 rounded-full bg-[#0a1e2a] border border-[#0cd2b4]/25 flex items-center justify-center text-[#0cd2b4] group-hover:bg-[#0cd2b4]/15 transition-colors duration-300">
+                        <item.icon className="h-4 w-4" />
+                      </div>
+                      <span className="text-[9px] font-semibold text-slate-400 leading-tight tracking-wide max-w-[68px] whitespace-pre-line select-none">{item.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="relative z-10 pt-8">
+                <Link href="/register?role=DOCTOR" className="w-full block">
+                  <button className="w-full h-14 bg-[#0cd2b4] hover:bg-[#0ec9ac] text-[#051016] font-extrabold text-sm tracking-widest rounded-2xl shadow-[0_4px_30px_rgba(12,210,180,0.3)] hover:shadow-[0_4px_45px_rgba(12,210,180,0.45)] transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-3 uppercase group/btn">
+                    Register as Doctor
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+                  </button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============ PHARMACY REGISTRATION CTA ============ */}
+      <section className="py-20 bg-[#02090d] text-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="relative overflow-hidden rounded-[2rem] border border-[#0cd2b4]/15 bg-[#071318]/90 p-8 shadow-[0_0_120px_rgba(12,210,180,0.12)]">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(12,210,180,0.12),_transparent_42%)]" />
+            <div className="pointer-events-none absolute bottom-0 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-cyan-500/10 blur-[100px]" />
+            <div className="relative grid gap-8 lg:grid-cols-[1.35fr_0.9fr] items-center">
+              <div className="space-y-6 max-w-3xl">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#0cd2b4]/20 bg-[#0cd2b4]/10 px-4 py-2 text-xs uppercase tracking-[0.32em] text-[#a5fff0]">
+                  Verified Pharmacy
+                </div>
+                <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-white">
+                  Register as a Pharmacy
+                </h2>
+                <p className="max-w-2xl text-sm leading-7 text-slate-300">
+                  Partner with DocBook to grow your pharmacy business, reach more customers, and manage orders efficiently through our digital platform.
+                </p>
+
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  {[
+                    { icon: ShieldCheck, label: "Trusted network" },
+                    { icon: ShoppingCart, label: "Manage orders" },
+                    { icon: Truck, label: "Fast fulfillment" },
+                    { icon: BadgeCheck, label: "Verified partners" },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-3xl border border-white/10 bg-white/5 p-4 text-center">
+                      <div className="mx-auto mb-3 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-teal-500/10 text-teal-300">
+                        <item.icon className="h-5 w-5" />
+                      </div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-200">
+                        {item.label}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <Link href="/register?role=PHARMACY" className="inline-block">
+                  <button className="mt-4 inline-flex items-center justify-center rounded-2xl bg-[#0cd2b4] px-6 py-4 text-sm font-black uppercase tracking-[0.2em] text-[#051016] shadow-[0_18px_40px_rgba(12,210,180,0.24)] transition hover:bg-[#0ec9ac]">
+                    Register as Pharmacy
+                    <ArrowRight className="ml-3 h-4 w-4" />
+                  </button>
+                </Link>
+              </div>
+
+              <div className="rounded-[2rem] border border-white/10 bg-[#051016]/80 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.25)]">
+                <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-[#0cd2b4]/10 px-4 py-2 text-xs font-semibold text-slate-100">
+                  <Store className="h-4 w-4 text-[#0cd2b4]" />
+                  Pharmacy Partner
+                </div>
+                <div className="flex h-64 items-center justify-center rounded-[1.75rem] bg-gradient-to-br from-[#0a232c] via-[#051014] to-[#041011] p-4">
+                  <Image
+                    src="/images/pharmacy-partner.svg"
+                    alt="Pharmacy partner illustration"
+                    width={240}
+                    height={240}
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div>

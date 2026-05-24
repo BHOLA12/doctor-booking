@@ -215,3 +215,13 @@
 .dark .hero-gradient {
   background: linear-gradient(135deg, #0f172a 0%, #134e4a 30%, #0c4a6e 60%, #0f172a 100%);
 }
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

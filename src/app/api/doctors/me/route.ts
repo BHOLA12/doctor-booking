@@ -5,7 +5,7 @@ import { getSession } from "@/lib/auth";
 export async function GET() {
   try {
     const session = await getSession();
-    if (!session || session.role !== "DOCTOR") {
+    if (!session || (session.role !== "DOCTOR" && session.role !== "PATHOLOGIST")) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
         { status: 401 }

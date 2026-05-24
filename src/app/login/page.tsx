@@ -77,8 +77,8 @@ function LoginContent() {
         <motion.div variants={fadeUp} className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-5">
             <div className="relative">
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-cyan-400 to-teal-500 blur-xl opacity-50 scale-110" />
-              <div className="relative h-16 w-16 flex items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 shadow-lg shadow-cyan-500/30">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 blur-xl opacity-50 scale-110" />
+              <div className="relative h-16 w-16 flex items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-teal-600 shadow-lg shadow-cyan-500/30">
                 <Stethoscope className="h-8 w-8 text-white" />
               </div>
             </div>
@@ -88,8 +88,8 @@ function LoginContent() {
           </h1>
           <p className="mt-2 text-slate-500 dark:text-slate-400 text-sm">
             Sign in to your{" "}
-            <span className="font-semibold text-cyan-600 dark:text-cyan-400">
-              DocBook
+            <span className="font-bold tracking-tight text-slate-900 dark:text-white">
+              Doc<span className="text-primary">Book</span>
             </span>{" "}
             account
           </p>

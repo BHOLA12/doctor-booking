@@ -5,7 +5,7 @@ import { fail, ok } from "@/server/utils/api";
 
 export async function listPrescriptions(session: { userId: string; role: string }) {
   const where =
-    session.role === "DOCTOR"
+    session.role === "DOCTOR" || session.role === "PATHOLOGIST"
       ? {
           doctor: {
             userId: session.userId,
@@ -29,7 +29,7 @@ export async function listPrescriptions(session: { userId: string; role: string 
 }
 
 export async function savePrescription(request: Request, session: { userId: string; role: string }) {
-  if (session.role !== "DOCTOR") {
+  if (session.role !== "DOCTOR" && session.role !== "PATHOLOGIST") {
     return fail("Only doctors can save prescriptions", 403);
   }
 

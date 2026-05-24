@@ -9,10 +9,13 @@ function validateEnvironment() {
     'DATABASE_URL',
     'DIRECT_URL',
     'JWT_SECRET',
-    'OPENAI_API_KEY',
   ];
 
   const missing = required.filter((variable) => !process.env[variable]);
+
+  if (!process.env.OPENAI_API_KEY && !process.env.GEMINI_API_KEY) {
+    missing.push('OPENAI_API_KEY or GEMINI_API_KEY');
+  }
 
   if (missing.length > 0) {
     console.error(

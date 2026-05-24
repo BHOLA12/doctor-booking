@@ -5,7 +5,7 @@ import { getPrescriptionSuggestion } from "@/server/controllers/ai-controller";
 export async function POST(request: Request) {
   try {
     const session = await getSession();
-    if (!session || session.role !== "DOCTOR") {
+    if (!session || (session.role !== "DOCTOR" && session.role !== "PATHOLOGIST")) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 

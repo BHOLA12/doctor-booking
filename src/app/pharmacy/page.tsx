@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import TrustBar from "@/components/layout/TrustBar";
 import PharmacyNavbar from "@/components/layout/PharmacyNavbar";
 import PharmacyHero from "@/components/pharmacy/PharmacyHero";
@@ -8,7 +9,7 @@ import PharmacyMedicineCard from "@/components/pharmacy/PharmacyMedicineCard";
 import StoreCard from "@/components/pharmacy/StoreCard";
 import Footer from "@/components/layout/Footer";
 import { MEDICINES, type Medicine } from "@/lib/medicines-data";
-import { PHARMACY_STORES, PHARMACY_CATEGORIES } from "@/lib/pharmacy-data";
+import { PHARMACY_STORES, PHARMACY_CATEGORIES, getCombinedStores } from "@/lib/pharmacy-data";
 import ComparePricesModal from "@/components/pharmacy/ComparePricesModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,9 +27,51 @@ import {
 import Link from "next/link";
 
 export default function PharmacyPage() {
+  const router = useRouter();
+  const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null);
   const [showComparison, setShowComparison] = useState(false);
+  const [stores, setStores] = useState(PHARMACY_STORES);
+
+  useEffect(() => {
+    async function loadStores() {
+      try {
+        const res = await fetch("/api/pharmacies");
+        if (res.ok) {
+          const result = await res.json();
+          if (result.success && Array.isArray(result.data)) {
+            const dbStores = result.data.map((pharmacy: any) => ({
+              id: `db-store-${pharmacy.id}`,
+              name: pharmacy.storeName,
+              image: pharmacy.user?.avatar || "https://images.unsplash.com/photo-1586015555751-63bb77f4322a?q=80&w=200&h=200&auto=format&fit=crop",
+              distance: "0.8 km",
+              rating: pharmacy.rating || 4.5,
+              reviews: pharmacy.totalReviews || 0,
+              isOpen: true,
+              isVerified: true,
+              hasGST: !!pharmacy.gstin,
+              medicineStock: "Available",
+              deliveryTime: "20-30 mins",
+              isFreeDelivery: true,
+              isPickupAvailable: true,
+              address: `${pharmacy.address}, ${pharmacy.pincode}, Jehanabad, Bihar`,
+            }));
+
+            if (dbStores.length > 0) {
+              setStores(dbStores);
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error loading pharmacies from database:", err);
+      }
+      setStores(PHARMACY_STORES);
+    }
+
+    loadStores();
+  }, []);
 
   const handleCompare = (medicine: Medicine) => {
     setSelectedMedicine(medicine);
@@ -41,7 +84,13 @@ export default function PharmacyPage() {
       <PharmacyNavbar />
       
       <main className="flex-1">
-        <PharmacyHero />
+        <PharmacyHero 
+          onUploadPrescription={() => router.push("/medicines?upload=true")}
+          onSimulateOrder={() => router.push("/medicines?simulate=true")}
+          searchValue={search}
+          onSearchChange={setSearch}
+          onSearch={(term) => router.push(`/medicines?q=${encodeURIComponent(term)}`)}
+        />
 
         {/* Category Filter Pills */}
         <div className="sticky top-20 z-40 bg-white/80 backdrop-blur-md border-b border-border/40">
@@ -89,7 +138,7 @@ export default function PharmacyPage() {
           </div>
 
           <div className="grid gap-6">
-            {PHARMACY_STORES.slice(0, 3).map((store) => (
+            {stores.map((store) => (
               <StoreCard key={store.id} store={store} />
             ))}
           </div>

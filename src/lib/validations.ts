@@ -9,7 +9,7 @@ export const registerSchema = z.object({
     .regex(/^[\d+\-\s()]{7,20}$/, "Phone number looks invalid")
     .optional()
     .or(z.literal("")),
-  role: z.enum(["PATIENT", "DOCTOR", "ADMIN"]).default("PATIENT"),
+  role: z.enum(["PATIENT", "DOCTOR", "PATHOLOGIST", "ADMIN", "PHARMACY"]).default("PATIENT"),
   avatar: z.string().optional(),
   specialization: z.string().optional(),
   experience: z.number().int().min(0).max(60).optional(),
@@ -18,8 +18,17 @@ export const registerSchema = z.object({
   college: z.string().optional().or(z.literal("")),
   experienceHospitals: z.string().optional().or(z.literal("")),
   currentHospitalName: z.string().optional().or(z.literal("")),
+  // Pharmacy specific fields
+  ownerName: z.string().optional().or(z.literal("")),
+  pharmacistName: z.string().optional().or(z.literal("")),
+  pharmacistRegNo: z.string().optional().or(z.literal("")),
+  dl20: z.string().optional().or(z.literal("")),
+  dl21: z.string().optional().or(z.literal("")),
+  gstin: z.string().optional().or(z.literal("")),
+  address: z.string().optional().or(z.literal("")),
+  pincode: z.string().optional().or(z.literal("")),
 }).superRefine((data, ctx) => {
-  if (data.role === "DOCTOR") {
+  if (data.role === "DOCTOR" || data.role === "PATHOLOGIST") {
     if (!data.specialization) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -39,6 +48,42 @@ export const registerSchema = z.object({
         code: z.ZodIssueCode.custom,
         path: ["licenseNumber"],
         message: "License number must be at least 6 characters",
+      });
+    }
+  } else if (data.role === "PHARMACY") {
+    if (!data.gstin || data.gstin.length !== 15) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["gstin"],
+        message: "GSTIN is required and must be exactly 15 characters",
+      });
+    }
+    if (!data.dl20) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["dl20"],
+        message: "Drug License Form 20 is required",
+      });
+    }
+    if (!data.dl21) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["dl21"],
+        message: "Drug License Form 21 is required",
+      });
+    }
+    if (!data.pharmacistRegNo) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["pharmacistRegNo"],
+        message: "Pharmacist Registration Number is required",
+      });
+    }
+    if (!data.address) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["address"],
+        message: "Physical Address is required",
       });
     }
   }

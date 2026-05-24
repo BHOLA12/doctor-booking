@@ -9,24 +9,119 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  PATIENT
+  DOCTOR
+  PATHOLOGIST
+  PHARMACY
+  ADMIN
+}
+
+enum ConsultationType {
+  ONLINE
+  OFFLINE
+  BOTH
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum AppointmentType {
+  EMERGENCY
+  FOLLOW_UP
+  NORMAL
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+enum MedicineOrderStatus {
+  CONFIRMED
+  PREPARING
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
 model User {
   id         String   @id @default(cuid())
   name       String
   email      String   @unique
   phone      String?
   password   String
-  role       String   @default("PATIENT") // PATIENT, DOCTOR, ADMIN
+  role       Role     @default(PATIENT)
   avatar     String?
   isVerified Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  doctor       Doctor?
-  appointments Appointment[] @relation("PatientAppointments")
-  medicalReports MedicalReport[]
-  prescriptions Prescription[] @relation("PatientPrescriptions")
-  notifications Notification[]
-  reviews      Review[]
+  doctor             Doctor?
+  pharmacy           Pharmacy?
+  sessions           Session[]
+  auditLogs          AuditLog[]
+  verificationRequests VerificationRequest[]
+  appointments       Appointment[] @relation("PatientAppointments")
+  medicalReports     MedicalReport[]
+  prescriptions       Prescription[] @relation("PatientPrescriptions")
+  notifications      Notification[]
+  reviews            Review[]
+  medicineOrders     MedicineOrder[]
+}
+
+model Session {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokenHash String
+  userAgent        String?
+  ipAddress        String?
+  expiresAt        DateTime
+  lastUsedAt       DateTime? @updatedAt
+  isValid          Boolean  @default(true)
+  createdAt        DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action      String
+  entity      String?
+  entityId    String?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt(sort: Desc)])
+}
+
+model VerificationRequest {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  providerType String
+  providerId  String
+  status      String   @default("PENDING")
+  documents   Json?
+  notes       String?
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
 }
 
 model Doctor {
@@ -50,7 +145,7 @@ model Doctor {
   isApproved       Boolean  @default(false)
   rating           Float    @default(0)
   totalReviews     Int      @default(0)
-  consultationType String   @default("BOTH") // ONLINE, OFFLINE, BOTH
+  consultationType ConsultationType @default(BOTH)
   degree           String?
   college          String?
   experienceHospitals String?
@@ -95,16 +190,16 @@ model Appointment {
   date             String // "2024-03-15"
   startTime        String // "09:00"
   endTime          String // "09:30"
-  status           String   @default("PENDING") // PENDING, CONFIRMED, CANCELLED, COMPLETED
-  consultationType String // ONLINE, OFFLINE
-  appointmentType  String   @default("NORMAL") // EMERGENCY, FOLLOW_UP, NORMAL
+  status           AppointmentStatus @default(PENDING)
+  consultationType ConsultationType
+  appointmentType  AppointmentType    @default(NORMAL)
   priorityRank     Int      @default(3)
   queuePositionSnapshot Int?
   estimatedWaitMinutes Int?
   notes            String?
   symptoms         String?
   isEmergency      Boolean  @default(false)
-  paymentStatus    String   @default("PENDING") // PENDING, PAID, FAILED
+  paymentStatus    PaymentStatus @default(PENDING)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   prescription     Prescription?
@@ -188,4 +283,47 @@ model Hospital {
   updatedAt   DateTime @updatedAt
 
   doctors     Doctor[]
+}
+
+model Pharmacy {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storeName       String
+  ownerName       String
+  pharmacistName  String
+  pharmacistRegNo String
+  dl20            String
+  dl21            String
+  gstin           String
+  address         String
+  pincode         String
+  latitude        Float?
+  longitude       Float?
+  isApproved      Boolean  @default(false)
+  rating          Float    @default(4.5)
+  totalReviews    Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  orders          MedicineOrder[]
+}
+
+model MedicineOrder {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pharmacyId  String?
+  pharmacy    Pharmacy? @relation(fields: [pharmacyId], references: [id], onDelete: SetNull)
+  items       Json     // Array of { medicineId, name, price, quantity, imageEmoji }
+  totalAmount Int
+  status      MedicineOrderStatus @default(CONFIRMED)
+  address     String?
+  phone       String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([pharmacyId, createdAt(sort: Desc)])
 }

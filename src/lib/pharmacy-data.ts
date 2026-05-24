@@ -20,11 +20,11 @@ export type PharmacyStore = {
 export const PHARMACY_STORES: PharmacyStore[] = [
   {
     id: "s1",
-    name: "Wellness Forever Medical",
+    name: "Hindustan Medical Hall",
     image: "https://images.unsplash.com/photo-1586015555751-63bb77f4322a?q=80&w=200&h=200&auto=format&fit=crop",
-    distance: "1.2 km",
+    distance: "0.5 km",
     rating: 4.8,
-    reviews: 1250,
+    reviews: 180,
     isOpen: true,
     isVerified: true,
     hasGST: true,
@@ -32,15 +32,15 @@ export const PHARMACY_STORES: PharmacyStore[] = [
     deliveryTime: "30-45 mins",
     isFreeDelivery: true,
     isPickupAvailable: true,
-    address: "Sector 18, Noida, UP",
+    address: "Jehanabad Court, Patna-Gaya Highway, Jehanabad, Bihar",
   },
   {
     id: "s2",
-    name: "Apollo Pharmacy",
+    name: "Ajay Medical Hall",
     image: "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?q=80&w=200&h=200&auto=format&fit=crop",
-    distance: "2.5 km",
-    rating: 4.5,
-    reviews: 890,
+    distance: "1.2 km",
+    rating: 4.6,
+    reviews: 95,
     isOpen: true,
     isVerified: true,
     hasGST: true,
@@ -48,15 +48,15 @@ export const PHARMACY_STORES: PharmacyStore[] = [
     deliveryTime: "45-60 mins",
     isFreeDelivery: true,
     isPickupAvailable: true,
-    address: "Indirapuram, Ghaziabad",
+    address: "Main Market, Hospital Road, Jehanabad, Bihar",
   },
   {
     id: "s3",
-    name: "Guardian Life Care",
+    name: "Gudvil Medical Hall",
     image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=200&h=200&auto=format&fit=crop",
-    distance: "3.8 km",
-    rating: 4.2,
-    reviews: 450,
+    distance: "2.1 km",
+    rating: 4.5,
+    reviews: 64,
     isOpen: true,
     isVerified: true,
     hasGST: true,
@@ -64,25 +64,53 @@ export const PHARMACY_STORES: PharmacyStore[] = [
     deliveryTime: "60-90 mins",
     isFreeDelivery: false,
     isPickupAvailable: true,
-    address: "Preet Vihar, Delhi",
+    address: "Rajabazar, NH-83, Patna-Gaya Road, Jehanabad, Bihar",
   },
   {
     id: "s4",
-    name: "Local Medical Hall",
+    name: "Green Medical Hall",
     image: "https://images.unsplash.com/photo-1587854692152-cbe660dbbb88?q=80&w=200&h=200&auto=format&fit=crop",
-    distance: "0.5 km",
-    rating: 3.9,
-    reviews: 120,
+    distance: "1.5 km",
+    rating: 4.3,
+    reviews: 42,
     isOpen: true,
-    isVerified: false,
+    isVerified: true,
     hasGST: true,
     medicineStock: "Available",
     deliveryTime: "15-20 mins",
     isFreeDelivery: true,
     isPickupAvailable: true,
-    address: "Gautam Buddha Nagar, Noida",
+    address: "Main Market, Hospital Road, Jehanabad, Bihar",
   },
 ];
+
+export function getCombinedStores(savedStoreStr: string | null): PharmacyStore[] {
+  if (!savedStoreStr) return PHARMACY_STORES;
+  try {
+    const savedStore = JSON.parse(savedStoreStr);
+    const newStore: PharmacyStore = {
+      id: "registered-store",
+      name: savedStore.storeName || savedStore.name || "My Registered Pharmacy",
+      image: savedStore.avatar || "https://images.unsplash.com/photo-1586015555751-63bb77f4322a?q=80&w=200&h=200&auto=format&fit=crop",
+      distance: "0.2 km",
+      rating: 5.0,
+      reviews: 1,
+      isOpen: true,
+      isVerified: true,
+      hasGST: !!savedStore.gstin,
+      medicineStock: "Available",
+      deliveryTime: "15-30 mins",
+      isFreeDelivery: true,
+      isPickupAvailable: true,
+      address: `${savedStore.address || "Main Road"}, ${savedStore.pincode || "804408"}, Jehanabad, Bihar`,
+    };
+    
+    // Return registered store prepended to general stores list
+    return [newStore, ...PHARMACY_STORES];
+  } catch {
+    return PHARMACY_STORES;
+  }
+}
 
 export const PHARMACY_CATEGORIES = [
   "All",

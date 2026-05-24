@@ -15,9 +15,9 @@ export default function BrandCard({
 }) {
   return (
     <Card 
-      className={`cursor-pointer transition-all duration-300 border-2 ${
+      className={`cursor-pointer transition-all duration-300 border-2 rounded-2xl ${
         isSelected 
-          ? "border-primary bg-primary/5 shadow-md" 
+          ? "border-teal-600 bg-teal-50/40 shadow-md" 
           : "border-slate-100 hover:border-slate-300 hover:shadow-md"
       }`}
       onClick={onClick}
@@ -30,21 +30,21 @@ export default function BrandCard({
             {brand.emoji}
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="font-bold text-slate-800 truncate">{brand.name}</h4>
+            <h4 className="font-extrabold text-slate-800 truncate">{brand.name}</h4>
             <div className="flex items-center gap-1.5 mt-1">
               <Package className="h-3 w-3 text-slate-400" />
-              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-tight">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                 {brand.medicineCount}+ Medicines
               </span>
             </div>
           </div>
-          <ChevronRight className={`h-5 w-5 transition-transform ${
-            isSelected ? "text-primary translate-x-1" : "text-slate-300"
+          <ChevronRight className={`h-5 w-5 transition-transform duration-300 ${
+            isSelected ? "text-teal-600 translate-x-1" : "text-slate-300"
           }`} />
         </div>
         
         {isSelected && (
-          <p className="mt-3 text-[11px] text-slate-500 leading-tight border-t border-primary/10 pt-3 italic">
+          <p className="mt-3 text-[11px] text-slate-500 leading-tight border-t border-teal-100/50 pt-3 italic">
             {brand.description}
           </p>
         )}

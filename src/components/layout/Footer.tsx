@@ -10,10 +10,12 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 <Stethoscope className="h-4 w-4" />
               </div>
-              <span className="text-lg font-bold gradient-text">DocBook</span>
+              <span className="text-lg font-extrabold tracking-tight text-foreground">
+                Doc<span className="text-primary">Book</span>
+              </span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
               Your complete healthcare super-app. Book doctors, order medicines, schedule lab tests, and get personalised diet plans — all in one place.

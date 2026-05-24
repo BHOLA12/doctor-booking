@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { hashPassword, signToken, getTokenCookieOptions } from "@/lib/auth";
+import {
+  hashPassword,
+  signAccessToken,
+  signRefreshToken,
+  getAccessTokenCookieOptions,
+  getRefreshTokenCookieOptions,
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+} from "@/lib/auth";
 import { registerSchema } from "@/lib/validations";
+import { createSession } from "@/server/services/session-service";
+import { logAuditEvent } from "@/server/services/audit-service";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,9 +25,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, email, password, phone, role, avatar, specialization, experience, licenseNumber } = validation.data;
+    const {
+      name,
+      email,
+      password,
+      phone,
+      role,
+      avatar,
+      specialization,
+      experience,
+      licenseNumber,
+      degree,
+      college,
+      experienceHospitals,
+      currentHospitalName,
+      ownerName,
+      pharmacistName,
+      pharmacistRegNo,
+      dl20,
+      dl21,
+      gstin,
+      address,
+      pincode,
+    } = validation.data;
 
-    // Check if user exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return NextResponse.json(
@@ -26,7 +57,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash password and create user
     const hashedPassword = await hashPassword(password);
     const user = await prisma.user.create({
       data: {
@@ -36,37 +66,75 @@ export async function POST(request: NextRequest) {
         phone: phone || null,
         role: role || "PATIENT",
         avatar: avatar || null,
-        isVerified: true, // Auto-verify all users for demo purposes
+        isVerified: role === "PATIENT",
       },
     });
 
-    // If registering as doctor, create doctor profile placeholder
-    if (role === "DOCTOR") {
+    if (role === "DOCTOR" || role === "PATHOLOGIST") {
       await prisma.doctor.create({
         data: {
           userId: user.id,
-          specialization: specialization || "General Physician",
-          experience: experience || 0,
+          specialization: specialization || (role === "PATHOLOGIST" ? "Pathologist" : "General Physician"),
+          experience: experience ?? 0,
           licenseNumber: licenseNumber || null,
           fees: 500,
           isApproved: false,
-          degree: body.degree || null,
-          college: body.college || null,
-          experienceHospitals: body.experienceHospitals || null,
-          currentHospitalName: body.currentHospitalName || null,
+          degree: degree || null,
+          college: college || null,
+          experienceHospitals: experienceHospitals || null,
+          currentHospitalName: currentHospitalName || null,
         },
       });
     }
 
-    // Generate JWT
-    const token = signToken({
+    if (role === "PHARMACY") {
+      await prisma.pharmacy.create({
+        data: {
+          userId: user.id,
+          storeName: name,
+          ownerName: ownerName || "",
+          pharmacistName: pharmacistName || "",
+          pharmacistRegNo: pharmacistRegNo || "",
+          dl20: dl20 || "",
+          dl21: dl21 || "",
+          gstin: gstin || "",
+          address: address || "",
+          pincode: pincode || "",
+          rating: 4.5,
+          totalReviews: 0,
+          isApproved: false,
+        },
+      });
+    }
+
+    const payload = {
       userId: user.id,
       email: user.email,
       role: user.role,
       name: user.name,
+      isVerified: user.isVerified,
+    };
+
+    const accessToken = signAccessToken(payload);
+    const refreshToken = signRefreshToken(payload);
+    const ipAddress = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || null;
+
+    await createSession({
+      userId: user.id,
+      refreshToken,
+      ipAddress,
+      userAgent: request.headers.get("user-agent") || null,
     });
 
-    const cookieOptions = getTokenCookieOptions();
+    await logAuditEvent({
+      userId: user.id,
+      action: "REGISTER",
+      entity: "User",
+      entityId: user.id,
+      ipAddress,
+      userAgent: request.headers.get("user-agent") || null,
+    });
+
     const response = NextResponse.json(
       {
         success: true,
@@ -77,14 +145,18 @@ export async function POST(request: NextRequest) {
           role: user.role,
           isVerified: user.isVerified,
         },
-        message: role === "DOCTOR" 
-          ? "Registration successful! Your account is pending admin approval." 
-          : "Registration successful!",
+        message:
+          role === "DOCTOR" || role === "PATHOLOGIST"
+            ? "Registration successful! Your provider account is pending approval."
+            : role === "PHARMACY"
+            ? "Registration successful! Your pharmacy is pending verification."
+            : "Registration successful!",
       },
       { status: 201 }
     );
 
-    response.cookies.set(cookieOptions.name, token, cookieOptions);
+    response.cookies.set(ACCESS_TOKEN_COOKIE, accessToken, getAccessTokenCookieOptions());
+    response.cookies.set(REFRESH_TOKEN_COOKIE, refreshToken, getRefreshTokenCookieOptions());
     return response;
   } catch (error: any) {
     console.error("Registration error:", error);

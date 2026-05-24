@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { APPOINTMENT_TYPES, DEFAULT_APPOINTMENT_DURATION_MINUTES } from "@/lib/constants";
+import type { AppointmentStatus } from "@prisma/client";
 
-const ACTIVE_APPOINTMENT_STATUSES = ["PENDING", "CONFIRMED"];
+const ACTIVE_APPOINTMENT_STATUSES: AppointmentStatus[] = ["PENDING", "CONFIRMED"];
 
 export function resolvePriorityRank(appointmentType: "EMERGENCY" | "FOLLOW_UP" | "NORMAL") {
   return APPOINTMENT_TYPES[appointmentType].rank;

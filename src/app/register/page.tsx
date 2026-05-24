@@ -5,11 +5,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
+import { RegisterInput } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Stethoscope,
+  Microscope,
   Eye,
   EyeOff,
   Loader2,
@@ -52,6 +54,7 @@ function InputField({
   min,
   max,
   minLength,
+  maxLength,
   rightElement,
   className = "",
 }: {
@@ -60,12 +63,13 @@ function InputField({
   icon: React.ElementType;
   type?: string;
   placeholder?: string;
-  value: string | number;
+  value?: string | number;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   required?: boolean;
   min?: number;
   max?: number;
   minLength?: number;
+  maxLength?: number;
   rightElement?: React.ReactNode;
   className?: string;
 }) {
@@ -83,12 +87,13 @@ function InputField({
           id={id}
           type={type}
           placeholder={placeholder}
-          value={value}
+          value={value ?? ""}
           onChange={onChange}
           required={required}
           min={min}
           max={max}
           minLength={minLength}
+          maxLength={maxLength}
           className={`h-12 pl-10 ${rightElement ? "pr-10" : ""} bg-white/60 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 rounded-xl text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-cyan-400/40 focus:border-cyan-400 focus:bg-white dark:focus:bg-white/10 transition-all duration-200 shadow-sm hover:border-slate-300 dark:hover:border-white/20 ${className}`}
         />
         {rightElement && (
@@ -105,15 +110,22 @@ function RegisterContent() {
   const { register } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const searchRole = searchParams.get("role")?.toUpperCase();
   const defaultRole =
-    searchParams.get("role") === "DOCTOR" ? "DOCTOR" : "PATIENT";
+    searchRole === "PATHOLOGIST"
+      ? "PATHOLOGIST"
+      : searchRole === "DOCTOR"
+      ? "DOCTOR"
+      : searchRole === "PHARMACY"
+      ? "PHARMACY"
+      : "PATIENT";
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<RegisterInput>({
     name: "",
     email: "",
     password: "",
     phone: "",
-    role: defaultRole,
+    role: defaultRole as RegisterInput["role"],
     avatar: "",
     specialization: "",
     experience: 0,
@@ -122,7 +134,17 @@ function RegisterContent() {
     college: "",
     experienceHospitals: "",
     currentHospitalName: "",
-  });
+    // Pharmacy fields
+    ownerName: "",
+    pharmacistName: "",
+    pharmacistRegNo: "",
+    dl20: "",
+    dl21: "",
+    gstin: "",
+    address: "",
+    pincode: "",
+  } as RegisterInput);
+
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -147,12 +169,15 @@ function RegisterContent() {
 
     const result = await register(form);
     if (result.success) {
-      if (form.role === "DOCTOR") {
+      if (form.role === "DOCTOR" || form.role === "PATHOLOGIST") {
         toast.success(
           "Registration successful! Your account is pending admin approval. You'll be notified once approved.",
           { duration: 6000 }
         );
         router.push("/dashboard/doctor");
+      } else if (form.role === "PHARMACY") {
+        toast.success("Pharmacy registration submitted. Verification is required before you can go live.");
+        router.push("/pharmacy/dashboard");
       } else {
         toast.success("Registration successful!");
         router.push("/dashboard/patient");
@@ -194,8 +219,8 @@ function RegisterContent() {
         <motion.div variants={fadeUp} className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-5">
             <div className="relative">
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-cyan-400 to-teal-500 blur-xl opacity-50 scale-110" />
-              <div className="relative h-16 w-16 flex items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 shadow-lg shadow-cyan-500/30">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 blur-xl opacity-50 scale-110" />
+              <div className="relative h-16 w-16 flex items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-teal-600 shadow-lg shadow-cyan-500/30">
                 <Stethoscope className="h-8 w-8 text-white" />
               </div>
             </div>
@@ -205,8 +230,8 @@ function RegisterContent() {
           </h1>
           <p className="mt-2 text-slate-500 dark:text-slate-400 text-sm">
             Join{" "}
-            <span className="font-semibold text-cyan-600 dark:text-cyan-400">
-              DocBook
+            <span className="font-bold tracking-tight text-slate-900 dark:text-white">
+              Doc<span className="text-primary">Book</span>
             </span>{" "}
             — trusted healthcare, simplified
           </p>
@@ -228,13 +253,13 @@ function RegisterContent() {
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
                 I am a
               </p>
-              <div className="grid grid-cols-2 gap-3">
-                {(["PATIENT", "DOCTOR"] as const).map((role) => (
+              <div className="grid grid-cols-4 gap-2">
+                {(["PATIENT", "DOCTOR", "PATHOLOGIST", "PHARMACY"] as const).map((role) => (
                   <button
                     key={role}
                     type="button"
                     onClick={() => setForm({ ...form, role })}
-                    className={`relative py-3 px-4 rounded-2xl text-sm font-semibold transition-all duration-300 overflow-hidden group ${
+                    className={`relative py-3 px-1.5 rounded-2xl text-xs sm:text-sm font-semibold transition-all duration-300 overflow-hidden group ${
                       form.role === role
                         ? "text-white shadow-lg"
                         : "bg-slate-100/80 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200/80 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10"
@@ -247,13 +272,15 @@ function RegisterContent() {
                         transition={{ type: "spring", bounce: 0.25, duration: 0.5 }}
                       />
                     )}
-                    <span className="relative flex items-center justify-center gap-2">
+                    <span className="relative flex items-center justify-center gap-1">
                       {role === "PATIENT" ? (
-                        <User className="h-4 w-4" />
+                        <User className="h-3.5 w-3.5" />
+                      ) : role === "DOCTOR" ? (
+                        <Stethoscope className="h-3.5 w-3.5" />
                       ) : (
-                        <Stethoscope className="h-4 w-4" />
+                        <Building2 className="h-3.5 w-3.5" />
                       )}
-                      {role === "PATIENT" ? "Patient" : "Doctor"}
+                      {role === "PATIENT" ? "Patient" : role === "DOCTOR" ? "Doctor" : role === "PATHOLOGIST" ? "Pathologist" : "Pharmacy"}
                     </span>
                   </button>
                 ))}
@@ -264,9 +291,15 @@ function RegisterContent() {
               <motion.div variants={stagger} initial="hidden" animate="visible" className="space-y-4">
                 <InputField
                   id="name"
-                  label="Full Name"
-                  icon={User}
-                  placeholder={form.role === "DOCTOR" ? "Dr. Full Name" : "Your full name"}
+                  label={form.role === "PHARMACY" ? "Pharmacy Name" : "Full Name"}
+                  icon={form.role === "PHARMACY" ? Building2 : User}
+                  placeholder={
+                    form.role === "DOCTOR" || form.role === "PATHOLOGIST"
+                      ? "Dr. Full Name"
+                      : form.role === "PHARMACY"
+                      ? "e.g. Wellness Forever Pharmacy"
+                      : "Your full name"
+                  }
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   required
@@ -294,7 +327,7 @@ function RegisterContent() {
                 />
 
                 <AnimatePresence mode="wait">
-                  {form.role === "DOCTOR" && (
+                  {(form.role === "DOCTOR" || form.role === "PATHOLOGIST") && (
                     <motion.div
                       key="doctor-fields"
                       initial={{ opacity: 0, height: 0 }}
@@ -386,6 +419,122 @@ function RegisterContent() {
                             placeholder="Current workplace"
                             value={form.currentHospitalName}
                             onChange={(e) => setForm({ ...form, currentHospitalName: e.target.value })}
+                          />
+                        </div>
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <AnimatePresence mode="wait">
+                  {form.role === "PHARMACY" && (
+                    <motion.div
+                      key="pharmacy-fields"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
+                      className="overflow-hidden"
+                    >
+                      <motion.div
+                        variants={stagger}
+                        initial="hidden"
+                        animate="visible"
+                        className="space-y-4"
+                      >
+                        {/* Pharmacy section divider */}
+                        <motion.div variants={fadeUp} className="flex items-center gap-3 pt-1">
+                          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-cyan-200 dark:via-cyan-800 to-transparent" />
+                          <span className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 uppercase tracking-widest">
+                            Pharmacy Compliance & Info
+                          </span>
+                          <div className="h-px flex-1 bg-gradient-to-l from-transparent via-cyan-200 dark:via-cyan-800 to-transparent" />
+                        </motion.div>
+
+                        <InputField
+                          id="ownerName"
+                          label="Owner Name"
+                          icon={User}
+                          placeholder="Owner's full name"
+                          value={form.ownerName}
+                          onChange={(e) => setForm({ ...form, ownerName: e.target.value })}
+                          required
+                        />
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <InputField
+                            id="pharmacistName"
+                            label="Regd. Pharmacist Name"
+                            icon={User}
+                            placeholder="Pharmacist name"
+                            value={form.pharmacistName}
+                            onChange={(e) => setForm({ ...form, pharmacistName: e.target.value })}
+                            required
+                          />
+                          <InputField
+                            id="pharmacistRegNo"
+                            label="Pharmacist Reg Number"
+                            icon={CheckCircle2}
+                            placeholder="e.g. REG-1249-PH"
+                            value={form.pharmacistRegNo}
+                            onChange={(e) => setForm({ ...form, pharmacistRegNo: e.target.value })}
+                            required
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <InputField
+                            id="dl20"
+                            label="Drug License Form 20 No."
+                            icon={CheckCircle2}
+                            placeholder="Form 20 DL"
+                            value={form.dl20}
+                            onChange={(e) => setForm({ ...form, dl20: e.target.value.toUpperCase() })}
+                            required
+                          />
+                          <InputField
+                            id="dl21"
+                            label="Drug License Form 21 No."
+                            icon={CheckCircle2}
+                            placeholder="Form 21 DL"
+                            value={form.dl21}
+                            onChange={(e) => setForm({ ...form, dl21: e.target.value.toUpperCase() })}
+                            required
+                          />
+                        </div>
+
+                        <InputField
+                          id="gstin"
+                          label="GSTIN Number"
+                          icon={Award}
+                          placeholder="15-character GSTIN"
+                          value={form.gstin}
+                          onChange={(e) => setForm({ ...form, gstin: e.target.value.toUpperCase() })}
+                          required
+                          minLength={15}
+                          maxLength={15}
+                        />
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <div className="sm:col-span-2">
+                            <InputField
+                              id="address"
+                              label="Physical Address"
+                              icon={Building2}
+                              placeholder="Sector, Street, City"
+                              value={form.address}
+                              onChange={(e) => setForm({ ...form, address: e.target.value })}
+                              required
+                            />
+                          </div>
+                          <InputField
+                            id="pincode"
+                            label="Pincode"
+                            icon={Building2}
+                            placeholder="6-digit PIN"
+                            value={form.pincode}
+                            onChange={(e) => setForm({ ...form, pincode: e.target.value })}
+                            required
                           />
                         </div>
                       </motion.div>
@@ -496,11 +645,19 @@ function RegisterContent() {
                         <>
                           {form.role === "DOCTOR" ? (
                             <Stethoscope className="h-4 w-4" />
+                          ) : form.role === "PATHOLOGIST" ? (
+                            <Microscope className="h-4 w-4" />
+                          ) : form.role === "PHARMACY" ? (
+                            <Building2 className="h-4 w-4" />
                           ) : (
                             <User className="h-4 w-4" />
                           )}
                           {form.role === "DOCTOR"
                             ? "Register as Doctor"
+                            : form.role === "PATHOLOGIST"
+                            ? "Register as Pathologist"
+                            : form.role === "PHARMACY"
+                            ? "Register Pharmacy & Verify"
                             : "Create Account"}
                         </>
                       )}

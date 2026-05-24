@@ -2,22 +2,13 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { UserProfile } from "@/types";
+import { RegisterInput } from "@/lib/validations";
 
 interface AuthContextType {
   user: UserProfile | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  register: (data: {
-    name: string;
-    email: string;
-    password: string;
-    phone?: string;
-    role?: string;
-    avatar?: string;
-    specialization?: string;
-    experience?: number;
-    licenseNumber?: string;
-  }) => Promise<{ success: boolean; error?: string }>;
+  register: (data: RegisterInput) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -70,17 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const register = async (regData: {
-    name: string;
-    email: string;
-    password: string;
-    phone?: string;
-    role?: string;
-    avatar?: string;
-    specialization?: string;
-    experience?: number;
-    licenseNumber?: string;
-  }) => {
+  const register = async (regData: RegisterInput) => {
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",

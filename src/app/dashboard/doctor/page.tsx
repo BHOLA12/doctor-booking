@@ -27,6 +27,8 @@ import {
   Star,
   Navigation2,
   Trash2,
+  Phone,
+  MessageCircle,
 } from "lucide-react";
 import { AppointmentInfo } from "@/types";
 import { APPOINTMENT_STATUSES, APPOINTMENT_TYPES, SPECIALIZATIONS } from "@/lib/constants";
@@ -61,7 +63,7 @@ export default function DoctorDashboard() {
 
   useEffect(() => {
     if (!authLoading && !user) router.push("/login");
-    if (!authLoading && user && user.role !== "DOCTOR") router.push("/dashboard");
+    if (!authLoading && user && user.role !== "DOCTOR" && user.role !== "PATHOLOGIST") router.push("/dashboard");
   }, [user, authLoading, router]);
 
   useEffect(() => {
@@ -348,12 +350,12 @@ export default function DoctorDashboard() {
                           <div className="flex gap-1">
                             <a href={`tel:${apt.patient.phone}`} title="Call Patient">
                               <Button variant="outline" size="icon" className="h-8 w-8">
-                                <Clock className="h-4 w-4" />
+                                <Phone className="h-4 w-4" />
                               </Button>
                             </a>
                             <a href={`https://wa.me/${apt.patient.phone.replace(/\D/g, '')}`} target="_blank" title="WhatsApp Patient">
                               <Button variant="outline" size="icon" className="h-8 w-8 bg-green-50 text-green-700 border-green-200">
-                                <Save className="h-4 w-4" />
+                                <MessageCircle className="h-4 w-4" />
                               </Button>
                             </a>
                           </div>

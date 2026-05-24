@@ -1,17 +1,17 @@
 
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Star, MapPin, Clock, Phone, Mail, Award, Stethoscope,
   CalendarDays, Video, Building2, Loader2, ChevronRight,
-  ShieldCheck, CheckCircle2, User, ChevronLeft, Navigation2
+  ShieldCheck, CheckCircle2, User, ChevronLeft, Navigation2,
+  Sunrise, Sun, Moon
 } from "lucide-react";
 import { DoctorProfile, SlotInfo } from "@/types";
 import { toast } from "sonner";
@@ -40,6 +40,34 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
   const [selectedSlot, setSelectedSlot] = useState<SlotInfo | null>(null);
   const [consultationType, setConsultationType] = useState<"ONLINE" | "OFFLINE">("OFFLINE");
   const [booking, setBooking] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: "left" | "right") => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 200;
+      scrollContainerRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const getUpcoming7Days = () => {
+    const days = [];
+    const today = new Date();
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      days.push(date);
+    }
+    return days;
+  };
+
+  const getSlotCountForDate = (date: Date) => {
+    if (!doctor?.slots) return 0;
+    const dayOfWeek = date.getDay();
+    return doctor.slots.filter((s) => s.dayOfWeek === dayOfWeek && s.isActive).length;
+  };
 
   useEffect(() => {
     async function fetchDoctor() {
@@ -79,7 +107,7 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           doctorId: doctor!.id,
-          date: selectedDate.toISOString().split("T")[0],
+          date: `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`,
           startTime: selectedSlot.startTime,
           endTime: selectedSlot.endTime,
           consultationType,
@@ -132,6 +160,24 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
   }
 
   const availableSlots = getAvailableSlots();
+  const { morningSlots, afternoonSlots, eveningSlots } = (() => {
+    const morning: SlotInfo[] = [];
+    const afternoon: SlotInfo[] = [];
+    const evening: SlotInfo[] = [];
+
+    availableSlots.forEach((slot) => {
+      const [hour] = slot.startTime.split(":").map(Number);
+      if (hour < 12) {
+        morning.push(slot);
+      } else if (hour >= 12 && hour < 16) {
+        afternoon.push(slot);
+      } else {
+        evening.push(slot);
+      }
+    });
+
+    return { morningSlots: morning, afternoonSlots: afternoon, eveningSlots: evening };
+  })();
 
   return (
     <div className="min-h-screen bg-[#f8fafc] pb-24 pt-8">
@@ -385,27 +431,46 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
               <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
                 <MapPin className="h-5 w-5 text-teal-600" /> Practice Location
               </h3>
-              <div className="rounded-2xl border border-slate-200 overflow-hidden bg-slate-50">
-                <div className="h-48 w-full bg-slate-200 relative">
-                  {/* Fake map image for styling */}
-                  <Image src="https://api.mapbox.com/styles/v1/mapbox/light-v10/static/77.2090,28.6139,13,0/800x400?access_token=pk.eyJ1IjoiZXhhbXBsZSIsImEiOiJjazB4c3QwM3MwMDFvM2NuNGxkZzhsNnRnIn0.fake" alt="Map" fill className="object-cover opacity-80 mix-blend-multiply grayscale" unoptimized />
-                  <div className="absolute inset-0 m-auto h-12 w-12 text-red-500 flex flex-col items-center justify-center">
-                    <MapPin className="h-8 w-8 fill-red-500 text-white" />
+              {(() => {
+                const cName = doctor.currentHospitalName || doctor.hospital?.name || doctor.clinicName || "Clinic Location";
+                const cAddress = doctor.clinicAddress || doctor.hospital?.address || "";
+                const cCity = doctor.city || "";
+                const mapQuery = encodeURIComponent([cName, cAddress, cCity].filter(Boolean).join(", "));
+                const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
+                return (
+                  <div className="rounded-2xl border border-slate-200 overflow-hidden bg-slate-50">
+                    <div className="h-[300px] w-full bg-slate-200 relative">
+                      <iframe
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        loading="lazy"
+                        allowFullScreen
+                        src={`https://maps.google.com/maps?q=${mapQuery}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                      ></iframe>
+                      <a
+                        href={googleMapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="absolute bottom-4 right-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 shadow-sm flex items-center gap-1.5 cursor-pointer hover:bg-white transition-colors"
+                      >
+                        Open in Maps <ChevronRight className="h-3 w-3" />
+                      </a>
+                    </div>
+                    <div className="p-5 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                      <div>
+                        <h4 className="font-bold text-slate-900">{cName}</h4>
+                        <p className="text-sm text-slate-500 mt-1">{cAddress || "Address details"}{cCity ? `, ${cCity}` : ""}</p>
+                      </div>
+                      <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" className="rounded-full border-slate-200 hover:bg-slate-50 text-slate-700 h-10 px-5 text-sm font-semibold">
+                          <Navigation2 className="h-4 w-4 mr-2" /> Get Directions
+                        </Button>
+                      </a>
+                    </div>
                   </div>
-                  <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 shadow-sm flex items-center gap-1.5 cursor-pointer hover:bg-white transition-colors">
-                    Open in Maps <ChevronRight className="h-3 w-3" />
-                  </div>
-                </div>
-                <div className="p-5 flex items-center justify-between">
-                  <div>
-                    <h4 className="font-bold text-slate-900">{doctor.currentHospitalName || doctor.hospital?.name || doctor.clinicName || "Clinic Location"}</h4>
-                    <p className="text-sm text-slate-500 mt-1">{doctor.clinicAddress || doctor.hospital?.address || "Address details"}, {doctor.city}</p>
-                  </div>
-                  <Button variant="outline" className="rounded-full border-slate-200 hover:bg-slate-50 text-slate-700 h-10 px-5 text-sm font-semibold">
-                    <Navigation2 className="h-4 w-4 mr-2" /> Get Directions
-                  </Button>
-                </div>
-              </div>
+                );
+              })()}
             </div>
 
           </div>
@@ -444,74 +509,174 @@ export default function DoctorProfilePage({ params }: { params: Promise<{ id: st
                   </button>
                 </div>
 
-                {/* Calendar */}
+                {/* Date Carousel */}
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900 mb-3">1. Choose Date</h4>
-                  <div className="border border-slate-200 rounded-3xl p-1 bg-white shadow-sm">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={setSelectedDate}
-                      disabled={(date) => {
-                        const today = new Date();
-                        today.setHours(0, 0, 0, 0);
-                        return date < today;
-                      }}
-                      className="w-full"
-                      classNames={{
-                        head_cell: "text-slate-400 font-semibold text-[13px] uppercase tracking-wider pb-2",
-                        cell: "text-center text-sm p-0 relative [&:has([aria-selected])]:bg-transparent",
-                        day: "h-10 w-10 p-0 font-medium text-slate-700 rounded-full hover:bg-slate-100 aria-selected:opacity-100 mx-auto",
-                        day_selected: "bg-teal-600 text-white hover:bg-teal-600 hover:text-white focus:bg-teal-600 focus:text-white font-bold shadow-md",
-                        day_today: "text-teal-600 font-bold",
-                        nav_button: "h-8 w-8 bg-transparent hover:bg-slate-100 rounded-full",
-                        caption: "flex justify-center pt-2 pb-4 relative items-center text-slate-900 font-bold",
-                      }}
-                    />
+                  <h4 className="text-sm font-extrabold text-slate-800 mb-3 pl-1">1. Choose Date</h4>
+                  <div className="relative flex items-center">
+                    <button 
+                      onClick={() => scroll('left')}
+                      className="absolute left-0 -ml-3 z-20 flex h-9 w-9 items-center justify-center bg-white/90 backdrop-blur-md border border-slate-200 rounded-full shadow-md hover:bg-teal-50 hover:text-teal-600 active:scale-95 transition-all"
+                      aria-label="Scroll left"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    
+                    <div 
+                      ref={scrollContainerRef}
+                      className="flex gap-2.5 overflow-x-auto scrollbar-none px-5 py-1.5 scroll-smooth w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                    >
+                      {getUpcoming7Days().map((date, idx) => {
+                        const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString();
+                        const slotsCount = getSlotCountForDate(date);
+                        const isToday = idx === 0;
+                        const isTomorrow = idx === 1;
+                        
+                        const dayLabel = isToday ? "Today" : isTomorrow ? "Tomorrow" : date.toLocaleDateString("en-US", { weekday: "short" });
+                        const dateLabel = date.toLocaleDateString("en-US", { day: "numeric", month: "short" });
+
+                        return (
+                          <button
+                            key={idx}
+                            onClick={() => {
+                              setSelectedDate(date);
+                              setSelectedSlot(null);
+                            }}
+                            className={`flex-none w-[105px] p-3 rounded-2xl border text-center transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
+                              isSelected
+                                ? "border-teal-600 bg-teal-50/80 ring-1 ring-teal-600/30 shadow-md shadow-teal-600/5"
+                                : "border-slate-200 bg-white hover:border-teal-300"
+                            }`}
+                          >
+                            <p className={`text-xs font-black ${isSelected ? "text-teal-700" : "text-slate-800"}`}>
+                              {dayLabel}
+                            </p>
+                            <p className={`text-[10px] font-bold mt-0.5 ${isSelected ? "text-teal-600" : "text-slate-500"}`}>
+                              {dateLabel}
+                            </p>
+                            <p className={`text-[9px] font-extrabold mt-2 ${
+                              slotsCount > 0 
+                                ? "text-emerald-600 bg-emerald-50 px-1 py-0.5 rounded-md" 
+                                : "text-slate-400 bg-slate-50 px-1 py-0.5 rounded-md"
+                            }`}>
+                              {slotsCount > 0 ? `${slotsCount} ${slotsCount === 1 ? 'slot' : 'slots'}` : "No slots"}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button 
+                      onClick={() => scroll('right')}
+                      className="absolute right-0 -mr-3 z-20 flex h-9 w-9 items-center justify-center bg-white/90 backdrop-blur-md border border-slate-200 rounded-full shadow-md hover:bg-teal-50 hover:text-teal-600 active:scale-95 transition-all"
+                      aria-label="Scroll right"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
 
                 {/* Time Slots */}
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900 mb-3">2. Select Time Slot</h4>
-                  <div className="grid grid-cols-3 gap-2.5">
-                    {availableSlots.length > 0 ? (
-                      availableSlots.map((slot) => (
-                        <button
-                          key={slot.id}
-                          onClick={() => setSelectedSlot(slot)}
-                          className={`py-2.5 rounded-full text-[13px] font-bold border transition-all ${
-                            selectedSlot?.id === slot.id 
-                            ? "border-teal-600 bg-teal-600 text-white shadow-md shadow-teal-500/20" 
-                            : "border-slate-200 text-slate-600 hover:border-teal-400 hover:text-teal-700 bg-white"
-                          }`}
-                        >
-                          {formatTime(slot.startTime)}
-                        </button>
-                      ))
-                    ) : (
-                      <div className="col-span-3 text-center py-6 text-sm text-slate-500 bg-slate-50 rounded-2xl border border-slate-100">
-                        No slots available on this date
-                      </div>
-                    )}
-                  </div>
+                  <h4 className="text-sm font-extrabold text-slate-800 mb-3 pl-1">2. Select Time Slot</h4>
+                  {availableSlots.length > 0 ? (
+                    <div className="space-y-4">
+                      {/* Morning Session */}
+                      {morningSlots.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2 pl-1">
+                            <Sunrise className="h-3.5 w-3.5 text-amber-500" />
+                            <span>Morning ({morningSlots.length} slots)</span>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            {morningSlots.map((slot) => (
+                              <button
+                                key={slot.id}
+                                onClick={() => setSelectedSlot(slot)}
+                                className={`py-2 rounded-xl text-[12px] font-black border transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
+                                  selectedSlot?.id === slot.id 
+                                  ? "border-teal-600 bg-teal-600 text-white shadow-md shadow-teal-500/20" 
+                                  : "border-slate-200 text-slate-600 hover:border-teal-400 hover:text-teal-700 bg-white"
+                                }`}
+                              >
+                                {formatTime(slot.startTime)}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Afternoon Session */}
+                      {afternoonSlots.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2 pl-1">
+                            <Sun className="h-3.5 w-3.5 text-amber-500" />
+                            <span>Afternoon ({afternoonSlots.length} slots)</span>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            {afternoonSlots.map((slot) => (
+                              <button
+                                key={slot.id}
+                                onClick={() => setSelectedSlot(slot)}
+                                className={`py-2 rounded-xl text-[12px] font-black border transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
+                                  selectedSlot?.id === slot.id 
+                                  ? "border-teal-600 bg-teal-600 text-white shadow-md shadow-teal-500/20" 
+                                  : "border-slate-200 text-slate-600 hover:border-teal-400 hover:text-teal-700 bg-white"
+                                }`}
+                              >
+                                {formatTime(slot.startTime)}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Evening Session */}
+                      {eveningSlots.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2 pl-1">
+                            <Moon className="h-3.5 w-3.5 text-indigo-500" />
+                            <span>Evening ({eveningSlots.length} slots)</span>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            {eveningSlots.map((slot) => (
+                              <button
+                                key={slot.id}
+                                onClick={() => setSelectedSlot(slot)}
+                                className={`py-2 rounded-xl text-[12px] font-black border transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
+                                  selectedSlot?.id === slot.id 
+                                  ? "border-teal-600 bg-teal-600 text-white shadow-md shadow-teal-500/20" 
+                                  : "border-slate-200 text-slate-600 hover:border-teal-400 hover:text-teal-700 bg-white"
+                                }`}
+                              >
+                                {formatTime(slot.startTime)}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-xs font-semibold text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                      No slots available on this date
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-2">
                   <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl mb-4 border border-slate-100">
-                    <span className="text-sm font-bold text-slate-700">Consultation Fee</span>
+                    <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Consultation Fee</span>
                     <span className="text-lg font-black text-teal-600">₹{doctor.fees}</span>
                   </div>
 
                   <Button 
                     onClick={handleBooking} 
                     disabled={booking || !selectedDate || !selectedSlot}
-                    className="w-full h-14 rounded-full bg-teal-600 hover:bg-teal-700 text-white font-bold text-[15px] shadow-lg shadow-teal-600/20 transition-all active:scale-[0.98]"
+                    className="w-full h-14 rounded-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-[15px] shadow-lg shadow-teal-600/20 transition-all active:scale-[0.98]"
                   >
                     {booking ? <Loader2 className="h-5 w-5 animate-spin" /> : "Confirm Booking"}
                   </Button>
-                  <p className="text-center text-xs text-slate-400 mt-4 flex items-center justify-center gap-1">
-                    <ShieldCheck className="h-3.5 w-3.5" /> Secure Payment & Instant Confirmation
+                  <p className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-4 flex items-center justify-center gap-1">
+                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" /> Secure Payment &amp; Instant Confirmation
                   </p>
                 </div>
 

@@ -13,10 +13,59 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "DocBook - Doctor Appointment Booking Platform",
+  title: {
+    default: "DocBook — Book Doctors, Order Medicines & Lab Tests",
+    template: "%s | DocBook",
+  },
   description:
-    "Book appointments with the best doctors worldwide. Find specialists, check availability, and book online or offline consultations.",
-  keywords: "doctor appointment, booking, healthcare, medical, online consultation, find doctors",
+    "India's smartest healthcare platform. Book verified doctors, order medicines in 30 mins, upload prescriptions, and track your health — all in one place.",
+  keywords: [
+    "doctor appointment booking",
+    "online doctor consultation",
+    "order medicines online",
+    "book lab tests",
+    "find specialist doctor",
+    "healthcare platform India",
+    "telemedicine",
+    "DocBook",
+  ],
+  authors: [{ name: "DocBook Health" }],
+  creator: "DocBook Health",
+  metadataBase: new URL("https://docbook.health"),
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: "https://docbook.health",
+    siteName: "DocBook",
+    title: "DocBook — Book Doctors, Order Medicines & Lab Tests",
+    description:
+      "India's smartest healthcare platform. Book verified doctors, order medicines in 30 mins, upload prescriptions, and track your health.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "DocBook — Healthcare Platform",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "DocBook — Book Doctors, Order Medicines & Lab Tests",
+    description: "India's smartest healthcare platform.",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 export default function RootLayout({

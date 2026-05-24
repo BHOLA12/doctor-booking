@@ -30,6 +30,7 @@ const GRADIENT_COLORS = [
 
 export default function DoctorsCarousel({ doctors }: { doctors: Doctor[] }) {
   const ref = useRef<HTMLDivElement>(null);
+  const isPaused = useRef(false);
 
   const scroll = (dir: "left" | "right") => {
     if (!ref.current) return;
@@ -42,7 +43,9 @@ export default function DoctorsCarousel({ doctors }: { doctors: Doctor[] }) {
     if (doctors.length === 0) return;
     
     const interval = setInterval(() => {
+      if (isPaused.current) return;
       if (!ref.current) return;
+      
       const { scrollLeft, scrollWidth, clientWidth } = ref.current;
       
       // If reached the end, scroll back to start
@@ -59,95 +62,92 @@ export default function DoctorsCarousel({ doctors }: { doctors: Doctor[] }) {
   if (doctors.length === 0) return null;
 
   return (
-    <section className="py-12 bg-gray-50/50">
+    <section className="py-16 bg-gradient-to-b from-slate-50/50 to-white border-t border-slate-100">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-7">
+        <div className="flex items-end justify-between mb-10">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold">Top Doctors</h2>
-            <p className="text-sm text-muted-foreground mt-1">Highly rated &amp; experienced doctors</p>
+            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Top Doctors</h2>
+            <p className="text-sm font-medium text-slate-500 mt-1.5">Highly rated &amp; experienced specialists available today</p>
           </div>
           <Link href="/doctors">
-            <Button variant="ghost" size="sm" className="gap-1 text-primary font-semibold hover:bg-primary/5">
-              View All Doctors <ArrowRight className="h-4 w-4" />
+            <Button variant="ghost" size="sm" className="gap-1.5 text-teal-600 font-extrabold hover:bg-teal-50 hover:text-teal-700 transition-colors uppercase tracking-wider text-xs">
+              View All Doctors <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           </Link>
         </div>
 
         {/* Carousel Container */}
-        <div className="relative">
+        <div className="relative group/carousel">
           <button
             onClick={() => scroll("left")}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white border shadow-md hover:shadow-lg transition-all hover:bg-primary/5"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 backdrop-blur-md border border-slate-200/60 shadow-lg hover:shadow-xl transition-all hover:bg-teal-50 hover:text-teal-600 active:scale-95 opacity-0 group-hover/carousel:opacity-100"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
 
           <div
             ref={ref}
-            className="flex gap-4 overflow-x-auto pb-3 scroll-smooth snap-x snap-mandatory"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            onMouseEnter={() => { isPaused.current = true; }}
+            onMouseLeave={() => { isPaused.current = false; }}
+            className="flex gap-5 overflow-x-auto pb-6 scroll-smooth snap-x snap-mandatory no-scrollbar"
           >
             {doctors.map((doctor, i) => {
-              const initials = doctor.user.name
-                .split(" ")
-                .filter((_, idx) => idx > 0)
-                .map((n) => n[0])
-                .join("")
-                .slice(0, 2) || doctor.user.name.charAt(0);
+              const displayName  = doctor.user.name.startsWith("Dr.") ? doctor.user.name : `Dr. ${doctor.user.name}`;
 
               return (
                 <Link key={doctor.id} href={`/doctors/${doctor.id}`} className="shrink-0 snap-start">
-                  <Card className="w-[220px] sm:w-[250px] cursor-pointer hover:shadow-lg hover:border-primary/20 transition-all duration-300 overflow-hidden group">
-                    <CardContent className="p-5 flex flex-col items-center text-center gap-3">
+                  <Card className="w-[230px] sm:w-[260px] cursor-pointer hover:shadow-2xl hover:shadow-teal-950/[0.04] border border-slate-100 hover:border-teal-500/25 transition-all duration-300 rounded-3xl overflow-hidden group">
+                    <CardContent className="p-6 flex flex-col items-center text-center gap-4">
                       {/* Avatar */}
                       <div className="relative">
-                        <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-full overflow-hidden border-2 border-white shadow-md ring-2 ring-primary/5">
+                        <div className="relative h-24 w-24 rounded-2xl overflow-hidden border-[3px] border-white shadow-md ring-4 ring-teal-500/5 group-hover:ring-teal-500/10 transition-all duration-300">
                           <Image 
                             src={doctor.user.avatar || `https://i.pravatar.cc/250?u=${doctor.id}`} 
                             alt={doctor.user.name}
                             fill
-                            sizes="(max-width: 640px) 80px, 96px"
-                            className="object-cover"
+                            sizes="(max-width: 640px) 96px, 120px"
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                         </div>
                         {/* Online dot */}
-                        <div className="absolute bottom-0 right-0 h-4 w-4 rounded-full bg-emerald-500 border-2 border-white shadow-sm" />
+                        <div className="absolute -bottom-1 -right-1 h-4.5 w-4.5 rounded-full bg-emerald-500 border-2 border-white shadow-md" />
                       </div>
 
-                      {/* Rating Badge */}
-                      <div className="flex items-center gap-0.5 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
-                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                        <span className="text-[11px] font-bold text-amber-700">{doctor.rating.toFixed(1)}</span>
-                      </div>
-
-                      {/* Name */}
-                      <div>
-                        <p className="font-bold text-sm sm:text-base leading-tight group-hover:text-primary transition-colors line-clamp-1">
-                          {doctor.user.name.startsWith("Dr.") ? doctor.user.name : `Dr. ${doctor.user.name}`}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-1 font-medium">{doctor.specialization}</p>
-                        {(doctor as any).currentHospitalName && (
-                          <p className="text-[10px] sm:text-xs text-primary font-bold mt-1 line-clamp-1 uppercase tracking-tighter">
-                            🏥 {(doctor as any).currentHospitalName}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Meta */}
-                      <div className="w-full space-y-2 mt-1">
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <MapPin className="h-3.5 w-3.5 shrink-0 text-primary/60" />
-                          <span className="truncate">{doctor.city}</span>
+                      {/* Name / Specialty */}
+                      <div className="space-y-1 w-full">
+                        {/* Rating Badge */}
+                        <div className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200/60 rounded-full px-2.5 py-0.5 mb-1 shadow-sm">
+                          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                          <span className="text-[11px] font-bold text-amber-700">{doctor.rating.toFixed(1)}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <Clock className="h-3.5 w-3.5 shrink-0" />
-                          {doctor.experience} Yrs Exp.
+                        
+                        <h4 className="font-extrabold text-[15px] sm:text-base leading-tight text-slate-800 group-hover:text-teal-600 transition-colors line-clamp-1">
+                          {displayName}
+                        </h4>
+                        <p className="text-[11px] font-semibold text-teal-600/90 uppercase tracking-wider">{doctor.specialization}</p>
+                      </div>
+
+                      {/* Meta stats */}
+                      <div className="w-full grid grid-cols-2 gap-2 pt-3 border-t border-slate-100">
+                        <div className="text-left">
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Experience</p>
+                          <p className="text-xs font-extrabold text-slate-700 mt-0.5">{doctor.experience} Years</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Fees</p>
+                          <p className="text-xs font-extrabold text-slate-700 mt-0.5">₹{doctor.fees}</p>
                         </div>
                       </div>
 
-                      <Button size="sm" variant="outline" className="w-full h-9 text-xs sm:text-sm mt-2 group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all rounded-lg">
-                        Book Now
+                      {/* Consultation Type Info */}
+                      <div className="flex items-center gap-1.5 text-xs text-slate-400 font-semibold bg-slate-50 px-3 py-1.5 rounded-xl w-full justify-center">
+                        <MapPin className="h-3.5 w-3.5 text-teal-600/70" />
+                        <span className="truncate">{doctor.city}</span>
+                      </div>
+
+                      <Button size="sm" className="w-full h-10 text-xs font-extrabold bg-teal-600 hover:bg-teal-500 text-white rounded-xl shadow-lg shadow-teal-600/10 hover:shadow-teal-500/20 active:scale-[0.98] transition-all">
+                        Book Appointment
                       </Button>
                     </CardContent>
                   </Card>
@@ -158,7 +158,7 @@ export default function DoctorsCarousel({ doctors }: { doctors: Doctor[] }) {
 
           <button
             onClick={() => scroll("right")}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white border shadow-md hover:shadow-lg transition-all hover:bg-primary/5"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 backdrop-blur-md border border-slate-200/60 shadow-lg hover:shadow-xl transition-all hover:bg-teal-50 hover:text-teal-600 active:scale-95 opacity-0 group-hover/carousel:opacity-100"
           >
             <ChevronRight className="h-5 w-5" />
           </button>
