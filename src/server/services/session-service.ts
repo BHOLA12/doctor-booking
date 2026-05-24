@@ -4,8 +4,8 @@ import { getRefreshTokenHash } from "@/lib/auth";
 export async function createSession(options: {
   userId: string;
   refreshToken: string;
-  ipAddress?: string;
-  userAgent?: string;
+  ipAddress?: string | null;
+  userAgent?: string | null;
 }) {
   const refreshTokenHash = getRefreshTokenHash(options.refreshToken);
   return prisma.session.create({
