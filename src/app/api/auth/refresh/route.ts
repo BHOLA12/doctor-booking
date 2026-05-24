@@ -27,7 +27,8 @@ export async function POST(request: NextRequest) {
 
     const accessToken = signAccessToken(payload);
     const newRefreshToken = signRefreshToken(payload);
-    const ipAddress = request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? undefined;
+    const ipAddress = request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? null;
+    const userAgent = request.headers.get("user-agent") ?? null;
     await rotateSession(session.id, newRefreshToken);
 
     await logAuditEvent({
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
       entity: "Session",
       entityId: session.id,
       ipAddress,
-      userAgent: request.headers.get("user-agent") ?? undefined,
+      userAgent,
     });
 
     const response = NextResponse.json({ success: true, message: "Token refreshed" }, { status: 200 });

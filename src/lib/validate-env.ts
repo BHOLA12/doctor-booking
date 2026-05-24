@@ -38,11 +38,16 @@ function validateEnvironment() {
   }
 
   // Warn if using placeholder values
-  if (process.env.JWT_SECRET?.includes('your-') || 
-      process.env.JWT_SECRET === 'docbook-jwt-secret-key-change-in-production-2024') {
-    console.warn(
-      '⚠️  WARNING: Using placeholder JWT_SECRET. Please set a strong one!'
-    );
+  const jwtPlaceholder = process.env.JWT_SECRET?.includes('your-') ||
+    process.env.JWT_SECRET === 'docbook-jwt-secret-key-change-in-production-2024' ||
+    process.env.JWT_SECRET === 'fallback-secret-change-me';
+
+  if (jwtPlaceholder) {
+    const message = '⚠️  Insecure JWT_SECRET detected. Use a strong secret in production.';
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(message);
+    }
+    console.warn(message);
   }
 
   if (process.env.DATABASE_URL?.includes('your_username')) {
