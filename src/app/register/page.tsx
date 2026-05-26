@@ -25,6 +25,7 @@ import {
   Briefcase,
   ImagePlus,
   CheckCircle2,
+  MapPin,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -106,6 +107,70 @@ function InputField({
   );
 }
 
+const LOCATION_DATA: Record<string, string[]> = {
+  "Bihar": ["Jehanabad", "Patna", "Gaya"],
+  "Delhi": ["New Delhi", "Rohini"],
+};
+
+function SelectField({
+  id,
+  label,
+  icon: Icon,
+  value,
+  onChange,
+  required,
+  options,
+  placeholder,
+  className = "",
+}: {
+  id: string;
+  label: string;
+  icon: React.ElementType;
+  value?: string;
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  required?: boolean;
+  options: string[];
+  placeholder?: string;
+  className?: string;
+}) {
+  return (
+    <motion.div variants={fadeUp} className="space-y-1.5">
+      <Label
+        htmlFor={id}
+        className="text-xs font-semibold tracking-wide uppercase text-slate-500 dark:text-slate-400"
+      >
+        {label}
+      </Label>
+      <div className="relative group">
+        <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-cyan-500 transition-colors duration-200 pointer-events-none" />
+        <select
+          id={id}
+          value={value ?? ""}
+          onChange={onChange}
+          required={required}
+          className={`h-12 w-full pl-10 pr-10 bg-white/60 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 rounded-xl text-sm focus:ring-2 focus:ring-cyan-400/40 focus:border-cyan-400 focus:bg-white dark:focus:bg-white/10 transition-all duration-200 shadow-sm hover:border-slate-300 dark:hover:border-white/20 cursor-pointer text-slate-800 dark:text-slate-100 ${className}`}
+        >
+          {placeholder && (
+            <option value="" className="text-slate-400">
+              {placeholder}
+            </option>
+          )}
+          {options.map((opt) => (
+            <option key={opt} value={opt} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+              {opt}
+            </option>
+          ))}
+        </select>
+        <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-cyan-500 transition-colors duration-200">
+          <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+          </svg>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 function RegisterContent() {
   const { register } = useAuth();
   const router = useRouter();
@@ -118,6 +183,8 @@ function RegisterContent() {
       ? "DOCTOR"
       : searchRole === "PHARMACY"
       ? "PHARMACY"
+      : searchRole === "HOSPITAL"
+      ? "HOSPITAL"
       : "PATIENT";
 
   const [form, setForm] = useState<RegisterInput>({
@@ -141,8 +208,11 @@ function RegisterContent() {
     dl20: "",
     dl21: "",
     gstin: "",
-    address: "",
+    addressLine1: "",
+    landmark: "",
     pincode: "",
+    city: "",
+    state: "",
   } as RegisterInput);
 
   const [showPassword, setShowPassword] = useState(false);
@@ -178,6 +248,9 @@ function RegisterContent() {
       } else if (form.role === "PHARMACY") {
         toast.success("Pharmacy registration submitted. Verification is required before you can go live.");
         router.push("/pharmacy/dashboard");
+      } else if (form.role === "HOSPITAL") {
+        toast.success("Hospital registration submitted. Verification is required before you can go live.");
+        router.push("/hospitals");
       } else {
         toast.success("Registration successful!");
         router.push("/dashboard/patient");
@@ -253,13 +326,13 @@ function RegisterContent() {
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
                 I am a
               </p>
-              <div className="grid grid-cols-4 gap-2">
-                {(["PATIENT", "DOCTOR", "PATHOLOGIST", "PHARMACY"] as const).map((role) => (
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                {(["PATIENT", "DOCTOR", "PATHOLOGIST", "PHARMACY", "HOSPITAL"] as const).map((role) => (
                   <button
                     key={role}
                     type="button"
                     onClick={() => setForm({ ...form, role })}
-                    className={`relative py-3 px-1.5 rounded-2xl text-xs sm:text-sm font-semibold transition-all duration-300 overflow-hidden group ${
+                    className={`relative py-3 px-1.5 rounded-2xl text-xs font-semibold transition-all duration-300 overflow-hidden group ${
                       form.role === role
                         ? "text-white shadow-lg"
                         : "bg-slate-100/80 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200/80 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10"
@@ -272,15 +345,17 @@ function RegisterContent() {
                         transition={{ type: "spring", bounce: 0.25, duration: 0.5 }}
                       />
                     )}
-                    <span className="relative flex items-center justify-center gap-1">
+                    <span className="relative flex items-center justify-center gap-1 text-[11px] sm:text-xs">
                       {role === "PATIENT" ? (
                         <User className="h-3.5 w-3.5" />
                       ) : role === "DOCTOR" ? (
                         <Stethoscope className="h-3.5 w-3.5" />
+                      ) : role === "PATHOLOGIST" ? (
+                        <Microscope className="h-3.5 w-3.5" />
                       ) : (
                         <Building2 className="h-3.5 w-3.5" />
                       )}
-                      {role === "PATIENT" ? "Patient" : role === "DOCTOR" ? "Doctor" : role === "PATHOLOGIST" ? "Pathologist" : "Pharmacy"}
+                      {role === "PATIENT" ? "Patient" : role === "DOCTOR" ? "Doctor" : role === "PATHOLOGIST" ? "Pathologist" : role === "PHARMACY" ? "Pharmacy" : "Hospital"}
                     </span>
                   </button>
                 ))}
@@ -291,13 +366,15 @@ function RegisterContent() {
               <motion.div variants={stagger} initial="hidden" animate="visible" className="space-y-4">
                 <InputField
                   id="name"
-                  label={form.role === "PHARMACY" ? "Pharmacy Name" : "Full Name"}
-                  icon={form.role === "PHARMACY" ? Building2 : User}
+                  label={form.role === "PHARMACY" ? "Pharmacy Name" : form.role === "HOSPITAL" ? "Hospital Name" : "Full Name"}
+                  icon={form.role === "PHARMACY" || form.role === "HOSPITAL" ? Building2 : User}
                   placeholder={
                     form.role === "DOCTOR" || form.role === "PATHOLOGIST"
                       ? "Dr. Full Name"
                       : form.role === "PHARMACY"
                       ? "e.g. Wellness Forever Pharmacy"
+                      : form.role === "HOSPITAL"
+                      ? "e.g. City General Hospital"
                       : "Your full name"
                   }
                   value={form.name}
@@ -325,6 +402,73 @@ function RegisterContent() {
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                 />
+
+                {/* Unified Address & Location Section */}
+                <motion.div variants={fadeUp} className="flex items-center gap-3 pt-1">
+                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-cyan-200 dark:via-cyan-800 to-transparent" />
+                  <span className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 uppercase tracking-widest">
+                    Address & Location
+                  </span>
+                  <div className="h-px flex-1 bg-gradient-to-l from-transparent via-cyan-200 dark:via-cyan-800 to-transparent" />
+                </motion.div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="sm:col-span-2">
+                    <InputField
+                      id="addressLine1"
+                      label="Physical Address"
+                      icon={Building2}
+                      placeholder="Flat/House No, Building, Street"
+                      value={form.addressLine1}
+                      onChange={(e) => setForm({ ...form, addressLine1: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <InputField
+                    id="pincode"
+                    label="Pincode"
+                    icon={Building2}
+                    placeholder="6-digit PIN"
+                    value={form.pincode}
+                    onChange={(e) => setForm({ ...form, pincode: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <InputField
+                  id="landmark"
+                  label="Landmark (optional)"
+                  icon={Building2}
+                  placeholder="e.g. Near bus stand"
+                  value={form.landmark}
+                  onChange={(e) => setForm({ ...form, landmark: e.target.value })}
+                />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <SelectField
+                    id="state"
+                    label="State"
+                    icon={MapPin}
+                    value={form.state}
+                    onChange={(e) => {
+                      setForm({ ...form, state: e.target.value, city: "" });
+                    }}
+                    options={Object.keys(LOCATION_DATA)}
+                    placeholder="Select State"
+                    required
+                  />
+
+                  <SelectField
+                    id="city"
+                    label="City / Location"
+                    icon={MapPin}
+                    value={form.city}
+                    onChange={(e) => setForm({ ...form, city: e.target.value })}
+                    options={form.state ? LOCATION_DATA[form.state] || [] : []}
+                    placeholder={form.state ? "Select City" : "Select State First"}
+                    required
+                  />
+                </div>
 
                 <AnimatePresence mode="wait">
                   {(form.role === "DOCTOR" || form.role === "PATHOLOGIST") && (
@@ -514,29 +658,6 @@ function RegisterContent() {
                           minLength={15}
                           maxLength={15}
                         />
-
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                          <div className="sm:col-span-2">
-                            <InputField
-                              id="address"
-                              label="Physical Address"
-                              icon={Building2}
-                              placeholder="Sector, Street, City"
-                              value={form.address}
-                              onChange={(e) => setForm({ ...form, address: e.target.value })}
-                              required
-                            />
-                          </div>
-                          <InputField
-                            id="pincode"
-                            label="Pincode"
-                            icon={Building2}
-                            placeholder="6-digit PIN"
-                            value={form.pincode}
-                            onChange={(e) => setForm({ ...form, pincode: e.target.value })}
-                            required
-                          />
-                        </div>
                       </motion.div>
                     </motion.div>
                   )}
@@ -647,7 +768,7 @@ function RegisterContent() {
                             <Stethoscope className="h-4 w-4" />
                           ) : form.role === "PATHOLOGIST" ? (
                             <Microscope className="h-4 w-4" />
-                          ) : form.role === "PHARMACY" ? (
+                          ) : form.role === "PHARMACY" || form.role === "HOSPITAL" ? (
                             <Building2 className="h-4 w-4" />
                           ) : (
                             <User className="h-4 w-4" />
@@ -658,6 +779,8 @@ function RegisterContent() {
                             ? "Register as Pathologist"
                             : form.role === "PHARMACY"
                             ? "Register Pharmacy & Verify"
+                            : form.role === "HOSPITAL"
+                            ? "Register Hospital & Verify"
                             : "Create Account"}
                         </>
                       )}

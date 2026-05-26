@@ -374,6 +374,23 @@ function DoctorsContent() {
           )}
         </>
       )}
+
+      {/* Standardized B2B Partner Onboarding Section */}
+      <div className="mt-16 bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/60 dark:border-slate-800 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4 hover:shadow-md transition-shadow duration-300">
+        <div className="flex-1 text-left">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+            Are you a Verified Medical Professional? Join the DocBook Care Network.
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+            Register your clinic or hospital slot matrices to consult local patients via express physical appointments or dynamic tele-health channels.
+          </p>
+        </div>
+        <Link href="/register/doctor" className="w-full md:w-auto shrink-0">
+          <button className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-semibold text-sm rounded-xl transition-all duration-300 shadow-sm hover:scale-[1.01] active:scale-[0.99] cursor-pointer whitespace-nowrap">
+            Register as Doctor 🩺
+          </button>
+        </Link>
+      </div>
     </div>
   );
 }

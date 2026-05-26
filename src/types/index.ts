@@ -6,6 +6,11 @@ export interface UserProfile {
   role: string;
   avatar?: string;
   isVerified: boolean;
+  addressLine1?: string;
+  landmark?: string;
+  pincode?: string;
+  city?: string;
+  state?: string;
   createdAt: string;
 }
 

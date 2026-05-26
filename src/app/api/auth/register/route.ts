@@ -45,8 +45,11 @@ export async function POST(request: NextRequest) {
       dl20,
       dl21,
       gstin,
-      address,
+      addressLine1,
+      landmark,
       pincode,
+      city,
+      state,
     } = validation.data;
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -67,6 +70,11 @@ export async function POST(request: NextRequest) {
         role: role || "PATIENT",
         avatar: avatar || null,
         isVerified: role === "PATIENT",
+        addressLine1,
+        landmark: landmark || null,
+        pincode,
+        city,
+        state,
       },
     });
 
@@ -98,11 +106,26 @@ export async function POST(request: NextRequest) {
           dl20: dl20 || "",
           dl21: dl21 || "",
           gstin: gstin || "",
-          address: address || "",
+          address: addressLine1 + (landmark ? " (Landmark: " + landmark + ")" : ""),
           pincode: pincode || "",
           rating: 4.5,
           totalReviews: 0,
           isApproved: false,
+        },
+      });
+    }
+
+    if (role === "HOSPITAL") {
+      await prisma.hospital.create({
+        data: {
+          userId: user.id,
+          name: name,
+          address: addressLine1 + (landmark ? " (Landmark: " + landmark + ")" : ""),
+          city: city || "",
+          state: state || "",
+          rating: 4.5,
+          totalReviews: 0,
+          specialties: [],
         },
       });
     }
@@ -151,6 +174,8 @@ export async function POST(request: NextRequest) {
             ? "Registration successful! Your provider account is pending approval."
             : role === "PHARMACY"
             ? "Registration successful! Your pharmacy is pending verification."
+            : role === "HOSPITAL"
+            ? "Registration successful! Your hospital profile is pending verification."
             : "Registration successful!",
       },
       { status: 201 }

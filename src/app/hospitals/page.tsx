@@ -3,24 +3,34 @@ import Link from "next/link";
 import Image from "next/image";
 import { Star, MapPin, Phone, ArrowRight, Search, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import FallbackImage from "@/components/shared/FallbackImage";
+import HospitalSearchBar from "@/components/shared/HospitalSearchBar";
 
 export default async function HospitalsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; city?: string }>;
+  searchParams: Promise<{ q?: string; city?: string; state?: string }>;
 }) {
-  const { q } = await searchParams;
+  const { q, city, state } = await searchParams;
   const query = q || "";
+  const filterCity = city || "";
+  const filterState = state || "";
   
   let hospitals: any[] = [];
   try {
+    const whereConditions: any[] = [];
+    if (query) {
+      whereConditions.push({ name: { contains: query, mode: "insensitive" } });
+    }
+    if (filterCity) {
+      whereConditions.push({ city: { equals: filterCity, mode: "insensitive" } });
+    }
+    if (filterState) {
+      whereConditions.push({ state: { equals: filterState, mode: "insensitive" } });
+    }
+
     hospitals = await prisma.hospital.findMany({
-      where: {
-        OR: [
-          { name: { contains: query, mode: "insensitive" } },
-          { city: { contains: query, mode: "insensitive" } },
-        ],
-      },
+      where: whereConditions.length > 0 ? { AND: whereConditions } : {},
       include: {
         _count: {
           select: { doctors: true },
@@ -35,6 +45,7 @@ export default async function HospitalsPage({
         name: "City General Hospital",
         address: "123 Healthcare Ave, South Extension",
         city: "New Delhi",
+        state: "Delhi",
         rating: 4.8,
         totalReviews: 450,
         image: "/hospital-placeholder.jpg",
@@ -46,6 +57,7 @@ export default async function HospitalsPage({
         name: "St. Mary's Medical Center",
         address: "45 Wellness Lane, Civil Lines",
         city: "New Delhi",
+        state: "Delhi",
         rating: 4.6,
         totalReviews: 320,
         image: "/hospital-placeholder.jpg",
@@ -53,6 +65,12 @@ export default async function HospitalsPage({
         _count: { doctors: 6 }
       }
     ];
+    if (filterCity) {
+      hospitals = hospitals.filter(h => h.city.toLowerCase() === filterCity.toLowerCase());
+    }
+    if (filterState) {
+      hospitals = hospitals.filter(h => h.state.toLowerCase() === filterState.toLowerCase());
+    }
   }
 
   return (
@@ -68,18 +86,8 @@ export default async function HospitalsPage({
           </p>
           
           {/* Search Bar */}
-          <div className="relative max-w-xl mx-auto group">
-            <div className="absolute inset-0 bg-primary/10 blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity rounded-full" />
-            <div className="relative flex items-center bg-background border-2 border-border/50 rounded-2xl p-1.5 shadow-xl transition-all focus-within:border-primary">
-              <Search className="ml-4 h-5 w-5 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search hospitals by name or location..."
-                className="flex-1 bg-transparent border-none focus:ring-0 px-4 text-sm"
-                defaultValue={query}
-              />
-              <Button className="rounded-xl px-6">Search</Button>
-            </div>
+          <div className="relative max-w-3xl mx-auto">
+            <HospitalSearchBar />
           </div>
         </div>
       </div>
@@ -137,13 +145,10 @@ export default async function HospitalsPage({
                 >
                   {/* Image Container */}
                   <div className="relative w-full md:w-64 h-48 rounded-2xl overflow-hidden shrink-0">
-                    <img
+                    <FallbackImage
                       src={hospital.image || "/hospital-placeholder.jpg"}
                       alt={hospital.name}
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = "/hospital-placeholder.jpg";
-                      }}
+                      fallbackSrc="/hospital-placeholder.jpg"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                     <div className="absolute top-3 left-3 bg-background/90 backdrop-blur-md px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">

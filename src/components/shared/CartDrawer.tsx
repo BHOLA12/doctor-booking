@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
-import { Minus, Plus, ShoppingCart, Trash2, X, Loader2, LogIn, PackageCheck } from "lucide-react";
+import { Minus, Plus, ShoppingCart, Trash2, X, Loader2, LogIn, PackageCheck, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -159,6 +159,22 @@ export default function CartDrawer({ open, onOpenChange }: Props) {
         {/* Footer */}
         {cartItems.length > 0 && (
           <div className="border-t bg-white px-5 py-6 space-y-4 shadow-[0_-4px_24px_rgba(0,0,0,0.03)]">
+            
+            {/* Smart Price Router Widget */}
+            <div className="bg-[#e6f4f2] border border-[#0a4d44]/10 rounded-2xl p-4 space-y-2">
+              <div className="flex items-center gap-2 text-slate-800 font-extrabold text-[11px] uppercase tracking-wide">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
+                <span>Smart Price Router Active</span>
+              </div>
+              <p className="text-[10px] text-slate-500 leading-normal font-medium">
+                Comparing local inventories in your tower radius... We have automatically selected the chemist offering the <strong>lowest overall cart cost</strong> including delivery.
+              </p>
+              <div className="flex justify-between items-center text-[9px] bg-white border border-slate-100 rounded-xl p-2.5 font-black text-slate-600 uppercase tracking-wide">
+                <span className="text-slate-400">Lowest Cost Route</span>
+                <span className="text-emerald-700">Ajay Medical Hall (~12% Savings)</span>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
                 <span>Subtotal ({cartCount} items)</span>

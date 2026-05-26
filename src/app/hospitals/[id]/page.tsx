@@ -14,6 +14,7 @@ import {
   User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import FallbackImage from "@/components/shared/FallbackImage";
 
 export default async function HospitalDetailPage({
   params,
@@ -95,13 +96,10 @@ export default async function HospitalDetailPage({
         <div className="container mx-auto px-4 py-10 relative z-10">
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             <div className="relative w-full lg:w-80 h-56 rounded-3xl overflow-hidden shadow-2xl shadow-primary/10">
-              <img
+              <FallbackImage
                 src={hospital.image || "/hospital-placeholder.jpg"}
                 alt={hospital.name}
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = "/hospital-placeholder.jpg";
-                }}
+                fallbackSrc="/hospital-placeholder.jpg"
                 className="w-full h-full object-cover"
               />
             </div>

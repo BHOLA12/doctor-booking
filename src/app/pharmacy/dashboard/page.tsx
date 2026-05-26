@@ -337,21 +337,70 @@ export default function StorePortalDashboard() {
   };
 
   // Excel file select
+  // Excel file select
   const handleExcelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setExcelFile(file);
-      toast.loading("Parsing excel sheet...", { duration: 1500 });
-      setTimeout(() => {
-        const newMeds = [
-          { name: "Calpol 650", sku: "MED-910", stock: 180, price: 32, status: "In Stock" },
-          { name: "Aspirin 75mg", sku: "MED-911", stock: 200, price: 18, status: "In Stock" },
-          { name: "Pantocid 40mg", sku: "MED-912", stock: 95, price: 110, status: "In Stock" }
+      const loadingToastId = toast.loading("Parsing excel sheet...");
+      setTimeout(async () => {
+        const rawMeds = [
+          { name: "Calpol 650", salt: "Paracetamol", category: "Cold & Fever", sku: "MED-910", stock: 180, price: 32, status: "In Stock" },
+          { name: "Aspirin 75mg", salt: "Acetylsalicylic Acid", category: "Pain Relief", sku: "MED-911", stock: 200, price: 18, status: "In Stock" },
+          { name: "Pantocid 40mg", salt: "Pantoprazole", category: "Digestive Health", sku: "MED-912", stock: 95, price: 110, status: "In Stock" }
         ];
-        setInventory([...inventory, ...newMeds]);
-        toast.success("Parsed 3 items from Excel sheet and added to Inventory!");
-        setExcelFile(null);
-        setShowImportDialog(false);
+
+        try {
+          const completedMeds = await Promise.all(
+            rawMeds.map(async (med, index) => {
+              try {
+                const res = await fetch("/api/scrape-image", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    medicineName: med.name,
+                    medicineId: `excel-upload-${index}-${Date.now()}`,
+                    salt: med.salt,
+                    category: med.category
+                  })
+                });
+                const data = await res.json();
+                return {
+                  ...med,
+                  image: data.scrapedUrl as string | undefined,
+                  isAiGenerated: !!data.isAiGenerated as boolean,
+                  aiDisclaimer: data.aiDisclaimer as string | undefined
+                };
+              } catch {
+                return {
+                  ...med,
+                  image: undefined as string | undefined,
+                  isAiGenerated: false as boolean,
+                  aiDisclaimer: undefined as string | undefined
+                };
+              }
+            })
+          );
+
+          setInventory(prev => [...prev, ...completedMeds]);
+          toast.dismiss(loadingToastId);
+          toast.success("Parsed 3 items from Excel sheet and added to Inventory!");
+
+          // Individual notifications for Google search success vs AI fallback
+          completedMeds.forEach(m => {
+            if (m.isAiGenerated) {
+              toast.warning(`🎨 AI Image generated for "${m.name}" based on its salt composition "${m.salt}".`);
+            } else {
+              toast.success(`🔍 Scraped clean unbranded image for "${m.name}".`);
+            }
+          });
+        } catch (err) {
+          toast.dismiss(loadingToastId);
+          toast.error("Failed to scrape images for uploaded items.");
+        } finally {
+          setExcelFile(null);
+          setShowImportDialog(false);
+        }
       }, 1500);
     }
   };
@@ -361,34 +410,133 @@ export default function StorePortalDashboard() {
     const file = e.target.files?.[0];
     if (file) {
       setPdfFile(file);
-      toast.loading("Analyzing medical purchase invoice PDF...", { duration: 1800 });
-      setTimeout(() => {
-        const newMeds = [
-          { name: "Volini Spray 40g", sku: "MED-718", stock: 45, price: 125, status: "In Stock" },
-          { name: "Becadexamin Multi", sku: "MED-719", stock: 350, price: 50, status: "In Stock" }
+      const loadingToastId = toast.loading("Analyzing medical purchase invoice PDF...");
+      setTimeout(async () => {
+        const rawMeds = [
+          { name: "Volini Spray 40g", salt: "Diclofenac Diethylamine", category: "Pain Relief", sku: "MED-718", stock: 45, price: 125, status: "In Stock" },
+          { name: "Becadexamin Multi", salt: "Multivitamins & Minerals", category: "Vitamins & Supplements", sku: "MED-719", stock: 350, price: 50, status: "In Stock" }
         ];
-        setInventory([...inventory, ...newMeds]);
-        toast.success("Analyzed PDF invoice successfully. 2 new medicines added to stock!");
-        setPdfFile(null);
-        setShowImportDialog(false);
+
+        try {
+          const completedMeds = await Promise.all(
+            rawMeds.map(async (med, index) => {
+              try {
+                const res = await fetch("/api/scrape-image", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    medicineName: med.name,
+                    medicineId: `pdf-upload-${index}-${Date.now()}`,
+                    salt: med.salt,
+                    category: med.category
+                  })
+                });
+                const data = await res.json();
+                return {
+                  ...med,
+                  image: data.scrapedUrl as string | undefined,
+                  isAiGenerated: !!data.isAiGenerated as boolean,
+                  aiDisclaimer: data.aiDisclaimer as string | undefined
+                };
+              } catch {
+                return {
+                  ...med,
+                  image: undefined as string | undefined,
+                  isAiGenerated: false as boolean,
+                  aiDisclaimer: undefined as string | undefined
+                };
+              }
+            })
+          );
+
+          setInventory(prev => [...prev, ...completedMeds]);
+          toast.dismiss(loadingToastId);
+          toast.success("Parsed 2 items from PDF invoice and added to Inventory!");
+
+          completedMeds.forEach(m => {
+            if (m.isAiGenerated) {
+              toast.warning(`🎨 AI Image generated for "${m.name}" based on its salt composition "${m.salt}".`);
+            } else {
+              toast.success(`🔍 Scraped clean unbranded image for "${m.name}".`);
+            }
+          });
+        } catch (err) {
+          toast.dismiss(loadingToastId);
+          toast.error("Failed to scrape images for PDF invoice.");
+        } finally {
+          setPdfFile(null);
+          setShowImportDialog(false);
+        }
       }, 1800);
     }
   };
 
   // Complete OCR Import
   const importOcrItems = () => {
-    const newItems = ocrResults.map((item, index) => ({
-      name: item.name,
-      sku: `OCR-${460 + index + Math.floor(Math.random() * 100)}`,
-      stock: item.stock,
-      price: item.price,
-      status: "In Stock"
-    }));
-    setInventory([...inventory, ...newItems]);
-    toast.success(`Imported ${ocrResults.length} scanned medicines to inventory!`);
-    setShowImportDialog(false);
-    setOcrResults([]);
-    setScanImage(null);
+    const loadingToastId = toast.loading("Saving scanned items and fetching images...");
+    setTimeout(async () => {
+      const rawMeds = ocrResults.map((item, index) => ({
+        name: item.name,
+        salt: item.name.includes("Paracetamol") ? "Paracetamol" : item.name.includes("Combiflam") ? "Ibuprofen" : "Vitamin B",
+        category: item.name.includes("Capsules") ? "Vitamins & Supplements" : "Pain Relief",
+        sku: `OCR-${460 + index + Math.floor(Math.random() * 100)}`,
+        stock: item.stock,
+        price: item.price,
+        status: "In Stock"
+      }));
+
+      try {
+        const completedMeds = await Promise.all(
+          rawMeds.map(async (med, index) => {
+            try {
+              const res = await fetch("/api/scrape-image", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  medicineName: med.name,
+                  medicineId: `ocr-upload-${index}-${Date.now()}`,
+                  salt: med.salt,
+                  category: med.category
+                })
+              });
+              const data = await res.json();
+              return {
+                ...med,
+                image: data.scrapedUrl as string | undefined,
+                isAiGenerated: !!data.isAiGenerated as boolean,
+                aiDisclaimer: data.aiDisclaimer as string | undefined
+              };
+            } catch {
+              return {
+                ...med,
+                image: undefined as string | undefined,
+                isAiGenerated: false as boolean,
+                aiDisclaimer: undefined as string | undefined
+              };
+            }
+          })
+        );
+
+        setInventory(prev => [...prev, ...completedMeds]);
+        toast.dismiss(loadingToastId);
+        toast.success(`Imported ${ocrResults.length} scanned medicines to inventory!`);
+
+        completedMeds.forEach(m => {
+          if (m.isAiGenerated) {
+            toast.warning(`🎨 AI Image generated for "${m.name}" based on its salt composition "${m.salt}".`);
+          } else {
+            toast.success(`🔍 Scraped clean unbranded image for "${m.name}".`);
+          }
+        });
+      } catch (err) {
+        toast.dismiss(loadingToastId);
+        toast.error("Failed to import scanned items.");
+      } finally {
+        setShowImportDialog(false);
+        setOcrResults([]);
+        setScanImage(null);
+      }
+    }, 1200);
   };
 
   // Logged-out Landing State (Registration & Login)
@@ -875,9 +1023,23 @@ export default function StorePortalDashboard() {
                       </TableRow>
                    </TableHeader>
                    <TableBody>
-                      {inventory.map((item, i) => (
+                      {inventory.map((item: any, i) => (
                         <TableRow key={i} className="border-slate-50 hover:bg-slate-50/30 transition-colors">
-                           <TableCell className="px-8 py-5 font-black text-slate-900">{item.name}</TableCell>
+                           <TableCell className="px-8 py-5 flex items-center gap-3">
+                             {item.image ? (
+                               <img src={item.image} alt={item.name} className="h-10 w-10 object-contain rounded-lg border border-slate-100 bg-slate-50 shrink-0" />
+                             ) : (
+                               <div className="h-10 w-10 rounded-lg border border-dashed border-slate-200 bg-slate-50 flex items-center justify-center shrink-0 text-lg">💊</div>
+                             )}
+                             <div>
+                               <p className="font-black text-slate-900 leading-snug">{item.name}</p>
+                               {item.isAiGenerated && (
+                                 <span className="inline-block mt-0.5 text-[8px] font-black text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                                   AI Image
+                                 </span>
+                               )}
+                             </div>
+                           </TableCell>
                            <TableCell className="font-bold text-slate-600">{item.sku}</TableCell>
                            <TableCell className="font-medium text-slate-500">{item.stock} Units</TableCell>
                            <TableCell className="font-black text-slate-900">₹{item.price}</TableCell>

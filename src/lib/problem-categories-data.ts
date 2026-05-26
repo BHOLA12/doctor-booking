@@ -39,6 +39,13 @@ export const PROBLEM_CATEGORIES: ProblemCategory[] = [
   { id: "c7", label: "Derma Care", slug: "derma-care", emoji: "✨", color: "from-pink-50 to-pink-100", description: "Solutions for skin infections, allergies, acne, and pigmentation." },
   { id: "c8", label: "Respiratory", slug: "respiratory", emoji: "🫁", color: "from-cyan-50 to-cyan-100", description: "Relief for asthma, cough, allergies, and lung health." },
   { id: "c9", label: "Eye Care", slug: "eye-care", emoji: "👁️", color: "from-indigo-50 to-indigo-100", description: "Lubricating drops and supplements for vision and eye fatigue." },
+  { id: "c10", label: "Thyroid Care", slug: "thyroid-care", emoji: "🦋", color: "from-purple-50 to-purple-100", description: "Thyroxine and metabolism regulators for thyroid hormone balance." },
+  { id: "c11", label: "Cancer Support", slug: "cancer-care", emoji: "🎗️", color: "from-slate-50 to-slate-100", description: "Supportive oncology medicines, chemotherapy aids, and specialty vitamins." },
+  { id: "c12", label: "Neuro & Brain", slug: "neuro-brain", emoji: "🧠", color: "from-violet-50 to-violet-100", description: "Solutions for migraine, epilepsy, nerve pain, and cognitive health." },
+  { id: "c13", label: "Cold & Fever", slug: "cold-fever", emoji: "🤒", color: "from-amber-50 to-amber-100", description: "Antipyretics, cough syrups, and anti-infectives for seasonal illnesses." },
+  { id: "c14", label: "Women Health", slug: "womens-health", emoji: "🤰", color: "from-fuchsia-50 to-fuchsia-100", description: "PCOS management, pregnancy supplements, iron/calcium, and hormone care." },
+  { id: "c15", label: "Child Care", slug: "child-care", emoji: "👶", color: "from-yellow-50 to-yellow-100", description: "Drops, syrups, and kid-friendly nutrition and wellness formulations." },
+  { id: "c16", label: "Ayurveda & Herbal", slug: "ayurveda", emoji: "🌿", color: "from-emerald-50 to-emerald-100", description: "Traditional Indian wellness, rasayanas, herbal tonics, and natural health care." },
 ];
 
 export const BRANDS: Brand[] = [
@@ -100,6 +107,29 @@ export const CONDITION_MEDICINES: ConditionMedicine[] = [
   // Eye Care
   { id: "cm25", name: "Refresh Tears", salt: "Carboxymethylcellulose", price: 180, mrp: 220, discount: 18, brandId: "b4", conditionId: "c9", imageEmoji: "👁️", availability: "In Stock" },
   { id: "cm26", name: "Latanoprost", salt: "Latanoprost", price: 450, mrp: 550, discount: 18, brandId: "b1", conditionId: "c9", imageEmoji: "💧", availability: "In Stock" },
+
+  // Thyroid Care
+  { id: "cm27", name: "Thyronorm 100mcg", salt: "Thyroxine Sodium", price: 160, mrp: 185, discount: 13, brandId: "b3", conditionId: "c10", imageEmoji: "🦋", availability: "In Stock" },
+  { id: "cm28", name: "Eltroxin 50mcg", salt: "Thyroxine Sodium", price: 120, mrp: 140, discount: 14, brandId: "b7", conditionId: "c10", imageEmoji: "💊", availability: "In Stock" },
+
+  // Neuro & Brain
+  { id: "cm29", name: "Gabapin NT", salt: "Gabapentin + Nortriptyline", price: 290, mrp: 350, discount: 17, brandId: "b10", conditionId: "c12", imageEmoji: "🧠", availability: "In Stock" },
+  { id: "cm30", name: "Vasograin", salt: "Ergotamine + Caffeine + Paracetamol", price: 115, mrp: 135, discount: 14, brandId: "b6", conditionId: "c12", imageEmoji: "💊", availability: "In Stock" },
+
+  // Cold & Fever
+  { id: "cm31", name: "Calpol 650", salt: "Paracetamol", price: 32, mrp: 40, discount: 20, brandId: "b7", conditionId: "c13", imageEmoji: "🤒", availability: "In Stock" },
+  { id: "cm32", name: "Allegra 120", salt: "Fexofenadine", price: 98, mrp: 130, discount: 25, brandId: "b4", conditionId: "c13", imageEmoji: "🌸", availability: "In Stock" },
+
+  // Women Health
+  { id: "cm33", name: "Orofer XT", salt: "Ferrous Ascorbate + Folic Acid", price: 185, mrp: 220, discount: 15, brandId: "b1", conditionId: "c14", imageEmoji: "🤰", availability: "In Stock" },
+  { id: "cm34", name: "Folvite 5mg", salt: "Folic Acid", price: 35, mrp: 45, discount: 22, brandId: "b9", conditionId: "c14", imageEmoji: "💊", availability: "In Stock" },
+
+  // Child Care
+  { id: "cm35", name: "Crocin Drops", salt: "Paracetamol Paediatric Drops", price: 42, mrp: 50, discount: 16, brandId: "b7", conditionId: "c15", imageEmoji: "👶", availability: "In Stock" },
+
+  // Ayurveda & Herbal
+  { id: "cm36", name: "Ashwagandha Capsules", salt: "Withania Somnifera Extract", price: 160, mrp: 195, discount: 17, brandId: "b11", conditionId: "c16", imageEmoji: "🌿", availability: "In Stock" },
+  { id: "cm37", name: "Chyawanprash Special", salt: "Amla and Herbal Paste", price: 245, mrp: 290, discount: 15, brandId: "b12", conditionId: "c16", imageEmoji: "🏺", availability: "In Stock" },
 ];
 
 // Pre-computed cache

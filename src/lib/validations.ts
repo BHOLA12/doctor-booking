@@ -9,7 +9,7 @@ export const registerSchema = z.object({
     .regex(/^[\d+\-\s()]{7,20}$/, "Phone number looks invalid")
     .optional()
     .or(z.literal("")),
-  role: z.enum(["PATIENT", "DOCTOR", "PATHOLOGIST", "ADMIN", "PHARMACY"]).default("PATIENT"),
+  role: z.enum(["PATIENT", "DOCTOR", "PATHOLOGIST", "ADMIN", "PHARMACY", "HOSPITAL"]).default("PATIENT"),
   avatar: z.string().optional(),
   specialization: z.string().optional(),
   experience: z.number().int().min(0).max(60).optional(),
@@ -25,8 +25,11 @@ export const registerSchema = z.object({
   dl20: z.string().optional().or(z.literal("")),
   dl21: z.string().optional().or(z.literal("")),
   gstin: z.string().optional().or(z.literal("")),
-  address: z.string().optional().or(z.literal("")),
-  pincode: z.string().optional().or(z.literal("")),
+  addressLine1: z.string().min(3, "Physical address must be at least 3 characters"),
+  landmark: z.string().optional().or(z.literal("")),
+  pincode: z.string().regex(/^\d{6}$/, "Pincode must be exactly 6 digits"),
+  city: z.string().min(1, "City is required"),
+  state: z.string().min(1, "State is required"),
 }).superRefine((data, ctx) => {
   if (data.role === "DOCTOR" || data.role === "PATHOLOGIST") {
     if (!data.specialization) {
@@ -77,13 +80,6 @@ export const registerSchema = z.object({
         code: z.ZodIssueCode.custom,
         path: ["pharmacistRegNo"],
         message: "Pharmacist Registration Number is required",
-      });
-    }
-    if (!data.address) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["address"],
-        message: "Physical Address is required",
       });
     }
   }
