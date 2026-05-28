@@ -3,10 +3,12 @@
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -86,41 +88,90 @@ export default function AdminDashboard() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState<Stats | null>(null);
-  const [doctors, setDoctors] = useState<DoctorEntry[]>([]);
-  const [users, setUsers] = useState<UserEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDoctor, setSelectedDoctor] = useState<DoctorEntry | null>(null);
+
+  // Doctor states
+  const [doctors, setDoctors] = useState<DoctorEntry[]>([]);
+  const [doctorSearch, setDoctorSearch] = useState("");
+  const [doctorPage, setDoctorPage] = useState(1);
+  const [doctorPagination, setDoctorPagination] = useState({ total: 0, totalPages: 1, limit: 10 });
+  const [doctorsLoading, setDoctorsLoading] = useState(true);
+
+  // User states
+  const [users, setUsers] = useState<UserEntry[]>([]);
+  const [userSearch, setUserSearch] = useState("");
+  const [userPage, setUserPage] = useState(1);
+  const [userPagination, setUserPagination] = useState({ total: 0, totalPages: 1, limit: 10 });
+  const [usersLoading, setUsersLoading] = useState(true);
+
+  const debouncedDoctorSearch = useDebounce(doctorSearch, 300);
+  const debouncedUserSearch = useDebounce(userSearch, 300);
 
   useEffect(() => {
     if (!authLoading && !user) router.push("/login");
     if (!authLoading && user && user.role !== "ADMIN") router.push("/dashboard");
   }, [user, authLoading, router]);
 
+  // Fetch stats once on mount
   useEffect(() => {
     if (user?.role !== "ADMIN") return;
-    async function loadAdminData() {
+    async function loadStats() {
       try {
-        const [statsRes, doctorsRes, usersRes] = await Promise.all([
-          fetch("/api/admin/stats"),
-          fetch("/api/admin/doctors"),
-          fetch("/api/admin/users"),
-        ]);
-        const [statsData, doctorsData, usersData] = await Promise.all([
-          statsRes.json(),
-          doctorsRes.json(),
-          usersRes.json(),
-        ]);
-        if (statsData.success) setStats(statsData.data);
-        if (doctorsData.success) setDoctors(doctorsData.data);
-        if (usersData.success) setUsers(usersData.data);
-      } catch {
-        console.error("Failed to fetch admin data");
+        const res = await fetch("/api/admin/stats");
+        const data = await res.json();
+        if (data.success) setStats(data.data);
+      } catch (err) {
+        console.error("Failed to fetch admin stats", err);
       }
       setLoading(false);
     }
-
-    void loadAdminData();
+    void loadStats();
   }, [user]);
+
+  // Fetch doctors on query/page change
+  useEffect(() => {
+    if (user?.role !== "ADMIN") return;
+    async function loadDoctors() {
+      setDoctorsLoading(true);
+      try {
+        const res = await fetch(
+          `/api/admin/doctors?q=${encodeURIComponent(debouncedDoctorSearch)}&page=${doctorPage}&limit=10`
+        );
+        const data = await res.json();
+        if (data.success) {
+          setDoctors(data.data);
+          setDoctorPagination(data.pagination || { total: data.data.length, totalPages: 1, limit: 10 });
+        }
+      } catch (err) {
+        console.error("Failed to fetch doctors", err);
+      }
+      setDoctorsLoading(false);
+    }
+    void loadDoctors();
+  }, [user, debouncedDoctorSearch, doctorPage]);
+
+  // Fetch users on query/page change
+  useEffect(() => {
+    if (user?.role !== "ADMIN") return;
+    async function loadUsers() {
+      setUsersLoading(true);
+      try {
+        const res = await fetch(
+          `/api/admin/users?q=${encodeURIComponent(debouncedUserSearch)}&page=${userPage}&limit=10`
+        );
+        const data = await res.json();
+        if (data.success) {
+          setUsers(data.data);
+          setUserPagination(data.pagination || { total: data.data.length, totalPages: 1, limit: 10 });
+        }
+      } catch (err) {
+        console.error("Failed to fetch users", err);
+      }
+      setUsersLoading(false);
+    }
+    void loadUsers();
+  }, [user, debouncedUserSearch, userPage]);
 
   async function handleApproval(doctorId: string, isApproved: boolean) {
     try {
@@ -132,19 +183,21 @@ export default function AdminDashboard() {
       const data = await res.json();
       if (data.success) {
         toast.success(isApproved ? "Doctor approved!" : "Doctor rejected");
-        const [statsRes, doctorsRes, usersRes] = await Promise.all([
-          fetch("/api/admin/stats"),
-          fetch("/api/admin/doctors"),
-          fetch("/api/admin/users"),
-        ]);
-        const [statsData, doctorsData, usersData] = await Promise.all([
-          statsRes.json(),
-          doctorsRes.json(),
-          usersRes.json(),
-        ]);
+        
+        // Refresh stats
+        const statsRes = await fetch("/api/admin/stats");
+        const statsData = await statsRes.json();
         if (statsData.success) setStats(statsData.data);
-        if (doctorsData.success) setDoctors(doctorsData.data);
-        if (usersData.success) setUsers(usersData.data);
+        
+        // Refresh doctors list
+        const docsRes = await fetch(
+          `/api/admin/doctors?q=${encodeURIComponent(debouncedDoctorSearch)}&page=${doctorPage}&limit=10`
+        );
+        const docsData = await docsRes.json();
+        if (docsData.success) {
+          setDoctors(docsData.data);
+          setDoctorPagination(docsData.pagination || { total: docsData.data.length, totalPages: 1, limit: 10 });
+        }
       } else {
         toast.error(data.error);
       }
@@ -244,131 +297,231 @@ export default function AdminDashboard() {
       <Tabs defaultValue="doctors" className="space-y-4">
         <TabsList>
           <TabsTrigger value="doctors">
-            Doctors ({doctors.length})
+            Doctors ({doctorPagination.total})
           </TabsTrigger>
           <TabsTrigger value="users">
-            Users ({users.length})
+            Users ({userPagination.total})
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="doctors">
           <Card>
+            <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row gap-3 items-center justify-between">
+              <Input
+                placeholder="Search doctors by name, email, specialization, or city..."
+                value={doctorSearch}
+                onChange={(e) => {
+                  setDoctorSearch(e.target.value);
+                  setDoctorPage(1);
+                }}
+                className="max-w-md"
+              />
+              <span className="text-xs text-muted-foreground">
+                Showing {doctors.length} of {doctorPagination.total} doctors
+              </span>
+            </div>
             <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Doctor</TableHead>
-                    <TableHead>Specialization</TableHead>
-                    <TableHead>Experience</TableHead>
-                    <TableHead>Rating</TableHead>
-                    <TableHead>Appointments</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {doctors.map((doc) => (
-                    <TableRow key={doc.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 font-bold shrink-0 overflow-hidden relative border border-slate-200">
-                             {doc.user.avatar ? (
-                               <Image src={doc.user.avatar} alt={doc.user.name} fill className="object-cover" />
-                             ) : (
-                               doc.user.name.charAt(0)
-                             )}
-                          </div>
-                          <div>
-                            <p className="font-medium">{doc.user.name}</p>
-                            <p className="text-xs text-muted-foreground">{doc.user.email}</p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{doc.specialization}</TableCell>
-                      <TableCell>{doc.experience} yrs</TableCell>
-                      <TableCell>
-                        <span className="flex items-center gap-1">
-                          <span>⭐</span> {doc.rating.toFixed(1)}
-                        </span>
-                      </TableCell>
-                      <TableCell>{doc._count.appointments}</TableCell>
-                      <TableCell>
-                        <Badge variant={doc.isApproved ? "default" : "outline"} className={doc.isApproved ? "bg-green-100 text-green-800" : "text-amber-600"}>
-                          {doc.isApproved ? "Approved" : "Pending"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className="h-8 w-8 p-0"
-                            onClick={() => setSelectedDoctor(doc)}
-                            title="View Details"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          {!doc.isApproved ? (
-                            <>
-                              <Button size="sm" variant="default" className="h-8 w-8 p-0" onClick={() => handleApproval(doc.id, true)} title="Approve">
-                                <CheckCircle2 className="h-4 w-4" />
+              {doctorsLoading ? (
+                <div className="flex items-center justify-center p-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : doctors.length === 0 ? (
+                <div className="p-8 text-center text-sm text-muted-foreground">
+                  No doctors found matching the search criteria.
+                </div>
+              ) : (
+                <>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Doctor</TableHead>
+                        <TableHead>Specialization</TableHead>
+                        <TableHead>Experience</TableHead>
+                        <TableHead>Rating</TableHead>
+                        <TableHead>Appointments</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {doctors.map((doc) => (
+                        <TableRow key={doc.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 font-bold shrink-0 overflow-hidden relative border border-slate-200">
+                                 {doc.user.avatar ? (
+                                   <Image src={doc.user.avatar} alt={doc.user.name} fill className="object-cover" />
+                                 ) : (
+                                   doc.user.name.charAt(0)
+                                 )}
+                              </div>
+                              <div>
+                                <p className="font-medium">{doc.user.name}</p>
+                                <p className="text-xs text-muted-foreground">{doc.user.email}</p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{doc.specialization}</TableCell>
+                          <TableCell>{doc.experience} yrs</TableCell>
+                          <TableCell>
+                            <span className="flex items-center gap-1">
+                              <span>⭐</span> {doc.rating.toFixed(1)}
+                            </span>
+                          </TableCell>
+                          <TableCell>{doc._count.appointments}</TableCell>
+                          <TableCell>
+                            <Badge variant={doc.isApproved ? "default" : "outline"} className={doc.isApproved ? "bg-green-100 text-green-800" : "text-amber-600"}>
+                              {doc.isApproved ? "Approved" : "Pending"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="h-8 w-8 p-0"
+                                onClick={() => setSelectedDoctor(doc)}
+                                title="View Details"
+                              >
+                                <Eye className="h-4 w-4" />
                               </Button>
-                              <Button size="sm" variant="outline" className="h-8 w-8 p-0 text-destructive" onClick={() => handleApproval(doc.id, false)} title="Reject">
-                                <XCircle className="h-4 w-4" />
-                              </Button>
-                            </>
-                          ) : (
-                            <Button size="sm" variant="outline" className="text-destructive text-xs h-8 px-2" onClick={() => handleApproval(doc.id, false)}>
-                              Revoke
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                              {!doc.isApproved ? (
+                                <>
+                                  <Button size="sm" variant="default" className="h-8 w-8 p-0" onClick={() => handleApproval(doc.id, true)} title="Approve">
+                                    <CheckCircle2 className="h-4 w-4" />
+                                  </Button>
+                                  <Button size="sm" variant="outline" className="h-8 w-8 p-0 text-destructive" onClick={() => handleApproval(doc.id, false)} title="Reject">
+                                    <XCircle className="h-4 w-4" />
+                                  </Button>
+                                </>
+                              ) : (
+                                <Button size="sm" variant="outline" className="text-destructive text-xs h-8 px-2" onClick={() => handleApproval(doc.id, false)}>
+                                  Revoke
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+
+                  {doctorPagination.totalPages > 1 && (
+                    <div className="p-4 border-t border-slate-100 flex items-center justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setDoctorPage(p => Math.max(1, p - 1))}
+                        disabled={doctorPage === 1}
+                      >
+                        Previous
+                      </Button>
+                      <span className="text-sm">
+                        Page {doctorPage} of {doctorPagination.totalPages}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setDoctorPage(p => Math.min(doctorPagination.totalPages, p + 1))}
+                        disabled={doctorPage === doctorPagination.totalPages}
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="users">
           <Card>
+            <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row gap-3 items-center justify-between">
+              <Input
+                placeholder="Search users by name, email, or phone..."
+                value={userSearch}
+                onChange={(e) => {
+                  setUserSearch(e.target.value);
+                  setUserPage(1);
+                }}
+                className="max-w-md"
+              />
+              <span className="text-xs text-muted-foreground">
+                Showing {users.length} of {userPagination.total} users
+              </span>
+            </div>
             <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Verified</TableHead>
-                    <TableHead>Joined</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.map((u) => (
-                    <TableRow key={u.id}>
-                      <TableCell className="font-medium">{u.name}</TableCell>
-                      <TableCell>{u.email}</TableCell>
-                      <TableCell>{u.phone || "—"}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="capitalize">{u.role.toLowerCase()}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        {u.isVerified ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {new Date(u.createdAt).toLocaleDateString("en-IN")}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              {usersLoading ? (
+                <div className="flex items-center justify-center p-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : users.length === 0 ? (
+                <div className="p-8 text-center text-sm text-muted-foreground">
+                  No users found matching the search criteria.
+                </div>
+              ) : (
+                <>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Phone</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead>Verified</TableHead>
+                        <TableHead>Joined</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {users.map((u) => (
+                        <TableRow key={u.id}>
+                          <TableCell className="font-medium">{u.name}</TableCell>
+                          <TableCell>{u.email}</TableCell>
+                          <TableCell>{u.phone || "—"}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="capitalize">{u.role.toLowerCase()}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            {u.isVerified ? (
+                              <CheckCircle2 className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <XCircle className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {new Date(u.createdAt).toLocaleDateString("en-IN")}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+
+                  {userPagination.totalPages > 1 && (
+                    <div className="p-4 border-t border-slate-100 flex items-center justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setUserPage(p => Math.max(1, p - 1))}
+                        disabled={userPage === 1}
+                      >
+                        Previous
+                      </Button>
+                      <span className="text-sm">
+                        Page {userPage} of {userPagination.totalPages}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setUserPage(p => Math.min(userPagination.totalPages, p + 1))}
+                        disabled={userPage === userPagination.totalPages}
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

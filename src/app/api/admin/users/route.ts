@@ -14,11 +14,19 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const role = searchParams.get("role");
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "20");
+    const query = searchParams.get("q") || "";
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "10", 10);
 
-    const where: Record<string, unknown> = {};
+    const where: any = {};
     if (role) where.role = role;
+    if (query) {
+      where.OR = [
+        { name: { contains: query, mode: "insensitive" } },
+        { email: { contains: query, mode: "insensitive" } },
+        { phone: { contains: query } }
+      ];
+    }
 
     const [users, total] = await Promise.all([
       prisma.user.findMany({
