@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/auth";
 import {
   reportAnalysisSchema,
   symptomCheckerSchema,
@@ -24,6 +25,11 @@ export async function checkSymptoms(request: Request) {
 }
 
 export async function analyzeReport(request: Request) {
+  const session = await getSession();
+  if (!session) {
+    return fail("Unauthorized", 401);
+  }
+
   const body = await request.json();
   const validation = reportAnalysisSchema.safeParse(body);
 
@@ -40,11 +46,17 @@ export async function analyzeReport(request: Request) {
         type: true,
         fileName: true,
         summary: true,
+        patientId: true,
       },
     });
 
     if (!report) {
       return fail("Report not found", 404);
+    }
+
+    // IDOR verification
+    if (report.patientId !== session.userId && session.role !== "ADMIN" && session.role !== "DOCTOR") {
+      return fail("Access denied", 403);
     }
 
     reportText = `${report.type}: ${report.fileName}. ${report.summary || "No extracted text available."}`;

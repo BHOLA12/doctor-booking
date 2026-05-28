@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
+import { getSession, ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from "@/lib/auth";
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -23,8 +23,9 @@ export async function DELETE(request: NextRequest) {
       { status: 200 }
     );
 
-    // Clear the auth cookie
-    response.cookies.delete("token");
+    // Clear the auth cookies
+    response.cookies.delete(ACCESS_TOKEN_COOKIE);
+    response.cookies.delete(REFRESH_TOKEN_COOKIE);
 
     return response;
   } catch (error: any) {

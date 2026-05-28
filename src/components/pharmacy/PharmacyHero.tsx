@@ -108,7 +108,7 @@ export default function PharmacyHero({
                 {/* Column 2: Consultation */}
                 <div className="space-y-4 flex flex-col justify-between">
                   <div className="space-y-2">
-                    <h3 className="text-lg font-black tracking-tight">New to DocBook?</h3>
+                    <h3 className="text-lg font-black tracking-tight">New to Doc<span className="text-primary">Book</span>?</h3>
                     <p className="text-xs text-teal-100/70 leading-relaxed font-semibold">
                       Book doctor consultations in minutes.
                     </p>

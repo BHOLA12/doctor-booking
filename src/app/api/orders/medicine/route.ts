@@ -1,17 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { verifyToken } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
     // Auth check
-    const token = request.cookies.get("token")?.value;
-    if (!token) {
+    const session = await getSession();
+    if (!session) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-    }
-    const payload = verifyToken(token);
-    if (!payload) {
-      return NextResponse.json({ success: false, error: "Invalid token" }, { status: 401 });
     }
 
     const body = await request.json();
@@ -37,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     const order = await prisma.medicineOrder.create({
       data: {
-        userId: payload.userId,
+        userId: session.userId,
         pharmacyId: resolvedPharmacyId,
         items: items,
         totalAmount: Math.round(totalAmount),
@@ -80,13 +76,11 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get("token")?.value;
-    if (!token) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-    const payload = verifyToken(token);
-    if (!payload) return NextResponse.json({ success: false, error: "Invalid token" }, { status: 401 });
+    const session = await getSession();
+    if (!session) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
 
     const orders = await prisma.medicineOrder.findMany({
-      where: { userId: payload.userId },
+      where: { userId: session.userId },
       orderBy: { createdAt: "desc" },
       take: 20,
       include: {

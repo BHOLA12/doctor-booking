@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**.supabase.co" },
     ],
   },
+  turbopack: {
+    root: __dirname,
+  },
   async headers() {
     return [
       {

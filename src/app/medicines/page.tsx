@@ -9,8 +9,15 @@ import { Button } from "@/components/ui/button";
 import CartDrawer from "@/components/shared/CartDrawer";
 import ComparePricesModal from "@/components/pharmacy/ComparePricesModal";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useCart } from "@/context/CartContext";
-import { MEDICINES, type Medicine } from "@/lib/medicines-data";
+import { MEDICINES, type Medicine, enrichMedicineDetails } from "@/lib/medicines-data";
 import { useDebounce } from "@/hooks/useDebounce";
 import { 
   Search, 
@@ -216,11 +223,20 @@ function MedicinesContent() {
   });
 
   // Filters & Search
-  const [search, setSearch] = useState("");
+  const initialSearch = searchParams.get("search") || searchParams.get("q") || "";
+  const [search, setSearch] = useState(initialSearch);
+
+  // Sync search state with URL parameter if it changes
+  useEffect(() => {
+    const urlSearch = searchParams.get("search") || searchParams.get("q") || "";
+    setSearch(urlSearch);
+  }, [searchParams]);
+
   const [activeCategory, setActiveCategory] = useState("All");
   const [cartOpen, setCartOpen] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
   const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null);
+  const [selectedDetailsMedicine, setSelectedDetailsMedicine] = useState<Medicine | null>(null);
   const [prescriptionOpen, setPrescriptionOpen] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [ocrProgress, setOcrProgress] = useState({ status: "", progress: 0 });
@@ -1090,7 +1106,8 @@ function MedicinesContent() {
                   return (
                     <div 
                       key={medicine.id}
-                      className="bg-white border border-[#f0eae1] rounded-[2rem] p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group relative"
+                      onClick={() => setSelectedDetailsMedicine(medicine)}
+                      className="bg-white border border-[#f0eae1] rounded-[2rem] p-5 shadow-sm hover:shadow-xl hover:scale-[1.03] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group relative cursor-pointer"
                     >
                       {/* Top elements */}
                       <div>
@@ -1211,13 +1228,19 @@ function MedicinesContent() {
                         <div>
                           {qtyInCart === 0 ? (
                             <button
-                              onClick={() => addItem(medicine)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                addItem(medicine);
+                              }}
                               className={`rounded-full py-2.5 px-5 font-black text-xs transition-all active:scale-95 shadow-sm border-none text-white ${activeColorClass}`}
                             >
                               ADD TO CART
                             </button>
                           ) : (
-                            <div className={`flex items-center rounded-full overflow-hidden text-xs shadow-sm ${counterColorClass} text-white`}>
+                            <div 
+                              onClick={(e) => e.stopPropagation()}
+                              className={`flex items-center rounded-full overflow-hidden text-xs shadow-sm ${counterColorClass} text-white`}
+                            >
                               <button 
                                 onClick={() => updateQuantity(medicine.id, qtyInCart - 1)}
                                 className="px-3 py-2 hover:bg-black/10 transition-all font-black text-sm"
@@ -1288,6 +1311,302 @@ function MedicinesContent() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {selectedDetailsMedicine && (() => {
+        const cartItem = cartItems.find(i => i.medicine.id === selectedDetailsMedicine.id);
+        const qtyInCart = cartItem ? cartItem.quantity : 0;
+        const routeDetails = getMappedStore(selectedDetailsMedicine);
+        const activeColorClass = routingMode === "FASTEST" ? "bg-[#FB6C3F] hover:bg-[#e0592b]" : "bg-[#5B8C5A] hover:bg-[#4a7249]";
+        const counterColorClass = routingMode === "FASTEST" ? "bg-[#FB6C3F] border-[#FB6C3F]" : "bg-[#5B8C5A] border-[#5B8C5A]";
+        const enrichedMed = enrichMedicineDetails(selectedDetailsMedicine);
+        
+        return (
+          <Dialog 
+            open={!!selectedDetailsMedicine} 
+            onOpenChange={(open) => {
+              if (!open) setSelectedDetailsMedicine(null);
+            }}
+          >
+            <DialogContent className="sm:max-w-xl max-h-[92vh] overflow-y-auto p-0 rounded-[2.5rem] border-[#f0eae1] bg-white shadow-2xl flex flex-col gap-0">
+              
+              {/* Header Image/Emoji banner (Premium Card Style) */}
+              <div className="relative w-full h-56 bg-[#FCFBF9] flex items-center justify-center border-b border-[#f0eae1] p-6">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_#f0eae1_1px,_transparent_1px)] [background-size:20px_20px] opacity-40" />
+                
+                {/* Brand and Category tags at top */}
+                <div className="absolute top-5 left-6 right-6 flex justify-between items-center z-10">
+                  <span className="text-[10px] text-stone-400 font-extrabold uppercase tracking-widest bg-white border border-[#f0eae1] px-3 py-1 rounded-full shadow-sm">
+                    {selectedDetailsMedicine.manufacturer}
+                  </span>
+                  
+                  {selectedDetailsMedicine.requiresPrescription ? (
+                    <Badge className="bg-rose-50 border border-rose-100 text-rose-600 hover:bg-rose-50 text-[9px] font-black uppercase tracking-wider px-3 py-1 rounded-full">
+                      [Rx] Prescription Required
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-stone-50 border border-stone-150 text-stone-500 hover:bg-stone-50 text-[9px] font-black uppercase tracking-wider px-3 py-1 rounded-full">
+                      OTC Medicine
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Circular image floating in the center */}
+                <div className="relative h-32 w-32 bg-white rounded-3xl border border-[#f0eae1] p-3 flex items-center justify-center shadow-md mt-6">
+                  <MedicineImage 
+                    src={selectedDetailsMedicine.image}
+                    category={selectedDetailsMedicine.category}
+                    alt={selectedDetailsMedicine.name}
+                    className="h-26 w-26 object-contain"
+                  />
+                </div>
+              </div>
+
+              {/* Main Content Area */}
+              <div className="p-6 sm:p-8 space-y-6">
+                {/* Title & Dosage */}
+                <div className="space-y-1">
+                  <h3 className="font-extrabold text-2xl text-[#554D45] leading-snug">
+                    {selectedDetailsMedicine.name}
+                  </h3>
+                  <p className="text-xs text-stone-400 font-bold">
+                    {selectedDetailsMedicine.dosage}
+                  </p>
+                </div>
+
+                {/* Composition/Salt */}
+                <div className="p-4 rounded-2xl bg-[#FCFBF9] border border-[#f0eae1] space-y-1">
+                  <span className="text-[9px] text-stone-400 font-extrabold uppercase tracking-wider block">Chemical Molecules (Salt)</span>
+                  <span className="font-extrabold text-[#554D45] text-sm leading-normal block">
+                    🧪 {selectedDetailsMedicine.salt}
+                  </span>
+                </div>
+
+                {/* Primary Uses & Side Effects */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Medical Uses */}
+                  <div className="p-4.5 rounded-2xl bg-emerald-50/20 border border-emerald-100/50 space-y-2 flex-1">
+                    <span className="text-[10px] text-emerald-700 font-extrabold uppercase tracking-wider flex items-center gap-1">
+                      👍 Medical Uses
+                    </span>
+                    <ul className="space-y-1.5 pl-1">
+                      {enrichedMed.medicalUses.map((use, i) => (
+                        <li key={i} className="text-xs font-semibold text-stone-600 flex items-start gap-1.5">
+                          <span className="text-emerald-600 mt-0.5">•</span>
+                          <span>{use}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Side Effects */}
+                  <div className="p-4.5 rounded-2xl bg-rose-50/20 border border-rose-100/50 space-y-2 flex-1">
+                    <span className="text-[10px] text-rose-700 font-extrabold uppercase tracking-wider flex items-center gap-1">
+                      ⚠️ Side Effects
+                    </span>
+                    <ul className="space-y-1.5 pl-1">
+                      {enrichedMed.sideEffects.map((effect, i) => (
+                        <li key={i} className="text-xs font-semibold text-stone-600 flex items-start gap-1.5">
+                          <span className="text-rose-500 mt-0.5">•</span>
+                          <span>{effect}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Substitutes */}
+                <div className="space-y-2">
+                  <span className="text-[9px] uppercase tracking-wider font-extrabold text-stone-400 block px-1">Equivalent Substitutes</span>
+                  <div className="flex flex-wrap gap-2 p-3 bg-[#FCFBF9] border border-[#f0eae1] rounded-2xl">
+                    {enrichedMed.substitutes.map((sub, i) => (
+                      <span key={i} className="text-xs font-extrabold bg-white border border-[#f0eae1] text-stone-600 hover:text-[#5B8C5A] hover:border-[#5B8C5A]/35 hover:shadow-sm px-3.5 py-1.5 rounded-xl transition-all flex items-center gap-1.5 select-none">
+                        <Pill className="h-3 w-3 text-emerald-500" />
+                        {sub}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Safety Warnings */}
+                <div className="space-y-2.5">
+                  <span className="text-[9px] uppercase tracking-wider font-extrabold text-stone-400 block px-1">Safety Warnings & Precautions</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    {/* Alcohol */}
+                    <div className="p-3.5 bg-[#FCFBF9] border border-[#f0eae1] rounded-2xl space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] text-stone-400 font-extrabold uppercase">Alcohol</span>
+                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded ${
+                          enrichedMed.safetyWarnings.alcohol.toLowerCase().startsWith("unsafe")
+                            ? "bg-rose-50 text-rose-600 border border-rose-100"
+                            : "bg-emerald-50 text-emerald-600 border border-emerald-100"
+                        }`}>
+                          {enrichedMed.safetyWarnings.alcohol.toLowerCase().startsWith("unsafe") ? "Unsafe" : "Caution"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] font-semibold text-stone-650 leading-relaxed pt-1">{enrichedMed.safetyWarnings.alcohol}</p>
+                    </div>
+
+                    {/* Pregnancy */}
+                    <div className="p-3.5 bg-[#FCFBF9] border border-[#f0eae1] rounded-2xl space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] text-stone-400 font-extrabold uppercase">Pregnancy</span>
+                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded ${
+                          enrichedMed.safetyWarnings.pregnancy.toLowerCase().startsWith("unsafe")
+                            ? "bg-rose-50 text-rose-600 border border-rose-100"
+                            : "bg-emerald-50 text-emerald-600 border border-emerald-100"
+                        }`}>
+                          {enrichedMed.safetyWarnings.pregnancy.toLowerCase().startsWith("unsafe") ? "Unsafe" : "Safe/Caution"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] font-semibold text-stone-650 leading-relaxed pt-1">{enrichedMed.safetyWarnings.pregnancy}</p>
+                    </div>
+
+                    {/* Driving */}
+                    <div className="p-3.5 bg-[#FCFBF9] border border-[#f0eae1] rounded-2xl space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] text-[#776c60] font-extrabold uppercase">Driving</span>
+                        <span className="text-[9px] font-black bg-emerald-50 text-emerald-600 border border-emerald-100 uppercase px-2 py-0.5 rounded">
+                          Safe
+                        </span>
+                      </div>
+                      <p className="text-[11px] font-semibold text-stone-650 leading-relaxed pt-1">{enrichedMed.safetyWarnings.driving}</p>
+                    </div>
+
+                    {/* Kidney/Liver */}
+                    <div className="p-3.5 bg-[#FCFBF9] border border-[#f0eae1] rounded-2xl space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] text-[#776c60] font-extrabold uppercase">Kidney & Liver</span>
+                        <span className="text-[9px] font-black bg-amber-50 text-amber-600 border border-amber-100 uppercase px-2 py-0.5 rounded">
+                          Caution
+                        </span>
+                      </div>
+                      <p className="text-[11px] font-semibold text-stone-650 leading-relaxed pt-1">{enrichedMed.safetyWarnings.kidneyLiver}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Hyperlocal Store Routing Details (Directly matching the style of card) */}
+                <div className="space-y-2.5">
+                  <span className="text-[9px] uppercase tracking-wider font-extrabold text-stone-400 block px-1">Fulfillment Router Details</span>
+                  <div className={`border rounded-[1.75rem] p-4.5 space-y-3.5 ${routeDetails.isInterCity ? "bg-amber-50/60 border-amber-250" : "bg-[#FCFBF9] border-[#f0eae1]"}`}>
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-stone-150/40 pb-3">
+                      <div>
+                        <span className="text-[9px] text-stone-400 font-extrabold uppercase block">Fulfillment Store</span>
+                        <span className="font-extrabold text-stone-850 text-xs sm:text-sm mt-0.5 flex items-center gap-1.5">
+                          🏪 {routeDetails.store.name}
+                        </span>
+                      </div>
+                      <div className="sm:text-right">
+                        <span className="text-[9px] text-stone-400 font-extrabold uppercase block">Delivery Duration</span>
+                        <span className={`font-black ${routeDetails.isInterCity ? "text-amber-700" : "text-[#5B8C5A]"} text-xs sm:text-sm mt-0.5 flex items-center sm:justify-end gap-1.5`}>
+                          ⏱️ {routeDetails.eta} mins
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs font-bold text-stone-650">
+                      <div>
+                        <span className="text-[9px] text-stone-400 font-extrabold uppercase block">Sourcing Distance</span>
+                        <span className="font-extrabold text-stone-800 mt-0.5 block">📍 {routeDetails.distance.toFixed(1)} km away</span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] text-stone-400 font-extrabold uppercase block">Delivery Charge</span>
+                        <span className="font-extrabold text-stone-800 mt-0.5 block">₹{routeDetails.store.deliveryFee}</span>
+                      </div>
+                      {routeDetails.isInterCity && (
+                        <div className="col-span-2 sm:col-span-1">
+                          <span className="text-[9px] text-stone-400 font-extrabold uppercase block">Source City</span>
+                          <span className="font-extrabold text-amber-700 mt-0.5 block">{routeDetails.city} Node</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Routing status & warnings */}
+                <div className="flex flex-wrap gap-2">
+                  {routeDetails.isInterCity ? (
+                    <div className="flex items-start gap-2 text-[10px] font-extrabold text-amber-750 bg-amber-50/50 rounded-xl p-3 border border-amber-200 w-full">
+                      <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
+                      <span>Out of stock locally. Sourced from the next closest node in {routeDetails.city}. Delivery fees adjusted dynamically.</span>
+                    </div>
+                  ) : selectedDetailsMedicine.availability === "Limited Stock" ? (
+                    <div className="flex items-center gap-1.5 text-[10px] font-extrabold text-[#FB6C3F] bg-[#FB6C3F]/5 rounded-xl px-3 py-2 border border-[#FB6C3F]/10 w-full">
+                      <AlertTriangle className="w-4 h-4 shrink-0" />
+                      <span>Only 2 items left at the selected store counter.</span>
+                    </div>
+                  ) : null}
+
+                  {!routeDetails.isInterCity && (
+                    <div className="flex flex-wrap gap-1.5 w-full">
+                      {routingMode === "FASTEST" ? (
+                        <span className="inline-flex items-center gap-1.5 text-[10px] font-extrabold text-[#FB6C3F] bg-[#FB6C3F]/5 border border-[#FB6C3F]/20 px-3 py-1 rounded-full">
+                          ⚡ Express Emergency Routing Enabled
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 text-[10px] font-extrabold text-[#5B8C5A] bg-[#5B8C5A]/5 border border-[#5B8C5A]/20 px-3 py-1 rounded-full">
+                          💰 Lowest Price Guarantee Active
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Price and quantity controller section */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-5 border-t border-stone-150">
+                  <div className="flex flex-col">
+                    <span className="text-xs text-stone-400 font-bold uppercase tracking-wider">Best Price</span>
+                    <div className="flex items-baseline gap-2 mt-1">
+                      <span className="text-3xl font-black text-[#554D45]">
+                        ₹{routeDetails.price}
+                      </span>
+                      <span className="text-sm text-stone-400 line-through font-semibold">
+                        ₹{routeDetails.mrp}
+                      </span>
+                      <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50 text-xs font-black border border-emerald-100">
+                        {routeDetails.discount}% OFF
+                      </Badge>
+                    </div>
+                    {routeDetails.mrp - routeDetails.price > 0 && (
+                      <span className="text-[10px] text-emerald-600 font-bold mt-0.5">
+                        You save ₹{routeDetails.mrp - routeDetails.price}!
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-center">
+                    {qtyInCart === 0 ? (
+                      <Button
+                        size="lg"
+                        className={`w-full sm:w-auto font-black h-12 text-xs transition-all active:scale-[0.98] shadow-md text-white rounded-xl ${activeColorClass} px-8 border-none`}
+                        onClick={() => addItem(selectedDetailsMedicine)}
+                      >
+                        ADD TO CART
+                      </Button>
+                    ) : (
+                      <div className={`flex items-center rounded-xl overflow-hidden text-xs shadow-md ${counterColorClass} text-white h-12`}>
+                        <button 
+                          onClick={() => updateQuantity(selectedDetailsMedicine.id, qtyInCart - 1)}
+                          className="px-4 py-3 hover:bg-black/10 transition-all font-black text-sm h-full flex items-center justify-center"
+                        >
+                          <Minus className="w-3.5 h-3.5" strokeWidth={3} />
+                        </button>
+                        <span className="px-4 font-extrabold text-sm min-w-[36px] text-center">{qtyInCart}</span>
+                        <button 
+                          onClick={() => updateQuantity(selectedDetailsMedicine.id, qtyInCart + 1)}
+                          className="px-4 py-3 hover:bg-black/10 transition-all font-black text-sm h-full flex items-center justify-center"
+                        >
+                          <Plus className="w-3.5 h-3.5" strokeWidth={3} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        );
+      })()}
 
       <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
 

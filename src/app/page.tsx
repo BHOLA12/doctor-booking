@@ -1,31 +1,26 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import SearchBar from "@/components/shared/SearchBar";
+import VoiceAssistantSection from "@/components/home/VoiceAssistantSection";
 import {
   MapPin,
   Stethoscope,
   Pill,
   FlaskConical,
   Zap,
-  TrendingUp,
-  Sparkles,
+  Activity,
   ArrowRight,
   ShieldCheck,
-  Store,
-  Check,
   ChevronDown,
   Info,
-  DollarSign,
-  Cpu,
-  MousePointerClick,
-  Mic,
-  ArrowUpRight,
+  Clock,
   Building,
-  Activity,
-  ShieldAlert
+  Store,
+  Calendar
 } from "lucide-react";
 
 export default function HomePage() {
@@ -39,744 +34,424 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#020617] text-slate-100 overflow-hidden font-sans">
+    <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900 font-sans antialiased overflow-x-hidden">
       
-      {/* 1. PREMIUM HERO HEADER SECTION */}
-      <section className="relative pt-32 pb-24 md:pt-40 md:pb-32 bg-gradient-to-b from-[#020617] via-[#0b0f19] to-[#020617] overflow-hidden">
+      {/* 1. 60-SECOND CONVERSION HERO SECTION */}
+      <section className="relative z-20 pt-24 pb-16 md:pt-32 md:pb-24 bg-gradient-to-b from-slate-100/50 via-white to-slate-50 border-b border-slate-200/50">
         
-        {/* Cinematic Background Lights */}
-        <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[140px] pointer-events-none animate-pulse-soft" />
-        <div className="absolute top-1/3 right-1/4 w-[600px] h-[600px] bg-cyan-500/5 rounded-full blur-[160px] pointer-events-none animate-pulse-soft" />
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-emerald-500/5 rounded-full blur-[140px] pointer-events-none" />
+        {/* Soft floating background glows */}
+        <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[100px] pointer-events-none -z-10" />
+        <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-teal-100/30 rounded-full blur-[120px] pointer-events-none -z-10" />
 
-        {/* Ambient Grid Overlay */}
-        <div 
-          className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-          style={{ 
-            backgroundImage: "radial-gradient(rgba(99, 102, 241, 0.25) 1px, transparent 1px)", 
-            backgroundSize: "32px 32px" 
-          }} 
-        />
-
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 z-10">
-          <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
-            
-            {/* Amber Pulse Active Network Badge */}
-            <motion.div 
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4.5 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs sm:text-sm font-bold tracking-wide shadow-[0_0_20px_rgba(245,158,11,0.1)] mb-8"
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 z-10 text-center">
+          
+          {/* Active Grid Location Badge */}
+          <div className="inline-block relative mb-6">
+            <button
+              onClick={() => setShowLocationTooltip(!showLocationTooltip)}
+              onMouseEnter={() => setShowLocationTooltip(true)}
+              onMouseLeave={() => setShowLocationTooltip(false)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 hover:border-primary/40 text-xs font-bold text-slate-700 transition-all shadow-sm cursor-pointer hover:shadow-md group"
             >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-              </span>
-              ⚡ Hyper-local Quick Healthcare Network Active
-            </motion.div>
-
-            {/* Main Gradient Headline */}
-            <motion.h1 
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] text-white mb-6"
-            >
-              Your Trusted Neighborhood{" "}
-              <span className="bg-gradient-to-r from-teal-400 via-cyan-400 to-indigo-400 bg-clip-text text-transparent">
-                Doctors & Pharmacies
-              </span>
-              , Connected.
-            </motion.h1>
-
-            {/* Subtitle */}
-            <motion.p 
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg sm:text-xl text-slate-400 leading-relaxed mb-10 max-w-2xl"
-            >
-              Get authentic medicines delivered from your closest chemist in 15 mins or book verified local doctors instantly.
-            </motion.p>
-
-            {/* Interactive Location Selector Badge */}
-            <motion.div 
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="relative mb-12"
-            >
-              <button 
-                onClick={() => setShowLocationTooltip(!showLocationTooltip)}
-                onMouseEnter={() => setShowLocationTooltip(true)}
-                onMouseLeave={() => setShowLocationTooltip(false)}
-                className="inline-flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-slate-700 text-sm font-semibold text-slate-200 transition-all duration-300 shadow-xl cursor-pointer hover:shadow-indigo-500/5 group"
-              >
-                <MapPin className="h-4.5 w-4.5 text-teal-400 group-hover:scale-110 transition-transform" />
-                <span>Jehanabad, Bihar</span>
-                <span className="inline-flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-md text-[11px] font-bold text-emerald-400 border border-emerald-500/20">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                  Live
-                </span>
-                <ChevronDown className={`h-4 w-4 text-slate-500 transition-transform duration-300 ${showLocationTooltip ? 'rotate-180' : ''}`} />
-              </button>
-
-              <AnimatePresence>
-                {showLocationTooltip && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-80 sm:w-96 bg-slate-900/95 backdrop-blur-md border border-slate-800 rounded-2xl shadow-2xl p-4 z-50 text-left"
-                  >
-                    <div className="flex items-center gap-2 pb-3 mb-3 border-b border-slate-800/80">
-                      <Sparkles className="h-4 w-4 text-amber-400" />
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Network Logistics Nodes</span>
-                    </div>
-                    <div className="space-y-3">
-                      {locations.map((loc, idx) => (
-                        <div key={idx} className="flex flex-col gap-0.5 p-2 rounded-lg bg-slate-950/50 hover:bg-slate-950 transition-colors">
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs font-bold text-slate-200">{loc.name}</span>
-                            <span className="text-[10px] font-extrabold text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">
-                              {loc.status}
-                            </span>
-                          </div>
-                          <span className="text-[11px] text-slate-500 leading-tight mt-0.5">{loc.desc}</span>
+              <MapPin className="h-3.5 w-3.5 text-primary group-hover:scale-110 transition-transform" />
+              <span>Jehanabad, Bihar</span>
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-600">Grid Active</span>
+              <ChevronDown className={`h-3 w-3 text-slate-400 transition-transform duration-300 ${showLocationTooltip ? 'rotate-180' : ''}`} />
+            </button>
+ 
+            <AnimatePresence>
+              {showLocationTooltip && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-80 sm:w-96 bg-white border border-slate-200 rounded-2xl shadow-2xl p-4 z-50 text-left"
+                >
+                  <div className="flex items-center gap-2 pb-2 mb-2 border-b border-slate-100">
+                    <Info className="h-4 w-4 text-primary" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Logistics Grid Nodes</span>
+                  </div>
+                  <div className="space-y-2">
+                    {locations.map((loc, idx) => (
+                      <div key={idx} className="flex flex-col gap-0.5 p-2 rounded-lg bg-slate-50 hover:bg-slate-100/80 transition-colors">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs font-bold text-slate-800">{loc.name}</span>
+                          <span className="text-[9px] font-black text-slate-500 bg-white border border-slate-200 px-1.5 py-0.5 rounded shadow-sm">
+                            {loc.status}
+                          </span>
                         </div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-
-            {/* Smart Search Bar */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="w-full max-w-xl flex justify-center mb-6"
-            >
-              <div className="w-full bg-slate-900/50 backdrop-blur-xl p-2.5 rounded-2xl border border-slate-800 shadow-2xl">
-                <SearchBar />
-              </div>
-            </motion.div>
-
-            {/* Keyboard shortcut hint */}
-            <p className="text-xs text-slate-500 flex items-center gap-1.5">
-              <Info className="h-3.5 w-3.5 text-indigo-400" /> Press <kbd className="px-1.5 py-0.5 bg-slate-900 rounded border border-slate-800 font-mono">Ctrl</kbd> + <kbd className="px-1.5 py-0.5 bg-slate-900 rounded border border-slate-800 font-mono">K</kbd> anywhere to search instantly.
-            </p>
-
-          </div>
-        </div>
-      </section>
-
-      {/* 2. THE 3-GATEWAY FEATURE SHOWCASE GRID */}
-      <section className="py-24 relative bg-[#020617]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(99,102,241,0.03),_transparent_50%)] pointer-events-none" />
-
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
-          
-          <div className="text-center max-w-3xl mx-auto mb-20">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-4">
-              Explore Gateways
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-4">
-              Select Your Gateway to Connect
-            </h2>
-            <p className="text-slate-400 text-base sm:text-lg">
-              DocBook bridges the gap between digital speed and local offline trust. Choose your destination to start.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            
-            {/* Gateway A: Doctors */}
-            <motion.div
-              whileHover={{ y: -6, scale: 1.01 }}
-              className="relative flex flex-col justify-between rounded-3xl border border-slate-800 bg-gradient-to-b from-slate-900/60 to-slate-950 p-7 shadow-2xl hover:border-indigo-500/30 hover:shadow-indigo-500/5 transition-all duration-300 group overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none group-hover:bg-indigo-500/10 transition-colors" />
-              
-              <div>
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <Stethoscope className="h-6 w-6" />
-                </div>
-                
-                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">
-                  Book Top Consultations
-                </h3>
-                
-                <p className="text-slate-400 text-sm leading-relaxed mb-6">
-                  Avoid crowded hospital lines. Search by specialist or hospital near you for instant appointments.
-                </p>
-
-                <ul className="space-y-3 mb-8">
-                  {[
-                    "Search 50+ specialists near you",
-                    "In-clinic & video consultations",
-                    "Instant slot booking & verification"
-                  ].map((bullet, idx) => (
-                    <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-300">
-                      <span className="p-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 mt-0.5">
-                        <Check className="h-3 w-3" />
-                      </span>
-                      <span>{bullet}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <Link href="/doctors" className="block w-full">
-                <button className="w-full py-3 px-4 bg-slate-900 border border-slate-800 hover:border-indigo-500/40 text-slate-200 hover:text-white font-semibold text-xs rounded-xl tracking-wider uppercase transition-all duration-300 hover:bg-indigo-950/20 active:scale-[0.98] flex items-center justify-center gap-2 group/btn">
-                  Find a Doctor
-                  <ArrowRight className="h-3.5 w-3.5 text-slate-500 group-hover/btn:translate-x-1 group-hover/btn:text-indigo-400 transition-all" />
-                </button>
-              </Link>
-            </motion.div>
-
-            {/* Gateway B: Medicines */}
-            <motion.div
-              whileHover={{ y: -6, scale: 1.01 }}
-              className="relative flex flex-col justify-between rounded-3xl border border-slate-800 bg-gradient-to-b from-slate-900/60 to-slate-950 p-7 shadow-2xl hover:border-teal-500/30 hover:shadow-teal-500/5 transition-all duration-300 group overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 rounded-full blur-2xl pointer-events-none group-hover:bg-teal-500/10 transition-colors" />
-              
-              <div>
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-500/10 border border-teal-500/20 text-teal-400 mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <Pill className="h-6 w-6" />
-                </div>
-                
-                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-teal-300 transition-colors">
-                  15-Min Pharmacy Delivery
-                </h3>
-                
-                <p className="text-slate-400 text-sm leading-relaxed mb-6">
-                  Upload prescription. Smart lowest-cost routing matching multiple local chemists to get the absolute cheapest aggregate bill.
-                </p>
-
-                <ul className="space-y-3 mb-8">
-                  {[
-                    "Delivered from local chemist in 15 mins",
-                    "Multi-store split-routing algorithm",
-                    "Up to 35% cheaper combined billings"
-                  ].map((bullet, idx) => (
-                    <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-300">
-                      <span className="p-0.5 rounded bg-teal-500/10 border border-teal-500/20 text-teal-400 mt-0.5">
-                        <Check className="h-3 w-3" />
-                      </span>
-                      <span>{bullet}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <Link href="/medicines" className="block w-full">
-                <button className="w-full py-3 px-4 bg-slate-900 border border-slate-800 hover:border-teal-500/40 text-slate-200 hover:text-white font-semibold text-xs rounded-xl tracking-wider uppercase transition-all duration-300 hover:bg-teal-950/20 active:scale-[0.98] flex items-center justify-center gap-2 group/btn">
-                  Order Medicines
-                  <ArrowRight className="h-3.5 w-3.5 text-slate-500 group-hover/btn:translate-x-1 group-hover/btn:text-teal-400 transition-all" />
-                </button>
-              </Link>
-            </motion.div>
-
-            {/* Gateway C: Lab Tests */}
-            <motion.div
-              whileHover={{ y: -6, scale: 1.01 }}
-              className="relative flex flex-col justify-between rounded-3xl border border-slate-800 bg-gradient-to-b from-slate-900/60 to-slate-950 p-7 shadow-2xl hover:border-purple-500/30 hover:shadow-purple-500/5 transition-all duration-300 group overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl pointer-events-none group-hover:bg-purple-500/10 transition-colors" />
-              
-              <div>
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <FlaskConical className="h-6 w-6" />
-                </div>
-                
-                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-300 transition-colors">
-                  Diagnostics at Home
-                </h3>
-                
-                <p className="text-slate-400 text-sm leading-relaxed mb-6">
-                  Certified laboratory partners. Safe home sample collection with smart digital reports returned in under 12 hours.
-                </p>
-
-                <ul className="space-y-3 mb-8">
-                  {[
-                    "NABL-accredited laboratory partners",
-                    "Certified health phlebotomists collections",
-                    "Smart digital report summaries under 12h"
-                  ].map((bullet, idx) => (
-                    <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-300">
-                      <span className="p-0.5 rounded bg-purple-500/10 border border-purple-500/20 text-purple-400 mt-0.5">
-                        <Check className="h-3 w-3" />
-                      </span>
-                      <span>{bullet}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <Link href="/lab-tests" className="block w-full">
-                <button className="w-full py-3 px-4 bg-slate-900 border border-slate-800 hover:border-purple-500/40 text-slate-200 hover:text-white font-semibold text-xs rounded-xl tracking-wider uppercase transition-all duration-300 hover:bg-purple-950/20 active:scale-[0.98] flex items-center justify-center gap-2 group/btn">
-                  Book Lab Tests
-                  <ArrowRight className="h-3.5 w-3.5 text-slate-500 group-hover/btn:translate-x-1 group-hover/btn:text-purple-400 transition-all" />
-                </button>
-              </Link>
-            </motion.div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* 3. INTERACTIVE VOICE & SEARCH AI AGENT SHOWCASE */}
-      <section className="py-24 relative bg-[#020617] border-t border-b border-slate-900 overflow-hidden">
-        
-        {/* Visual Background Glows */}
-        <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-500/[0.04] rounded-full blur-[140px] pointer-events-none" />
-        <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] bg-indigo-500/[0.02] rounded-full blur-[120px] pointer-events-none" />
-
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
-          
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16">
-            
-            {/* Left Column (55% Width) - AI Visual Pod */}
-            <div className="w-full lg:w-[55%] flex justify-center">
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.96 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                className="w-full max-w-lg backdrop-blur-xl bg-slate-900/40 border border-slate-800 rounded-3xl p-8 relative overflow-hidden shadow-2xl hover:border-slate-700/50 transition-all duration-500 group"
-              >
-                {/* Embedded Grid Effect */}
-                <div 
-                  className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-                  style={{ 
-                    backgroundImage: "radial-gradient(rgba(6, 182, 212, 0.3) 1px, transparent 1px)", 
-                    backgroundSize: "16px 16px" 
-                  }} 
-                />
-
-                {/* Left ambient glow overlay */}
-                <div className="absolute -top-24 -left-24 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl group-hover:bg-cyan-500/20 transition-all duration-500" />
-                
-                {/* 3D Floating Orb container */}
-                <div className="relative w-64 h-64 mx-auto flex items-center justify-center">
-                  
-                  {/* Floating Central Node */}
-                  <motion.div
-                    animate={{
-                      y: [-10, 10, -10],
-                    }}
-                    transition={{
-                      duration: 4.5,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                    className="relative z-10 w-36 h-36 rounded-full bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 flex items-center justify-center shadow-[0_0_50px_rgba(6,182,212,0.35)]"
-                  >
-                    <div className="absolute inset-1.5 rounded-full bg-slate-950/95 backdrop-blur-md flex items-center justify-center group-hover:scale-[0.98] transition-transform duration-300">
-                      <Cpu className="h-14 w-14 text-cyan-400 animate-pulse" />
-                    </div>
-                  </motion.div>
-
-                  {/* Halo Layer 1 */}
-                  <motion.div
-                    animate={{
-                      scale: [1, 1.35, 1],
-                      opacity: [0.15, 0.35, 0.15],
-                    }}
-                    transition={{
-                      duration: 3.5,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                    className="absolute w-48 h-48 rounded-full border border-cyan-500/30 bg-cyan-500/5 blur-sm"
-                  />
-
-                  {/* Halo Layer 2 */}
-                  <motion.div
-                    animate={{
-                      scale: [1, 1.7, 1],
-                      opacity: [0.06, 0.18, 0.06],
-                    }}
-                    transition={{
-                      duration: 4.5,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                      delay: 0.6,
-                    }}
-                    className="absolute w-60 h-60 rounded-full border border-blue-500/20 bg-blue-500/5 blur-md"
-                  />
-
-                  {/* Halo Layer 3 */}
-                  <motion.div
-                    animate={{
-                      scale: [1, 2.0, 1],
-                      opacity: [0.02, 0.08, 0.02],
-                    }}
-                    transition={{
-                      duration: 5.5,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                      delay: 1.2,
-                    }}
-                    className="absolute w-72 h-72 rounded-full border border-indigo-500/10 bg-indigo-500/5 blur-xl"
-                  />
-
-                  {/* Floating micro particles */}
-                  <motion.div
-                    animate={{
-                      x: [0, 12, 0],
-                      y: [0, -20, 0],
-                    }}
-                    transition={{
-                      duration: 6,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                    className="absolute top-12 left-10 w-3.5 h-3.5 bg-teal-400/40 rounded-full blur-xs"
-                  />
-                  <motion.div
-                    animate={{
-                      x: [0, -15, 0],
-                      y: [0, 12, 0],
-                    }}
-                    transition={{
-                      duration: 8,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                    className="absolute bottom-14 right-10 w-5 h-5 bg-indigo-500/30 rounded-full blur-sm"
-                  />
-                </div>
-
-                {/* Animated Waveform line */}
-                <div className="mt-8 text-center">
-                  <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest block mb-3.5 animate-pulse">
-                    AI Active & Listening
-                  </span>
-                  
-                  <div className="flex items-center justify-center gap-1.5 h-10">
-                    {[1.3, 1.7, 1.1, 1.9, 1.4, 1.6, 1.2, 1.8, 1.5].map((speed, i) => (
-                      <motion.div
-                        key={i}
-                        animate={{
-                          height: [8, 32, 8],
-                        }}
-                        transition={{
-                          duration: speed,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                        }}
-                        className="w-1 bg-gradient-to-t from-cyan-500 via-blue-500 to-indigo-500 rounded-full"
-                      />
+                        <span className="text-[10px] text-slate-400 leading-tight mt-0.5">{loc.desc}</span>
+                      </div>
                     ))}
                   </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Crisp typography & Value proposition */}
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 leading-[1.1] max-w-4xl mx-auto mb-6">
+            Book a Doctor or Order Medicines in{" "}
+            <span className="bg-gradient-to-r from-primary to-teal-600 bg-clip-text text-transparent">
+              60 Seconds.
+            </span>
+          </h1>
+
+          <p className="text-base sm:text-lg text-slate-500 leading-relaxed mb-10 max-w-xl mx-auto">
+            Direct neighborhood partnerships. Zero markup. Better than walk-in experience.
+          </p>
+
+          {/* Direct Search Bar */}
+          <div className="w-full max-w-lg mx-auto flex justify-center mb-8">
+            <div className="w-full bg-white p-2 rounded-2xl border border-slate-200 shadow-md">
+              <SearchBar />
+            </div>
+          </div>
+
+          <p className="text-xs text-slate-400 flex items-center justify-center gap-1.5">
+            <Info className="h-3.5 w-3.5 text-primary" /> Press <kbd className="px-1.5 py-0.5 bg-white rounded border border-slate-200 font-mono shadow-sm">Ctrl</kbd> + <kbd className="px-1.5 py-0.5 bg-white rounded border border-slate-200 font-mono shadow-sm">K</kbd> anywhere to search instantly.
+          </p>
+
+        </div>
+      </section>
+
+      {/* 2. INFINITE MOVING LIVE TICKER (MARQUEE BANNER) */}
+      <section className="bg-primary text-primary-foreground py-3.5 overflow-hidden select-none border-b border-primary/20 shadow-[inset_0_-2px_4px_rgba(0,0,0,0.05)] relative z-15">
+        <div className="flex w-full overflow-hidden">
+          <div className="animate-marquee whitespace-nowrap flex gap-12 text-xs font-black uppercase tracking-widest">
+            <span>🔬 100% Verified Pharmacies</span>
+            <span>•</span>
+            <span>⚡ 15-Min Flash Delivery</span>
+            <span>•</span>
+            <span>🩺 Top Specialists Near You</span>
+            <span>•</span>
+            <span>🧪 NABL-Accredited Lab Partners</span>
+            <span>•</span>
+            <span>💰 Lowest Price Guaranteed</span>
+            <span>•</span>
+            {/* Repeated for seamless scrolling */}
+            <span>🔬 100% Verified Pharmacies</span>
+            <span>•</span>
+            <span>⚡ 15-Min Flash Delivery</span>
+            <span>•</span>
+            <span>🩺 Top Specialists Near You</span>
+            <span>•</span>
+            <span>🧪 NABL-Accredited Lab Partners</span>
+            <span>•</span>
+            <span>💰 Lowest Price Guaranteed</span>
+            <span>•</span>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. B2C CATEGORY GATEWAY SECTION */}
+      <section className="py-24 bg-slate-50/50 relative border-b border-slate-200/40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="text-center max-w-xl mx-auto mb-16">
+            <span className="text-[10px] font-black tracking-widest text-primary uppercase bg-primary/5 border border-primary/20 px-3.5 py-1.5 rounded-full shadow-sm">
+              Instant Gateways
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mt-4 mb-2">
+              Select Your Destination
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500">
+              Direct connection to nearest local healthcare grids
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            
+            {/* Card A: Doctors */}
+            <motion.div
+              whileHover={{ y: -6 }}
+              className="bg-white rounded-[2.5rem] border border-slate-200/80 p-5 pb-7 shadow-sm flex flex-col justify-between hover:shadow-xl hover:border-blue-500/20 transition-all duration-500 group overflow-hidden"
+            >
+              <div>
+                {/* Image Container with Badge Overlay */}
+                <div className="relative w-full h-56 rounded-[2rem] overflow-hidden bg-gradient-to-br from-blue-50/60 to-sky-100/30 mb-6 border border-slate-100/80 flex items-center justify-center">
+                  <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md shadow-sm border border-slate-100 text-[10px] font-black uppercase tracking-wider text-slate-800">
+                    <Stethoscope className="h-3.5 w-3.5 text-blue-600" />
+                    <span>Doctors</span>
+                  </div>
+                  <Image
+                    src="/doctor-illustration.png"
+                    alt="Consult Doctors"
+                    width={400}
+                    height={400}
+                    priority
+                    className="w-auto h-[90%] object-contain group-hover:scale-105 transition-transform duration-500"
+                  />
                 </div>
 
-              </motion.div>
-            </div>
-
-            {/* Right Column (45% Width) - AI Pitch & CTA */}
-            <div className="w-full lg:w-[45%] flex flex-col justify-center text-left">
-              
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/25 text-cyan-400 text-xs font-semibold uppercase tracking-wider self-start mb-5 animate-pulse">
-                <Sparkles className="h-3.5 w-3.5" />
-                Interactive Voice & Search
+                <div className="px-2">
+                  <h3 className="text-xl font-black text-slate-900 tracking-tight mb-2">
+                    Consult Doctors
+                  </h3>
+                  <p className="text-slate-500 text-xs leading-relaxed mb-6">
+                    Book verified local doctors instantly for video or in-clinic visits. Zero queuing time.
+                  </p>
+                </div>
               </div>
 
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.15] mb-6">
-                Meet Your Personal{" "}
-                <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-                  Hyperlocal Health Assistant.
-                </span>
-              </h2>
+              <div className="px-2">
+                <Link href="/doctors" className="w-full">
+                  <button className="w-full py-3.5 bg-slate-950 hover:bg-blue-600 text-white hover:text-white font-bold text-xs rounded-xl tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer shadow-sm hover:shadow-blue-500/25">
+                    Find a Doctor
+                    <ArrowRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                  </button>
+                </Link>
+              </div>
+            </motion.div>
 
-              <p className="text-base sm:text-lg text-slate-400 leading-relaxed mb-8">
-                No more typing long names or searching multiple stores. Just speak naturally. DocBook's advanced AI agent listens to your symptoms, matches prescriptions with closest verified doctors, and splits your medicine cart across local pharmacies to find the absolute lowest bill instantly.
+            {/* Card B: Medicines */}
+            <motion.div
+              whileHover={{ y: -6 }}
+              className="bg-white rounded-[2.5rem] border border-slate-200/80 p-5 pb-7 shadow-sm flex flex-col justify-between hover:shadow-xl hover:border-teal-500/20 transition-all duration-500 group overflow-hidden"
+            >
+              <div>
+                {/* Image Container with Badge Overlay */}
+                <div className="relative w-full h-56 rounded-[2rem] overflow-hidden bg-gradient-to-br from-teal-50/60 to-emerald-100/30 mb-6 border border-slate-100/80 flex items-center justify-center">
+                  <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md shadow-sm border border-slate-100 text-[10px] font-black uppercase tracking-wider text-slate-800">
+                    <Pill className="h-3.5 w-3.5 text-teal-600" />
+                    <span>Medicines</span>
+                  </div>
+                  <Image
+                    src="/pharmacy-illustration.png"
+                    alt="Order Medicines"
+                    width={400}
+                    height={400}
+                    priority
+                    className="w-auto h-[90%] object-contain group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+
+                <div className="px-2">
+                  <h3 className="text-xl font-black text-slate-900 tracking-tight mb-2">
+                    Order Medicines
+                  </h3>
+                  <p className="text-slate-500 text-xs leading-relaxed mb-6">
+                    15-minute delivery from your closest retail chemist. Zero markups and split routing optimization.
+                  </p>
+                </div>
+              </div>
+
+              <div className="px-2">
+                <Link href="/medicines" className="w-full">
+                  <button className="w-full py-3.5 bg-slate-950 hover:bg-teal-600 text-white hover:text-white font-bold text-xs rounded-xl tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer shadow-sm hover:shadow-teal-500/25">
+                    Order Medicines
+                    <ArrowRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                  </button>
+                </Link>
+              </div>
+            </motion.div>
+
+            {/* Card C: Lab Tests */}
+            <motion.div
+              whileHover={{ y: -6 }}
+              className="bg-white rounded-[2.5rem] border border-slate-200/80 p-5 pb-7 shadow-sm flex flex-col justify-between hover:shadow-xl hover:border-purple-500/20 transition-all duration-500 group overflow-hidden"
+            >
+              <div>
+                {/* Image Container with Badge Overlay */}
+                <div className="relative w-full h-56 rounded-[2rem] overflow-hidden bg-gradient-to-br from-purple-50/60 to-indigo-100/30 mb-6 border border-slate-100/80 flex items-center justify-center">
+                  <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md shadow-sm border border-slate-100 text-[10px] font-black uppercase tracking-wider text-slate-800">
+                    <FlaskConical className="h-3.5 w-3.5 text-purple-600" />
+                    <span>Lab Tests</span>
+                  </div>
+                  <Image
+                    src="/lab-illustration.png"
+                    alt="Book Lab Tests"
+                    width={400}
+                    height={400}
+                    priority
+                    className="w-auto h-[90%] object-contain group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+
+                <div className="px-2">
+                  <h3 className="text-xl font-black text-slate-900 tracking-tight mb-2">
+                    Book Lab Tests
+                  </h3>
+                  <p className="text-slate-500 text-xs leading-relaxed mb-6">
+                    NABL-accredited diagnostic labs. Safe, certified phlebotomists collect samples from your home.
+                  </p>
+                </div>
+              </div>
+
+              <div className="px-2">
+                <Link href="/lab-tests" className="w-full">
+                  <button className="w-full py-3.5 bg-slate-950 hover:bg-purple-600 text-white hover:text-white font-bold text-xs rounded-xl tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer shadow-sm hover:shadow-purple-500/25">
+                    Book Lab Tests
+                    <ArrowRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                  </button>
+                </Link>
+              </div>
+            </motion.div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* 3.5. INTERACTIVE VOICE & HYPERLOCAL ASSISTANT */}
+      <VoiceAssistantSection />
+
+      {/* 4. THE 'CONTINUOUS INTELLIGENCE' HEALTH LOOP GRID */}
+      <section className="py-24 bg-white border-t border-b border-slate-200/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="text-center max-w-xl mx-auto mb-20">
+            <span className="text-[10px] font-black tracking-widest text-primary uppercase bg-primary/5 border border-primary/20 px-3.5 py-1.5 rounded-full shadow-sm">
+              Continuous Intelligence Loop
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mt-5 mb-3">
+              How Doc<span className="text-primary">Book</span> Synchronizes
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto leading-relaxed">
+              We sync inventory databases and specialist appointment logs in real-time.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            
+            {/* Step 1 */}
+            <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-200/60 shadow-sm transition-all duration-300 hover:-translate-y-1">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="h-10 w-10 rounded-xl bg-primary text-white flex items-center justify-center font-black text-sm shadow-sm">
+                  1
+                </div>
+                <h3 className="text-lg font-black text-slate-900 tracking-tight">Discover & Book</h3>
+              </div>
+              <p className="text-slate-500 text-xs sm:text-sm leading-relaxed">
+                Instant slot mapping matching closest retail nodes. Automatically checks pharmacy stock databases and doctor calendars to avoid scheduling conflicts.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-200/60 shadow-sm transition-all duration-300 hover:-translate-y-1">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="h-10 w-10 rounded-xl bg-primary text-white flex items-center justify-center font-black text-sm shadow-sm">
+                  2
+                </div>
+                <h3 className="text-lg font-black text-slate-900 tracking-tight">Hyperlocal Dispatch</h3>
+              </div>
+              <p className="text-slate-500 text-xs sm:text-sm leading-relaxed">
+                Package assignment to the nearest network delivery rider. Telemetry systems coordinate dispatch parameters to achieve a 15-minute delivery window.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-200/60 shadow-sm transition-all duration-300 hover:-translate-y-1">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="h-10 w-10 rounded-xl bg-primary text-white flex items-center justify-center font-black text-sm shadow-sm">
+                  3
+                </div>
+                <h3 className="text-lg font-black text-slate-900 tracking-tight">Sync & Track</h3>
+              </div>
+              <p className="text-slate-500 text-xs sm:text-sm leading-relaxed">
+                Real-time status update feeds mirrored across client, rider, and chemist devices. Full order transparency with secure, encrypted data synchronization.
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* 5. SELF-SERVE B2B PARTNER ONBOARDING LAYER (HIGH CONTRAST SPLIT) */}
+      <section className="py-24 bg-slate-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-slate-950 text-white rounded-[2.5rem] p-8 sm:p-12 border border-slate-900 shadow-2xl relative overflow-hidden">
+            
+            {/* Background design glow */}
+            <div className="absolute right-0 bottom-0 w-[300px] h-[300px] bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
+
+            <div className="relative z-10 max-w-3xl">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/15 border border-primary/30 text-primary text-[10px] font-black uppercase tracking-wider mb-6">
+                ⚡ B2B Healthcare Partners
+              </span>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight mb-4">
+                Join the Doc<span className="text-primary">Book</span> Care Network
+              </h2>
+              <p className="text-slate-400 text-xs sm:text-sm leading-relaxed mb-10 max-w-xl">
+                Integrate your retail pharmacy stock or clinic schedules directly into our local dispatch grid. Join thousands of verified professionals.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button 
-                  onClick={() => alert("Connecting to DocBook Live AI voice session...")}
-                  className="h-13 px-7 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-3 transition-all duration-300 shadow-[0_0_25px_rgba(6,182,212,0.3)] hover:shadow-[0_0_35px_rgba(6,182,212,0.5)] hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-                >
-                  <Mic className="h-4.5 w-4.5 animate-pulse" />
-                  🚨 Talk to Live Agent
-                </button>
-
-                <button 
-                  onClick={() => alert("Showing AI Agent demo walkthrough...")}
-                  className="h-13 px-7 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-300 cursor-pointer"
-                >
-                  See How It Works
-                  <ArrowUpRight className="h-4 w-4" />
-                </button>
-              </div>
-
-            </div>
-
-          </div>
-
-          {/* Micro-metrics under layout */}
-          <div className="mt-16 pt-10 border-t border-slate-900 flex flex-col md:flex-row justify-center items-center gap-6 md:gap-16 text-slate-400 text-xs sm:text-sm font-semibold select-none">
-            <div className="flex items-center gap-2 hover:text-cyan-400 transition-colors">
-              <Zap className="h-4.5 w-4.5 text-cyan-400 animate-pulse" />
-              <span>0.12ms Local Grid Latency</span>
-            </div>
-            <div className="hidden md:block w-1.5 h-1.5 rounded-full bg-slate-800" />
-            <div className="flex items-center gap-2 hover:text-blue-400 transition-colors">
-              <Mic className="h-4.5 w-4.5 text-blue-400" />
-              <span>Supports Hindi, English & Mixed Voice Scripts</span>
-            </div>
-            <div className="hidden md:block w-1.5 h-1.5 rounded-full bg-slate-800" />
-            <div className="flex items-center gap-2 hover:text-emerald-400 transition-colors">
-              <ShieldCheck className="h-4.5 w-4.5 text-emerald-400" />
-              <span>100% Secure HIPAA-Compliant Encryption</span>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* 4. VALUE PROP COMPASS: "WHY DOCBOOK BEATS THE GIANTS" */}
-      <section className="py-24 relative bg-slate-900/10 border-b border-slate-900">
-        
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-indigo-500/[0.02] rounded-full blur-[120px] pointer-events-none" />
-
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
-          
-          <div className="text-center max-w-3xl mx-auto mb-20">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-4">
-              Local Vs. Centralized
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-4">
-              Why DocBook Beats the Giants
-            </h2>
-            <p className="text-slate-400 text-base sm:text-lg">
-              Unlike centralized e-pharmacies shipping from distant warehouses, we optimize for local speed and affordability.
-            </p>
-          </div>
-
-          <div className="max-w-5xl mx-auto divide-y divide-slate-800/80 border border-slate-800 rounded-3xl bg-slate-950/40 overflow-hidden shadow-2xl">
-            
-            {/* Advantage 1: Flash Speed */}
-            <div className="p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 hover:bg-slate-900/20 transition-colors">
-              <div className="flex items-start gap-4 max-w-2xl">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-teal-500/10 border border-teal-500/20 text-teal-400">
-                  <Zap className="h-6 w-6" />
+              <div className="grid sm:grid-cols-3 gap-6">
+                
+                {/* Partner 1: Chemist */}
+                <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 hover:border-primary/40 transition-colors flex flex-col justify-between">
+                  <div>
+                    <Store className="h-5 w-5 text-primary mb-3" />
+                    <h4 className="font-extrabold text-xs sm:text-sm tracking-tight text-slate-100 mb-1">Retail Chemists</h4>
+                    <p className="text-[10px] text-slate-400 leading-normal mb-4">Manage orders and automate stock with our billing module.</p>
+                  </div>
+                  <Link href="/chemist-dashboard">
+                    <button className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold tracking-wider uppercase rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1">
+                      Partner Portal
+                      <ArrowRight className="h-3 w-3" />
+                    </button>
+                  </Link>
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                    Flash Speed Dispatch
-                    <span className="text-[10px] font-bold text-teal-400 bg-teal-500/10 border border-teal-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                      2km Radius
-                    </span>
-                  </h3>
-                  <p className="text-slate-400 text-sm mt-1">
-                    We route orders to local retail shops within a 2km radius instead of routing from far-away warehouses in distant cities. You get your essentials right when you need them.
-                  </p>
+
+                {/* Partner 2: Doctor */}
+                <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 hover:border-primary/40 transition-colors flex flex-col justify-between">
+                  <div>
+                    <Calendar className="h-5 w-5 text-primary mb-3" />
+                    <h4 className="font-extrabold text-xs sm:text-sm tracking-tight text-slate-100 mb-1">Medical Clinics</h4>
+                    <p className="text-[10px] text-slate-400 leading-normal mb-4">Publish slot matrices to consult local neighborhood patients.</p>
+                  </div>
+                  <Link href="/register/doctor">
+                    <button className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold tracking-wider uppercase rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1">
+                      Register Doctor
+                      <ArrowRight className="h-3 w-3" />
+                    </button>
+                  </Link>
                 </div>
-              </div>
-              <div className="lg:text-right shrink-0">
-                <span className="inline-block text-sm font-extrabold text-slate-200 bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl">
-                  🚀 15 Min Avg. Delivery
-                </span>
+
+                {/* Partner 3: Labs */}
+                <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 hover:border-primary/40 transition-colors flex flex-col justify-between">
+                  <div>
+                    <FlaskConical className="h-5 w-5 text-primary mb-3" />
+                    <h4 className="font-extrabold text-xs sm:text-sm tracking-tight text-slate-100 mb-1">Pathology Labs</h4>
+                    <p className="text-[10px] text-slate-400 leading-normal mb-4">Scale NABL-certified sample dispatch and electronic logs.</p>
+                  </div>
+                  <Link href="/register/lab">
+                    <button className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold tracking-wider uppercase rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1">
+                      Register Lab
+                      <ArrowRight className="h-3 w-3" />
+                    </button>
+                  </Link>
+                </div>
+
               </div>
             </div>
-
-            {/* Advantage 2: Smart Multi-Store Split */}
-            <div className="p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 hover:bg-slate-900/20 transition-colors">
-              <div className="flex items-start gap-4 max-w-2xl">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
-                  <DollarSign className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                    Smart Multi-Store Split Billing
-                    <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                      Database Optimization
-                    </span>
-                  </h3>
-                  <p className="text-slate-400 text-sm mt-1">
-                    Our routing engine scans the live catalog of all nearby chemists and splits your cart dynamically to buy each item from the cheapest source, guaranteeing the absolute lowest combined total.
-                  </p>
-                </div>
-              </div>
-              <div className="lg:text-right shrink-0">
-                <span className="inline-block text-sm font-extrabold text-slate-200 bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl">
-                  💰 Save up to 35%
-                </span>
-              </div>
-            </div>
-
-            {/* Advantage 3: Anti-Gravity Latency */}
-            <div className="p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 hover:bg-slate-900/20 transition-colors">
-              <div className="flex items-start gap-4 max-w-2xl">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400">
-                  <Cpu className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                    Anti-Gravity Optimization
-                    <span className="text-[10px] font-bold text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                      High Performance
-                    </span>
-                  </h3>
-                  <p className="text-slate-400 text-sm mt-1">
-                    Zero-lag, highly lightweight responsive interface designed for fast loading and low latency, optimized specifically to run smoothly on unstable 3G/4G connections.
-                  </p>
-                </div>
-              </div>
-              <div className="lg:text-right shrink-0">
-                <span className="inline-block text-sm font-extrabold text-slate-200 bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl">
-                  📱 Under 1s Load Time
-                </span>
-              </div>
-            </div>
-
           </div>
         </div>
       </section>
 
-      {/* 5. PARTNER SELF-SERVE REGISTRATION CARDS (B2B PORTAL GRID) */}
-      <section className="py-24 relative bg-[#020617]">
-        <div className="absolute top-1/2 right-1/4 w-[400px] h-[400px] bg-indigo-600/[0.02] rounded-full blur-[130px] pointer-events-none" />
-
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+      {/* 6. TRUST FOOTER */}
+      <footer className="w-full py-12 bg-white border-t border-slate-200/60">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-4">
-              B2B Partnerships
+          <div className="flex flex-col md:flex-row justify-center items-center gap-6 md:gap-12 text-slate-500 text-xs font-bold select-none mb-8">
+            <div className="flex items-center gap-2 hover:text-primary transition-colors">
+              <ShieldCheck className="h-4.5 w-4.5 text-primary" />
+              <span>100% Licensed & Verified Retail Partners</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-4">
-              Join the DocBook Care Network
-            </h2>
-            <p className="text-slate-400 text-base">
-              Grow your healthcare service by integrating directly into our hyper-local dispatch grid. Sell, consult, and organize.
-            </p>
+            <div className="hidden md:block w-1 h-1 rounded-full bg-slate-350" />
+            <div className="flex items-center gap-2 hover:text-primary transition-colors">
+              <ShieldCheck className="h-4.5 w-4.5 text-primary" />
+              <span>Secure, Encrypted Electronic Prescriptions</span>
+            </div>
+            <div className="hidden md:block w-1 h-1 rounded-full bg-slate-350" />
+            <div className="flex items-center gap-2 hover:text-primary transition-colors">
+              <ShieldCheck className="h-4.5 w-4.5 text-primary" />
+              <span>Direct Neighborhood Dispatch Grid First</span>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            
-            {/* Card 1: Doctors */}
-            <motion.div 
-              whileHover={{ y: -5 }}
-              className="bg-slate-900/40 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 flex flex-col justify-between hover:border-indigo-500/30 transition-all duration-300 group"
-            >
-              <div>
-                <div className="h-10 w-10 rounded-xl bg-indigo-500/10 border border-indigo-500/25 flex items-center justify-center text-indigo-400 mb-5 group-hover:scale-105 transition-transform">
-                  <Stethoscope className="h-5 w-5" />
-                </div>
-                <h3 className="text-lg font-bold text-white mb-2">Doctors & Clinics</h3>
-                <p className="text-slate-400 text-xs leading-relaxed mb-6">
-                  List your clinic or hospital slot matrices to consult local patients via express physical appointments or secure video calls.
-                </p>
-              </div>
-              <Link href="/register?role=DOCTOR" className="w-full">
-                <button className="w-full py-2.5 bg-slate-950 border border-slate-800 hover:border-indigo-500/40 text-slate-300 hover:text-white text-xs font-bold rounded-xl tracking-wider uppercase transition-all duration-300">
-                  Register as Doctor 🩺
-                </button>
-              </Link>
-            </motion.div>
-
-            {/* Card 2: Chemists */}
-            <motion.div 
-              whileHover={{ y: -5 }}
-              className="bg-slate-900/40 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 flex flex-col justify-between hover:border-emerald-500/30 transition-all duration-300 group"
-            >
-              <div>
-                <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center text-emerald-400 mb-5 group-hover:scale-105 transition-transform">
-                  <Store className="h-5 w-5" />
-                </div>
-                <h3 className="text-lg font-bold text-white mb-2">Local Chemists</h3>
-                <p className="text-slate-400 text-xs leading-relaxed mb-6">
-                  Power your shop with our free desktop billing software and instantly receive hyper-local quick commerce medicine orders.
-                </p>
-              </div>
-              <Link href="/register?role=PHARMACY" className="w-full">
-                <button className="w-full py-2.5 bg-slate-950 border border-slate-800 hover:border-emerald-500/40 text-slate-300 hover:text-white text-xs font-bold rounded-xl tracking-wider uppercase transition-all duration-300">
-                  Register as Chemist 🏪
-                </button>
-              </Link>
-            </motion.div>
-
-            {/* Card 3: Labs */}
-            <motion.div 
-              whileHover={{ y: -5 }}
-              className="bg-slate-900/40 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 flex flex-col justify-between hover:border-purple-500/30 transition-all duration-300 group"
-            >
-              <div>
-                <div className="h-10 w-10 rounded-xl bg-purple-500/10 border border-purple-500/25 flex items-center justify-center text-purple-400 mb-5 group-hover:scale-105 transition-transform">
-                  <FlaskConical className="h-5 w-5" />
-                </div>
-                <h3 className="text-lg font-bold text-white mb-2">Diagnostic Labs</h3>
-                <p className="text-slate-400 text-xs leading-relaxed mb-6">
-                  Upload test catalogs and slot allocations to dispatch certified phlebotomists for prompt diagnostic home collections.
-                </p>
-              </div>
-              <Link href="/register?role=PATHOLOGIST" className="w-full">
-                <button className="w-full py-2.5 bg-slate-950 border border-slate-800 hover:border-purple-500/40 text-slate-300 hover:text-white text-xs font-bold rounded-xl tracking-wider uppercase transition-all duration-300">
-                  Register as Lab 🧪
-                </button>
-              </Link>
-            </motion.div>
-
-            {/* Card 4: Hospitals */}
-            <motion.div 
-              whileHover={{ y: -5 }}
-              className="bg-slate-900/40 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 flex flex-col justify-between hover:border-cyan-500/30 transition-all duration-300 group"
-            >
-              <div>
-                <div className="h-10 w-10 rounded-xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center text-cyan-400 mb-5 group-hover:scale-105 transition-transform">
-                  <Building className="h-5 w-5" />
-                </div>
-                <h3 className="text-lg font-bold text-white mb-2">Hospitals & Centers</h3>
-                <p className="text-slate-400 text-xs leading-relaxed mb-6">
-                  Integrate your emergency wards, specialized departments, and doctor directories to manage patient queues.
-                </p>
-              </div>
-              <Link href="/register?role=HOSPITAL" className="w-full">
-                <button className="w-full py-2.5 bg-slate-950 border border-slate-800 hover:border-cyan-500/40 text-slate-300 hover:text-white text-xs font-bold rounded-xl tracking-wider uppercase transition-all duration-300">
-                  Register Hospital 🏥
-                </button>
-              </Link>
-            </motion.div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* 6. ECOSYSTEM TRUST BADGES & FOOTER */}
-      <footer className="w-full py-12 bg-[#020617] border-t border-slate-900/80">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          
-          <div className="flex flex-col md:flex-row justify-center items-center gap-6 md:gap-12 text-slate-400 text-sm font-semibold select-none">
-            
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:text-emerald-400 hover:bg-emerald-500/5 border border-transparent hover:border-emerald-500/10 transition-all">
-              <ShieldCheck className="h-4.5 w-4.5 text-emerald-400" />
-              <span>100% Licensed & Verified Retailers</span>
-            </div>
-            
-            <div className="hidden md:block w-1.5 h-1.5 rounded-full bg-slate-800" />
-
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:text-indigo-400 hover:bg-indigo-500/5 border border-transparent hover:border-indigo-500/10 transition-all">
-              <ShieldCheck className="h-4.5 w-4.5 text-indigo-400" />
-              <span>Secure Encrypted Prescriptions</span>
-            </div>
-
-            <div className="hidden md:block w-1.5 h-1.5 rounded-full bg-slate-800" />
-
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:text-teal-400 hover:bg-teal-500/5 border border-transparent hover:border-teal-500/10 transition-all">
-              <ShieldCheck className="h-4.5 w-4.5 text-teal-400" />
-              <span>Local Economy First</span>
-            </div>
-
-          </div>
-
-          <div className="mt-8 text-center text-xs text-slate-600">
-            &copy; {new Date().getFullYear()} DocBook Healthcare. All rights reserved. HIPAA Compliant & encrypted.
+          <div className="text-[10px] text-slate-400">
+            &copy; {new Date().getFullYear()} DocBook Healthcare. All rights reserved. HIPAA Compliant Security & Grid Encrypted Routing.
           </div>
 
         </div>

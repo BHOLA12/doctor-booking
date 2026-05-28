@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/auth";
 
 const femaleImages = [
   "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=300&h=300",
@@ -23,6 +24,11 @@ function isFemaleName(name: string) {
 
 export async function GET() {
   try {
+    const session = await getSession();
+    if (!session || session.role !== "ADMIN") {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 403 });
+    }
+
     const doctors = await prisma.user.findMany({
       where: { role: 'DOCTOR' },
     });

@@ -379,7 +379,7 @@ function DoctorsContent() {
       <div className="mt-16 bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/60 dark:border-slate-800 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4 hover:shadow-md transition-shadow duration-300">
         <div className="flex-1 text-left">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-            Are you a Verified Medical Professional? Join the DocBook Care Network.
+            Are you a Verified Medical Professional? Join the Doc<span className="text-primary">Book</span> Care Network.
           </h2>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
             Register your clinic or hospital slot matrices to consult local patients via express physical appointments or dynamic tele-health channels.

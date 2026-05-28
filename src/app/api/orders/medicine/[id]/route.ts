@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { verifyToken } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
@@ -8,10 +8,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const token = request.cookies.get("token")?.value;
-    if (!token) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-    const payload = verifyToken(token);
-    if (!payload) return NextResponse.json({ success: false, error: "Invalid token" }, { status: 401 });
+    const session = await getSession();
+    if (!session) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
 
     const order = await prisma.medicineOrder.findUnique({
       where: { id },
@@ -26,7 +24,7 @@ export async function GET(
     }
 
     // Only allow the owner (or admin/pharmacy) to view
-    if (order.userId !== payload.userId && payload.role !== "ADMIN" && payload.role !== "PHARMACY") {
+    if (order.userId !== session.userId && session.role !== "ADMIN" && session.role !== "PHARMACY") {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 
@@ -42,15 +40,24 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const token = request.cookies.get("token")?.value;
-    if (!token) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-    const payload = verifyToken(token);
-    if (!payload) return NextResponse.json({ success: false, error: "Invalid token" }, { status: 401 });
+    const session = await getSession();
+    if (!session) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
 
     const { status } = await request.json();
     const validStatuses = ["CONFIRMED", "PREPARING", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"];
     if (!validStatuses.includes(status)) {
       return NextResponse.json({ success: false, error: "Invalid status" }, { status: 400 });
+    }
+
+    // Retrieve order to check authorization
+    const orderExists = await prisma.medicineOrder.findUnique({ where: { id } });
+    if (!orderExists) {
+      return NextResponse.json({ success: false, error: "Order not found" }, { status: 404 });
+    }
+
+    // Only admin/pharmacy can update order stages; user can only cancel their own order
+    if (session.role !== "ADMIN" && session.role !== "PHARMACY" && !(status === "CANCELLED" && orderExists.userId === session.userId)) {
+      return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 
     const order = await prisma.medicineOrder.update({

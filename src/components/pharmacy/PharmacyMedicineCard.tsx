@@ -12,9 +12,10 @@ import Image from "next/image";
 type Props = {
   medicine: Medicine;
   onCompare: (medicine: Medicine) => void;
+  onViewDetails?: (medicine: Medicine) => void;
 };
 
-export const PharmacyMedicineCard = memo(function PharmacyMedicineCard({ medicine, onCompare }: Props) {
+export const PharmacyMedicineCard = memo(function PharmacyMedicineCard({ medicine, onCompare, onViewDetails }: Props) {
   const { addItem, isInCart } = useCart();
   const inCart = isInCart(medicine.id);
 
@@ -22,7 +23,8 @@ export const PharmacyMedicineCard = memo(function PharmacyMedicineCard({ medicin
     <motion.div
       whileHover={{ y: -6, scale: 1.01 }}
       transition={{ duration: 0.3, ease: [0.25, 0.8, 0.25, 1] }}
-      className="group relative flex flex-col h-full bg-white hover:shadow-2xl hover:shadow-teal-900/[0.04] transition-all duration-300 border border-slate-100 hover:border-teal-500/20 rounded-3xl overflow-hidden"
+      onClick={() => onViewDetails?.(medicine)}
+      className="group relative flex flex-col h-full bg-white hover:shadow-2xl hover:shadow-teal-900/[0.04] transition-all duration-300 border border-slate-100 hover:border-teal-500/20 rounded-3xl overflow-hidden cursor-pointer"
     >
       {/* Badges Overlay */}
       <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between">
@@ -60,14 +62,20 @@ export const PharmacyMedicineCard = memo(function PharmacyMedicineCard({ medicin
         {/* Quick Actions Overlay */}
         <div className="absolute bottom-3 right-3 flex gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
             <button 
-              onClick={() => onCompare(medicine)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onCompare(medicine);
+              }}
               title="Compare Prices"
               className="h-9 w-9 bg-white/95 backdrop-blur-md text-slate-600 rounded-xl flex items-center justify-center hover:bg-teal-600 hover:text-white transition-all duration-200 border border-slate-100 shadow-md hover:shadow-teal-500/10"
             >
               <ArrowRightLeft className="h-4 w-4" />
             </button>
             <button 
-              onClick={() => addItem(medicine)}
+              onClick={(e) => {
+                e.stopPropagation();
+                addItem(medicine);
+              }}
               title="Add to Cart"
               className="h-9 w-9 bg-teal-600 text-white rounded-xl flex items-center justify-center hover:bg-teal-500 transition-all duration-200 shadow-md shadow-teal-600/10 hover:shadow-teal-500/20"
             >
@@ -119,7 +127,10 @@ export const PharmacyMedicineCard = memo(function PharmacyMedicineCard({ medicin
                   ? "bg-slate-100 text-slate-700 hover:bg-slate-200 border-none shadow-none" 
                   : "bg-teal-600 hover:bg-teal-500 text-white shadow-lg shadow-teal-600/10 hover:shadow-teal-500/20 active:scale-[0.98]"
               }`}
-              onClick={() => addItem(medicine)}
+              onClick={(e) => {
+                e.stopPropagation();
+                addItem(medicine);
+              }}
             >
               {inCart ? "In Cart" : (
                 <>
@@ -131,7 +142,10 @@ export const PharmacyMedicineCard = memo(function PharmacyMedicineCard({ medicin
             <Button 
               variant="ghost" 
               className="w-full h-8 text-[10px] font-bold text-slate-400 hover:text-teal-600 hover:bg-teal-50/50 rounded-xl"
-              onClick={() => onCompare(medicine)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onCompare(medicine);
+              }}
             >
               <ArrowRightLeft className="h-3 w-3 mr-1.5" />
               Compare Prices

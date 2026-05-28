@@ -365,7 +365,7 @@ export default function RouteOptimizerPage() {
           <Badge className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-3 py-1 font-semibold text-xs rounded-full">
             <Compass className="w-3.5 h-3.5 animate-spin" /> Hyper-Local Core Engine
           </Badge>
-          <span className="text-xs text-slate-500 font-bold uppercase tracking-widest">DocBook Routing Lab</span>
+          <span className="text-xs text-slate-500 font-bold uppercase tracking-widest">Doc<span className="text-primary">Book</span> Routing Lab</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight mt-3">
           Cheapest Store Auto-Router & Split-Cost Optimizer
