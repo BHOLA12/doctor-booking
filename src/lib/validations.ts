@@ -30,6 +30,8 @@ export const registerSchema = z.object({
   pincode: z.string().regex(/^\d{6}$/, "Pincode must be exactly 6 digits"),
   city: z.string().min(1, "City is required"),
   state: z.string().min(1, "State is required"),
+  latitude: z.number().optional().nullable(),
+  longitude: z.number().optional().nullable(),
 }).superRefine((data, ctx) => {
   if (data.role === "DOCTOR" || data.role === "PATHOLOGIST") {
     if (!data.specialization) {

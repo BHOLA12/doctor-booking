@@ -251,10 +251,94 @@ function RegisterContent() {
     pincode: "",
     city: "",
     state: "",
+    latitude: null,
+    longitude: null,
   } as RegisterInput);
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [detectingLocation, setDetectingLocation] = useState(false);
+
+  const detectLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser");
+      return;
+    }
+    setDetectingLocation(true);
+    toast.info("Detecting your exact GPS location...");
+    
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+          const data = await res.json();
+          
+          if (data && data.address) {
+            const addr = data.address;
+            const stateName = addr.state || "";
+            const cityName = addr.city || addr.town || addr.village || addr.county || "";
+            const postcode = addr.postcode || "";
+            
+            // Build a clean physical address
+            const roadName = addr.road || "";
+            const neighborhood = addr.suburb || addr.neighbourhood || "";
+            const cleanAddr = [roadName, neighborhood].filter(Boolean).join(", ") || data.display_name || "";
+            
+            // Match the state dynamically if possible
+            let detectedState = "";
+            if (stateName) {
+              const matchedState = Object.keys(LOCATION_DATA).find(
+                s => s.toLowerCase() === stateName.toLowerCase() || stateName.toLowerCase().includes(s.toLowerCase())
+              );
+              if (matchedState) {
+                detectedState = matchedState;
+              }
+            }
+
+            // Match city dynamically
+            let detectedCity = "";
+            if (detectedState && cityName) {
+              const citiesInState = LOCATION_DATA[detectedState] || [];
+              const matchedCity = citiesInState.find(
+                c => c.toLowerCase() === cityName.toLowerCase() || cityName.toLowerCase().includes(c.toLowerCase())
+              );
+              if (matchedCity) {
+                detectedCity = matchedCity;
+              }
+            }
+            
+            setForm(prev => ({
+              ...prev,
+              latitude: lat,
+              longitude: lon,
+              state: detectedState || prev.state,
+              city: detectedCity || prev.city,
+              pincode: postcode.length === 6 ? postcode : prev.pincode,
+              addressLine1: cleanAddr || prev.addressLine1,
+            }));
+            
+            toast.success("Exact location & address auto-filled!");
+          } else {
+            setForm(prev => ({ ...prev, latitude: lat, longitude: lon }));
+            toast.success(`Coordinates captured: ${lat.toFixed(4)}, ${lon.toFixed(4)}`);
+          }
+        } catch (err) {
+          setForm(prev => ({ ...prev, latitude: lat, longitude: lon }));
+          toast.success(`Coordinates captured: ${lat.toFixed(4)}, ${lon.toFixed(4)}`);
+        } finally {
+          setDetectingLocation(false);
+        }
+      },
+      (error) => {
+        toast.error("Location permission denied. Please enter manually.");
+        setDetectingLocation(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -448,6 +532,34 @@ function RegisterContent() {
                     Address & Location
                   </span>
                   <div className="h-px flex-1 bg-gradient-to-l from-transparent via-cyan-200 dark:via-cyan-800 to-transparent" />
+                </motion.div>
+
+                <motion.div variants={fadeUp} className="flex flex-col gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={detectLocation}
+                    disabled={detectingLocation}
+                    className="w-full h-11 border border-cyan-200/60 dark:border-cyan-800/40 hover:bg-cyan-50 dark:hover:bg-cyan-950/20 text-cyan-700 dark:text-cyan-400 flex items-center justify-center gap-2 rounded-xl transition-all duration-200"
+                  >
+                    {detectingLocation ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin text-cyan-500" />
+                        Detecting Exact Location (GPS)...
+                      </>
+                    ) : (
+                      <>
+                        <MapPin className="h-4 w-4 text-cyan-500 animate-pulse" />
+                        Auto-detect GPS Location & Address
+                      </>
+                    )}
+                  </Button>
+                  {form.latitude && form.longitude && (
+                    <div className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 rounded-lg">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                      GPS captured: {form.latitude.toFixed(6)}, {form.longitude.toFixed(6)}
+                    </div>
+                  )}
                 </motion.div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

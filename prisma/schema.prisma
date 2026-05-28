@@ -65,6 +65,8 @@ model User {
   pincode      String?
   city         String?
   state        String?
+  latitude     Float?
+  longitude    Float?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

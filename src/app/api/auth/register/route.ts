@@ -50,6 +50,8 @@ export async function POST(request: NextRequest) {
       pincode,
       city,
       state,
+      latitude,
+      longitude,
     } = validation.data;
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -75,6 +77,8 @@ export async function POST(request: NextRequest) {
         pincode,
         city,
         state,
+        latitude: latitude || null,
+        longitude: longitude || null,
       },
     });
 
@@ -91,6 +95,8 @@ export async function POST(request: NextRequest) {
           college: college || null,
           experienceHospitals: experienceHospitals || null,
           currentHospitalName: currentHospitalName || null,
+          latitude: latitude || null,
+          longitude: longitude || null,
         },
       });
     }
@@ -111,6 +117,8 @@ export async function POST(request: NextRequest) {
           rating: 4.5,
           totalReviews: 0,
           isApproved: false,
+          latitude: latitude || null,
+          longitude: longitude || null,
         },
       });
     }
