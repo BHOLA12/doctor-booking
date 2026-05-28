@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { SPECIALIZATIONS } from "@/lib/constants";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -58,6 +59,8 @@ function InputField({
   maxLength,
   rightElement,
   className = "",
+  suggestions = [],
+  onSuggestionClick,
 }: {
   id: string;
   label: string;
@@ -73,9 +76,13 @@ function InputField({
   maxLength?: number;
   rightElement?: React.ReactNode;
   className?: string;
+  suggestions?: string[];
+  onSuggestionClick?: (val: string) => void;
 }) {
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
   return (
-    <motion.div variants={fadeUp} className="space-y-1.5">
+    <motion.div variants={fadeUp} className="space-y-1.5 relative">
       <Label
         htmlFor={id}
         className="text-xs font-semibold tracking-wide uppercase text-slate-500 dark:text-slate-400"
@@ -90,6 +97,11 @@ function InputField({
           placeholder={placeholder}
           value={value ?? ""}
           onChange={onChange}
+          onFocus={() => setShowSuggestions(true)}
+          onBlur={() => {
+            // delay onBlur so that clicking on a suggestion actually fires the click handler before the dropdown is unmounted
+            setTimeout(() => setShowSuggestions(false), 200);
+          }}
           required={required}
           min={min}
           max={max}
@@ -103,6 +115,32 @@ function InputField({
           </div>
         )}
       </div>
+
+      {/* Suggestions Dropdown */}
+      <AnimatePresence>
+        {showSuggestions && suggestions.length > 0 && (
+          <motion.ul
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl max-h-48 overflow-y-auto"
+          >
+            {suggestions.map((item, index) => (
+              <li
+                key={index}
+                onMouseDown={() => {
+                  if (onSuggestionClick) {
+                    onSuggestionClick(item);
+                  }
+                }}
+                className="px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-cyan-50 dark:hover:bg-cyan-950/40 cursor-pointer transition-colors duration-150 first:rounded-t-xl last:rounded-b-xl"
+              >
+                {item}
+              </li>
+            ))}
+          </motion.ul>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
@@ -499,10 +537,23 @@ function RegisterContent() {
                           id="specialization"
                           label="Specialization"
                           icon={Award}
-                          placeholder="e.g. Cardiologist"
+                          placeholder="e.g. Cardiologist, Sexologist"
                           value={form.specialization}
                           onChange={(e) => setForm({ ...form, specialization: e.target.value })}
                           required
+                          suggestions={
+                            (() => {
+                              const spec = form.specialization;
+                              return spec
+                                ? SPECIALIZATIONS.map(s => s.label).filter(label =>
+                                    label.toLowerCase().includes(spec.toLowerCase())
+                                  )
+                                : SPECIALIZATIONS.map(s => s.label);
+                            })()
+                          }
+                          onSuggestionClick={(val) => {
+                            setForm({ ...form, specialization: val });
+                          }}
                         />
 
                         <InputField
