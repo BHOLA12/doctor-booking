@@ -67,7 +67,7 @@ async function main() {
   const admin = await prisma.user.create({
     data: {
       name: "Admin",
-      email: "admin@docbook.com",
+      email: "admin@clinikbook.health",
       password: adminPassword,
       role: "ADMIN",
       isVerified: true,
@@ -100,7 +100,7 @@ async function main() {
     prisma.user.create({
       data: {
         name: "Neha Gupta",
-        email: "patient@docbook.com",
+        email: "patient@clinikbook.health",
         password: hashedPassword,
         phone: "9876543213",
         role: "PATIENT",
@@ -217,7 +217,7 @@ async function main() {
   const doctorData = [
     {
       name: "Dr. Rajesh Sharma",
-      email: "dr.sharma@docbook.com",
+      email: "dr.sharma@clinikbook.health",
       specialization: "Cardiologist",
       experience: 15,
       fees: 800,
@@ -229,7 +229,7 @@ async function main() {
     },
     {
       name: "Dr. Anita Kumari",
-      email: "dr.anita@docbook.com",
+      email: "dr.anita@clinikbook.health",
       specialization: "Gynecologist",
       experience: 12,
       fees: 600,
@@ -241,7 +241,7 @@ async function main() {
     },
     {
       name: "Dr. Meena Devi",
-      email: "dr.meena@docbook.com",
+      email: "dr.meena@clinikbook.health",
       specialization: "Pediatrician",
       experience: 8,
       fees: 500,
@@ -253,7 +253,7 @@ async function main() {
     },
     {
       name: "Dr. Ashok Pandey",
-      email: "dr.ashok@docbook.com",
+      email: "dr.ashok@clinikbook.health",
       specialization: "Psychiatrist",
       experience: 13,
       fees: 700,
@@ -265,7 +265,7 @@ async function main() {
     },
     {
       name: "Dr. Manoj Kumar",
-      email: "dr.manoj@docbook.com",
+      email: "dr.manoj@clinikbook.health",
       specialization: "General Physician",
       experience: 20,
       fees: 300,

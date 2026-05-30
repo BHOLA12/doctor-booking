@@ -15,6 +15,6 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: "https://docbook.health/sitemap.xml",
+    sitemap: "https://clinikbook.health/sitemap.xml",
   };
 }

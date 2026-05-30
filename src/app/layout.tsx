@@ -14,8 +14,8 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "DocBook — Book Doctors, Order Medicines & Lab Tests",
-    template: "%s | DocBook",
+    default: "ClinikBook — Book Doctors, Order Medicines & Lab Tests",
+    template: "%s | ClinikBook",
   },
   description:
     "India's smartest healthcare platform. Book verified doctors, order medicines in 30 mins, upload prescriptions, and track your health — all in one place.",
@@ -27,17 +27,17 @@ export const metadata: Metadata = {
     "find specialist doctor",
     "healthcare platform India",
     "telemedicine",
-    "DocBook",
+    "ClinikBook",
   ],
-  authors: [{ name: "DocBook Health" }],
-  creator: "DocBook Health",
-  metadataBase: new URL("https://docbook.health"),
+  authors: [{ name: "ClinikBook Health" }],
+  creator: "ClinikBook Health",
+  metadataBase: new URL("https://clinikbook.health"),
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "https://docbook.health",
-    siteName: "DocBook",
-    title: "DocBook — Book Doctors, Order Medicines & Lab Tests",
+    url: "https://clinikbook.health",
+    siteName: "ClinikBook",
+    title: "ClinikBook — Book Doctors, Order Medicines & Lab Tests",
     description:
       "India's smartest healthcare platform. Book verified doctors, order medicines in 30 mins, upload prescriptions, and track your health.",
     images: [
@@ -45,13 +45,13 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "DocBook — Healthcare Platform",
+        alt: "ClinikBook — Healthcare Platform",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "DocBook — Book Doctors, Order Medicines & Lab Tests",
+    title: "ClinikBook — Book Doctors, Order Medicines & Lab Tests",
     description: "India's smartest healthcare platform.",
     images: ["/og-image.png"],
   },

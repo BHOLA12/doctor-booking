@@ -15,8 +15,8 @@ function getJwtSecret(): string {
 
 const ACCESS_TOKEN_EXPIRY = "30m";
 const REFRESH_TOKEN_EXPIRY = "30d";
-const ACCESS_TOKEN_COOKIE = "docbook_access_token";
-const REFRESH_TOKEN_COOKIE = "docbook_refresh_token";
+const ACCESS_TOKEN_COOKIE = "clinikbook_access_token";
+const REFRESH_TOKEN_COOKIE = "clinikbook_refresh_token";
 
 export interface JWTPayload {
   userId: string;

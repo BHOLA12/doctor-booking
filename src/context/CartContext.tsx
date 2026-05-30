@@ -21,7 +21,7 @@ type CartContextType = {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const CART_STORAGE_KEY = "docbook_cart_v1";
+const CART_STORAGE_KEY = "clinikbook_cart_v1";
 
 function loadCartFromStorage(): CartItem[] {
   if (typeof window === "undefined") return [];

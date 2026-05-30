@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -82,11 +83,11 @@ export default function Navbar() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group shrink-0">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md shadow-primary/20 transition-all group-hover:scale-105">
-              <Stethoscope className="h-5 w-5" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-950 shadow-md shadow-slate-950/20 overflow-hidden relative shrink-0">
+              <Image src="/logo.png" alt="ClinikBook" width={44} height={44} className="object-contain p-1" />
             </div>
             <span className="text-xl font-extrabold tracking-tight text-foreground">
-              Doc<span className="text-primary">Book</span>
+              Clinik<span className="text-cta">Book</span>
             </span>
           </Link>
 
@@ -232,7 +233,7 @@ export default function Navbar() {
                       <Stethoscope className="h-5 w-5" />
                     </div>
                     <span className="text-lg font-extrabold tracking-tight text-foreground">
-                      Doc<span className="text-primary">Book</span>
+                      Clinik<span className="text-primary">Book</span>
                     </span>
                   </div>
                   <div className="flex-1 overflow-y-auto p-4 space-y-1">

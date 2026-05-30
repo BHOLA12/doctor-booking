@@ -39,7 +39,7 @@ function validateEnvironment() {
 
   // Warn if using placeholder values
   const jwtPlaceholder = process.env.JWT_SECRET?.includes('your-') ||
-    process.env.JWT_SECRET === 'docbook-jwt-secret-key-change-in-production-2024' ||
+    process.env.JWT_SECRET === 'clinikbook-jwt-secret-key-change-in-production-2024' ||
     process.env.JWT_SECRET === 'fallback-secret-change-me';
 
   if (jwtPlaceholder) {

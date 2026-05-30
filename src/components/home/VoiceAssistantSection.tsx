@@ -657,7 +657,7 @@ export default function VoiceAssistantSection() {
             {/* Description */}
             <p className="text-slate-400 text-sm sm:text-base leading-relaxed font-normal">
               No more typing long names or searching multiple stores. Just speak naturally. 
-              DocBook&apos;s advanced AI agent listens to your symptoms, matches prescriptions with 
+              ClinikBook&apos;s advanced AI agent listens to your symptoms, matches prescriptions with 
               closest verified doctors, and splits your medicine cart across local pharmacies to find 
               the absolute lowest bill instantly.
             </p>

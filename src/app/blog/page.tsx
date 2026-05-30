@@ -8,7 +8,7 @@ export default function BlogPage() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h3M7 12h10M7 16h10" />
         </svg>
       </div>
-      <h1 className="text-3xl font-black mb-4">Doc<span className="text-primary">Book</span> Health Blog</h1>
+      <h1 className="text-3xl font-black mb-4">Clinik<span className="text-cta">Book</span> Health Blog</h1>
       <p className="text-muted-foreground max-w-md text-lg">
         Our medical experts are busy writing helpful health tips for you. Check back shortly for our latest articles!
       </p>

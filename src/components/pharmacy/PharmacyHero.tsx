@@ -108,7 +108,7 @@ export default function PharmacyHero({
                 {/* Column 2: Consultation */}
                 <div className="space-y-4 flex flex-col justify-between">
                   <div className="space-y-2">
-                    <h3 className="text-lg font-black tracking-tight">New to Doc<span className="text-primary">Book</span>?</h3>
+                    <h3 className="text-lg font-black tracking-tight">New to Clinik<span className="text-cta">Book</span>?</h3>
                     <p className="text-xs text-teal-100/70 leading-relaxed font-semibold">
                       Book doctor consultations in minutes.
                     </p>
@@ -146,7 +146,7 @@ export default function PharmacyHero({
               <div className="absolute inset-0 bg-gradient-to-tr from-teal-500/5 to-transparent pointer-events-none z-20" />
               <Image
                 src="/pharmacy-hero.jpg"
-                alt="DocBook Online Pharmacy"
+                alt="ClinikBook Online Pharmacy"
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
                 priority

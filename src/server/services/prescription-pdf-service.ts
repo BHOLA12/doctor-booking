@@ -18,7 +18,7 @@ export async function generatePrescriptionPdf(input: {
   medicines: PrescriptionMedicine[];
 }) {
   const lines = [
-    "DocBook Prescription",
+    "ClinikBook Prescription",
     `Doctor: ${input.doctorName}`,
     `Patient: ${input.patientName}`,
     `Diagnosis: ${input.diagnosis}`,

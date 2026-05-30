@@ -40,8 +40,8 @@ export default function HomePage() {
       <section className="relative z-20 pt-24 pb-16 md:pt-32 md:pb-24 bg-gradient-to-b from-slate-100/50 via-white to-slate-50 border-b border-slate-200/50">
         
         {/* Soft floating background glows */}
-        <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[100px] pointer-events-none -z-10" />
-        <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-teal-100/30 rounded-full blur-[120px] pointer-events-none -z-10" />
+        <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-cta/5 rounded-full blur-[100px] pointer-events-none -z-10" />
+        <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-slate-250/20 rounded-full blur-[120px] pointer-events-none -z-10" />
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 z-10 text-center">
           
@@ -91,14 +91,14 @@ export default function HomePage() {
           </div>
 
           {/* Crisp typography & Value proposition */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 leading-[1.1] max-w-4xl mx-auto mb-6">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.15] max-w-4xl mx-auto mb-6">
             Book a Doctor or Order Medicines in{" "}
-            <span className="bg-gradient-to-r from-primary to-teal-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-slate-900 to-cta bg-clip-text text-transparent">
               60 Seconds.
             </span>
           </h1>
 
-          <p className="text-base sm:text-lg text-slate-500 leading-relaxed mb-10 max-w-xl mx-auto">
+          <p className="text-base sm:text-lg text-slate-600 leading-relaxed mb-10 max-w-xl mx-auto">
             Direct neighborhood partnerships. Zero markup. Better than walk-in experience.
           </p>
 
@@ -119,27 +119,27 @@ export default function HomePage() {
       {/* 2. INFINITE MOVING LIVE TICKER (MARQUEE BANNER) */}
       <section className="bg-primary text-primary-foreground py-3.5 overflow-hidden select-none border-b border-primary/20 shadow-[inset_0_-2px_4px_rgba(0,0,0,0.05)] relative z-15">
         <div className="flex w-full overflow-hidden">
-          <div className="animate-marquee whitespace-nowrap flex gap-12 text-xs font-black uppercase tracking-widest">
-            <span>🔬 100% Verified Pharmacies</span>
+          <div className="animate-marquee whitespace-nowrap flex gap-12 text-xs font-bold uppercase tracking-widest items-center">
+            <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-cta shrink-0" /> 100% Verified Pharmacies</span>
             <span>•</span>
-            <span>⚡ 15-Min Flash Delivery</span>
+            <span className="inline-flex items-center gap-1.5"><Zap className="h-4 w-4 text-cta shrink-0" /> 15-Min Flash Delivery</span>
             <span>•</span>
-            <span>🩺 Top Specialists Near You</span>
+            <span className="inline-flex items-center gap-1.5"><Stethoscope className="h-4 w-4 text-cta shrink-0" /> Top Specialists Near You</span>
             <span>•</span>
-            <span>🧪 NABL-Accredited Lab Partners</span>
+            <span className="inline-flex items-center gap-1.5"><FlaskConical className="h-4 w-4 text-cta shrink-0" /> NABL-Accredited Lab Partners</span>
             <span>•</span>
-            <span>💰 Lowest Price Guaranteed</span>
+            <span className="inline-flex items-center gap-1.5"><Activity className="h-4 w-4 text-cta shrink-0" /> Lowest Price Guaranteed</span>
             <span>•</span>
             {/* Repeated for seamless scrolling */}
-            <span>🔬 100% Verified Pharmacies</span>
+            <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-cta shrink-0" /> 100% Verified Pharmacies</span>
             <span>•</span>
-            <span>⚡ 15-Min Flash Delivery</span>
+            <span className="inline-flex items-center gap-1.5"><Zap className="h-4 w-4 text-cta shrink-0" /> 15-Min Flash Delivery</span>
             <span>•</span>
-            <span>🩺 Top Specialists Near You</span>
+            <span className="inline-flex items-center gap-1.5"><Stethoscope className="h-4 w-4 text-cta shrink-0" /> Top Specialists Near You</span>
             <span>•</span>
-            <span>🧪 NABL-Accredited Lab Partners</span>
+            <span className="inline-flex items-center gap-1.5"><FlaskConical className="h-4 w-4 text-cta shrink-0" /> NABL-Accredited Lab Partners</span>
             <span>•</span>
-            <span>💰 Lowest Price Guaranteed</span>
+            <span className="inline-flex items-center gap-1.5"><Activity className="h-4 w-4 text-cta shrink-0" /> Lowest Price Guaranteed</span>
             <span>•</span>
           </div>
         </div>
@@ -150,13 +150,13 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="text-center max-w-xl mx-auto mb-16">
-            <span className="text-[10px] font-black tracking-widest text-primary uppercase bg-primary/5 border border-primary/20 px-3.5 py-1.5 rounded-full shadow-sm">
+            <span className="text-[10px] font-bold tracking-widest text-cta uppercase bg-cta/5 border border-cta/25 px-3.5 py-1.5 rounded-full shadow-sm">
               Instant Gateways
             </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mt-4 mb-2">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-4 mb-2">
               Select Your Destination
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500">
+            <p className="text-xs sm:text-sm text-slate-600">
               Direct connection to nearest local healthcare grids
             </p>
           </div>
@@ -166,13 +166,13 @@ export default function HomePage() {
             {/* Card A: Doctors */}
             <motion.div
               whileHover={{ y: -6 }}
-              className="bg-white rounded-[2.5rem] border border-slate-200/80 p-5 pb-7 shadow-sm flex flex-col justify-between hover:shadow-xl hover:border-blue-500/20 transition-all duration-500 group overflow-hidden"
+              className="bg-white rounded-[2rem] border border-slate-200 p-6 shadow-sm flex flex-col justify-between hover:shadow-xl hover:border-cta/20 transition-all duration-500 group overflow-hidden"
             >
               <div>
                 {/* Image Container with Badge Overlay */}
-                <div className="relative w-full h-56 rounded-[2rem] overflow-hidden bg-gradient-to-br from-blue-50/60 to-sky-100/30 mb-6 border border-slate-100/80 flex items-center justify-center">
-                  <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md shadow-sm border border-slate-100 text-[10px] font-black uppercase tracking-wider text-slate-800">
-                    <Stethoscope className="h-3.5 w-3.5 text-blue-600" />
+                <div className="relative w-full h-56 rounded-2xl overflow-hidden bg-slate-50 mb-6 border border-slate-100 flex items-center justify-center">
+                  <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white shadow-sm border border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-800">
+                    <Stethoscope className="h-3.5 w-3.5 text-cta" />
                     <span>Doctors</span>
                   </div>
                   <Image
@@ -185,21 +185,21 @@ export default function HomePage() {
                   />
                 </div>
 
-                <div className="px-2">
-                  <h3 className="text-xl font-black text-slate-900 tracking-tight mb-2">
+                <div className="px-1">
+                  <h3 className="text-xl font-bold text-slate-900 tracking-tight mb-2">
                     Consult Doctors
                   </h3>
-                  <p className="text-slate-500 text-xs leading-relaxed mb-6">
+                  <p className="text-slate-600 text-xs leading-relaxed mb-6">
                     Book verified local doctors instantly for video or in-clinic visits. Zero queuing time.
                   </p>
                 </div>
               </div>
 
-              <div className="px-2">
+              <div className="px-1">
                 <Link href="/doctors" className="w-full">
-                  <button className="w-full py-3.5 bg-slate-950 hover:bg-blue-600 text-white hover:text-white font-bold text-xs rounded-xl tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer shadow-sm hover:shadow-blue-500/25">
+                  <button className="w-full py-3.5 bg-cta hover:bg-[#025684] text-white font-bold text-xs rounded-xl tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer shadow-sm hover:shadow-cta/15">
                     Find a Doctor
-                    <ArrowRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                    <ArrowRight className="h-3.5 w-3.5 text-white/80 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </Link>
               </div>
@@ -208,13 +208,13 @@ export default function HomePage() {
             {/* Card B: Medicines */}
             <motion.div
               whileHover={{ y: -6 }}
-              className="bg-white rounded-[2.5rem] border border-slate-200/80 p-5 pb-7 shadow-sm flex flex-col justify-between hover:shadow-xl hover:border-teal-500/20 transition-all duration-500 group overflow-hidden"
+              className="bg-white rounded-[2rem] border border-slate-200 p-6 shadow-sm flex flex-col justify-between hover:shadow-xl hover:border-cta/20 transition-all duration-500 group overflow-hidden"
             >
               <div>
                 {/* Image Container with Badge Overlay */}
-                <div className="relative w-full h-56 rounded-[2rem] overflow-hidden bg-gradient-to-br from-teal-50/60 to-emerald-100/30 mb-6 border border-slate-100/80 flex items-center justify-center">
-                  <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md shadow-sm border border-slate-100 text-[10px] font-black uppercase tracking-wider text-slate-800">
-                    <Pill className="h-3.5 w-3.5 text-teal-600" />
+                <div className="relative w-full h-56 rounded-2xl overflow-hidden bg-slate-50 mb-6 border border-slate-100 flex items-center justify-center">
+                  <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white shadow-sm border border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-800">
+                    <Pill className="h-3.5 w-3.5 text-cta" />
                     <span>Medicines</span>
                   </div>
                   <Image
@@ -227,21 +227,21 @@ export default function HomePage() {
                   />
                 </div>
 
-                <div className="px-2">
-                  <h3 className="text-xl font-black text-slate-900 tracking-tight mb-2">
+                <div className="px-1">
+                  <h3 className="text-xl font-bold text-slate-900 tracking-tight mb-2">
                     Order Medicines
                   </h3>
-                  <p className="text-slate-500 text-xs leading-relaxed mb-6">
+                  <p className="text-slate-600 text-xs leading-relaxed mb-6">
                     15-minute delivery from your closest retail chemist. Zero markups and split routing optimization.
                   </p>
                 </div>
               </div>
 
-              <div className="px-2">
+              <div className="px-1">
                 <Link href="/medicines" className="w-full">
-                  <button className="w-full py-3.5 bg-slate-950 hover:bg-teal-600 text-white hover:text-white font-bold text-xs rounded-xl tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer shadow-sm hover:shadow-teal-500/25">
+                  <button className="w-full py-3.5 bg-cta hover:bg-[#025684] text-white font-bold text-xs rounded-xl tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer shadow-sm hover:shadow-cta/15">
                     Order Medicines
-                    <ArrowRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                    <ArrowRight className="h-3.5 w-3.5 text-white/80 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </Link>
               </div>
@@ -250,13 +250,13 @@ export default function HomePage() {
             {/* Card C: Lab Tests */}
             <motion.div
               whileHover={{ y: -6 }}
-              className="bg-white rounded-[2.5rem] border border-slate-200/80 p-5 pb-7 shadow-sm flex flex-col justify-between hover:shadow-xl hover:border-purple-500/20 transition-all duration-500 group overflow-hidden"
+              className="bg-white rounded-[2rem] border border-slate-200 p-6 shadow-sm flex flex-col justify-between hover:shadow-xl hover:border-cta/20 transition-all duration-500 group overflow-hidden"
             >
               <div>
                 {/* Image Container with Badge Overlay */}
-                <div className="relative w-full h-56 rounded-[2rem] overflow-hidden bg-gradient-to-br from-purple-50/60 to-indigo-100/30 mb-6 border border-slate-100/80 flex items-center justify-center">
-                  <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md shadow-sm border border-slate-100 text-[10px] font-black uppercase tracking-wider text-slate-800">
-                    <FlaskConical className="h-3.5 w-3.5 text-purple-600" />
+                <div className="relative w-full h-56 rounded-2xl overflow-hidden bg-slate-50 mb-6 border border-slate-100 flex items-center justify-center">
+                  <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white shadow-sm border border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-800">
+                    <FlaskConical className="h-3.5 w-3.5 text-cta" />
                     <span>Lab Tests</span>
                   </div>
                   <Image
@@ -269,21 +269,21 @@ export default function HomePage() {
                   />
                 </div>
 
-                <div className="px-2">
-                  <h3 className="text-xl font-black text-slate-900 tracking-tight mb-2">
+                <div className="px-1">
+                  <h3 className="text-xl font-bold text-slate-900 tracking-tight mb-2">
                     Book Lab Tests
                   </h3>
-                  <p className="text-slate-500 text-xs leading-relaxed mb-6">
+                  <p className="text-slate-600 text-xs leading-relaxed mb-6">
                     NABL-accredited diagnostic labs. Safe, certified phlebotomists collect samples from your home.
                   </p>
                 </div>
               </div>
 
-              <div className="px-2">
+              <div className="px-1">
                 <Link href="/lab-tests" className="w-full">
-                  <button className="w-full py-3.5 bg-slate-950 hover:bg-purple-600 text-white hover:text-white font-bold text-xs rounded-xl tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer shadow-sm hover:shadow-purple-500/25">
+                  <button className="w-full py-3.5 bg-cta hover:bg-[#025684] text-white font-bold text-xs rounded-xl tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer shadow-sm hover:shadow-cta/15">
                     Book Lab Tests
-                    <ArrowRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                    <ArrowRight className="h-3.5 w-3.5 text-white/80 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </Link>
               </div>
@@ -301,13 +301,13 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="text-center max-w-xl mx-auto mb-20">
-            <span className="text-[10px] font-black tracking-widest text-primary uppercase bg-primary/5 border border-primary/20 px-3.5 py-1.5 rounded-full shadow-sm">
+            <span className="text-[10px] font-bold tracking-widest text-cta uppercase bg-cta/5 border border-cta/25 px-3.5 py-1.5 rounded-full shadow-sm">
               Continuous Intelligence Loop
             </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mt-5 mb-3">
-              How Doc<span className="text-primary">Book</span> Synchronizes
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-5 mb-3">
+              How Clinik<span className="text-cta">Book</span> Synchronizes
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 max-w-sm mx-auto leading-relaxed">
               We sync inventory databases and specialist appointment logs in real-time.
             </p>
           </div>
@@ -360,17 +360,17 @@ export default function HomePage() {
       {/* 5. SELF-SERVE B2B PARTNER ONBOARDING LAYER (HIGH CONTRAST SPLIT) */}
       <section className="py-24 bg-slate-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-slate-950 text-white rounded-[2.5rem] p-8 sm:p-12 border border-slate-900 shadow-2xl relative overflow-hidden">
+          <div className="bg-slate-950 text-white rounded-[2rem] p-8 sm:p-12 border border-slate-900 shadow-2xl relative overflow-hidden">
             
             {/* Background design glow */}
-            <div className="absolute right-0 bottom-0 w-[300px] h-[300px] bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
+            <div className="absolute right-0 bottom-0 w-[300px] h-[300px] bg-cta/10 rounded-full blur-[80px] pointer-events-none" />
 
             <div className="relative z-10 max-w-3xl">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/15 border border-primary/30 text-primary text-[10px] font-black uppercase tracking-wider mb-6">
-                ⚡ B2B Healthcare Partners
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cta/15 border border-cta/30 text-cta text-[10px] font-bold uppercase tracking-wider mb-6">
+                B2B Healthcare Partners
               </span>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight mb-4">
-                Join the Doc<span className="text-primary">Book</span> Care Network
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight mb-4">
+                Join the Clinik<span className="text-cta">Book</span> Care Network
               </h2>
               <p className="text-slate-400 text-xs sm:text-sm leading-relaxed mb-10 max-w-xl">
                 Integrate your retail pharmacy stock or clinic schedules directly into our local dispatch grid. Join thousands of verified professionals.
@@ -379,14 +379,14 @@ export default function HomePage() {
               <div className="grid sm:grid-cols-3 gap-6">
                 
                 {/* Partner 1: Chemist */}
-                <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 hover:border-primary/40 transition-colors flex flex-col justify-between">
+                <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 hover:border-cta/40 transition-colors flex flex-col justify-between">
                   <div>
-                    <Store className="h-5 w-5 text-primary mb-3" />
-                    <h4 className="font-extrabold text-xs sm:text-sm tracking-tight text-slate-100 mb-1">Retail Chemists</h4>
+                    <Store className="h-5 w-5 text-cta mb-3" />
+                    <h4 className="font-bold text-xs sm:text-sm tracking-tight text-slate-100 mb-1">Retail Chemists</h4>
                     <p className="text-[10px] text-slate-400 leading-normal mb-4">Manage orders and automate stock with our billing module.</p>
                   </div>
                   <Link href="/chemist-dashboard">
-                    <button className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold tracking-wider uppercase rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1">
+                    <button className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold tracking-wider uppercase rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5">
                       Partner Portal
                       <ArrowRight className="h-3 w-3" />
                     </button>
@@ -394,14 +394,14 @@ export default function HomePage() {
                 </div>
 
                 {/* Partner 2: Doctor */}
-                <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 hover:border-primary/40 transition-colors flex flex-col justify-between">
+                <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 hover:border-cta/40 transition-colors flex flex-col justify-between">
                   <div>
-                    <Calendar className="h-5 w-5 text-primary mb-3" />
-                    <h4 className="font-extrabold text-xs sm:text-sm tracking-tight text-slate-100 mb-1">Medical Clinics</h4>
+                    <Stethoscope className="h-5 w-5 text-cta mb-3" />
+                    <h4 className="font-bold text-xs sm:text-sm tracking-tight text-slate-100 mb-1">Medical Clinics</h4>
                     <p className="text-[10px] text-slate-400 leading-normal mb-4">Publish slot matrices to consult local neighborhood patients.</p>
                   </div>
                   <Link href="/register/doctor">
-                    <button className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold tracking-wider uppercase rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1">
+                    <button className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold tracking-wider uppercase rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5">
                       Register Doctor
                       <ArrowRight className="h-3 w-3" />
                     </button>
@@ -409,14 +409,14 @@ export default function HomePage() {
                 </div>
 
                 {/* Partner 3: Labs */}
-                <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 hover:border-primary/40 transition-colors flex flex-col justify-between">
+                <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 hover:border-cta/40 transition-colors flex flex-col justify-between">
                   <div>
-                    <FlaskConical className="h-5 w-5 text-primary mb-3" />
-                    <h4 className="font-extrabold text-xs sm:text-sm tracking-tight text-slate-100 mb-1">Pathology Labs</h4>
+                    <FlaskConical className="h-5 w-5 text-cta mb-3" />
+                    <h4 className="font-bold text-xs sm:text-sm tracking-tight text-slate-100 mb-1">Pathology Labs</h4>
                     <p className="text-[10px] text-slate-400 leading-normal mb-4">Scale NABL-certified sample dispatch and electronic logs.</p>
                   </div>
                   <Link href="/register/lab">
-                    <button className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold tracking-wider uppercase rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1">
+                    <button className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold tracking-wider uppercase rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5">
                       Register Lab
                       <ArrowRight className="h-3 w-3" />
                     </button>
@@ -451,7 +451,7 @@ export default function HomePage() {
           </div>
 
           <div className="text-[10px] text-slate-400">
-            &copy; {new Date().getFullYear()} DocBook Healthcare. All rights reserved. HIPAA Compliant Security & Grid Encrypted Routing.
+            &copy; {new Date().getFullYear()} ClinikBook Healthcare. All rights reserved. HIPAA Compliant Security & Grid Encrypted Routing.
           </div>
 
         </div>

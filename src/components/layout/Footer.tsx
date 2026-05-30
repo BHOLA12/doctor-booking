@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Stethoscope } from "lucide-react";
 import ContactSection from "./ContactSection";
 
@@ -9,13 +10,16 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           {/* Brand */}
           <div className="md:col-span-2">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                <Stethoscope className="h-4 w-4" />
+            <Link href="/" className="flex items-center gap-3.5 mb-5 group">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-950 shadow-md shadow-slate-950/20 overflow-hidden relative shrink-0 border border-slate-800">
+                <Image src="/logo.png" alt="ClinikBook" width={64} height={64} className="object-contain p-1.5 transition-transform group-hover:scale-105" />
               </div>
-              <span className="text-lg font-extrabold tracking-tight text-foreground">
-                Doc<span className="text-primary">Book</span>
-              </span>
+              <div className="flex flex-col">
+                <span className="text-2xl font-black tracking-tight text-foreground leading-none mb-1">
+                  Clinik<span className="text-cta">Book</span>
+                </span>
+                <span className="text-[10px] text-muted-foreground font-bold tracking-widest uppercase">Healthcare Simplified</span>
+              </div>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
               Your complete healthcare super-app. Book doctors, order medicines, schedule lab tests, and get personalised diet plans — all in one place.
@@ -49,7 +53,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-10 pt-6 border-t text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} DocBook. All rights reserved. Made with ❤️ for better healthcare.</p>
+          <p>&copy; {new Date().getFullYear()} ClinikBook. All rights reserved. Made with ❤️ for better healthcare.</p>
         </div>
       </div>
     </footer>

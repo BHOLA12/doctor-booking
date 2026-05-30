@@ -3,6 +3,7 @@
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -77,9 +78,9 @@ function LoginContent() {
         <motion.div variants={fadeUp} className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-5">
             <div className="relative">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 blur-xl opacity-50 scale-110" />
-              <div className="relative h-16 w-16 flex items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-teal-600 shadow-lg shadow-cyan-500/30">
-                <Stethoscope className="h-8 w-8 text-white" />
+              <div className="absolute inset-0 rounded-full bg-slate-900 blur-xl opacity-50 scale-110" />
+              <div className="relative h-20 w-20 flex items-center justify-center rounded-2xl bg-slate-950 shadow-lg overflow-hidden shrink-0 border border-white/10">
+                <Image src="/logo.png" alt="ClinikBook" width={80} height={80} className="object-contain p-2" />
               </div>
             </div>
           </div>
@@ -89,7 +90,7 @@ function LoginContent() {
           <p className="mt-2 text-slate-500 dark:text-slate-400 text-sm">
             Sign in to your{" "}
             <span className="font-bold tracking-tight text-slate-900 dark:text-white">
-              Doc<span className="text-primary">Book</span>
+              Clinik<span className="text-cta">Book</span>
             </span>{" "}
             account
           </p>
@@ -220,9 +221,9 @@ function LoginContent() {
               </p>
               <div className="space-y-1">
                 {[
-                  { label: "Admin", creds: "admin@docbook.com / admin123" },
-                  { label: "Doctor", creds: "dr.sharma@docbook.com / password123" },
-                  { label: "Patient", creds: "patient@docbook.com / password123" },
+                  { label: "Admin", creds: "admin@clinikbook.health / admin123" },
+                  { label: "Doctor", creds: "dr.sharma@clinikbook.health / password123" },
+                  { label: "Patient", creds: "patient@clinikbook.health / password123" },
                 ].map((item) => (
                   <p key={item.label} className="text-xs text-slate-500 dark:text-slate-400">
                     <span className="font-semibold text-slate-600 dark:text-slate-300">

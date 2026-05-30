@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { 
   Search, 
@@ -39,11 +40,11 @@ export default function PharmacyNavbar() {
           
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group shrink-0">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md shadow-primary/20 transition-all group-hover:scale-105">
-              <Stethoscope className="h-5 w-5" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-950 shadow-md shadow-slate-950/20 overflow-hidden relative shrink-0">
+              <Image src="/logo.png" alt="ClinikBook" width={44} height={44} className="object-contain p-1" />
             </div>
             <span className="hidden sm:inline text-xl font-extrabold tracking-tight text-foreground">
-              Doc<span className="text-primary">Book</span>
+              Clinik<span className="text-cta">Book</span>
             </span>
           </Link>
 

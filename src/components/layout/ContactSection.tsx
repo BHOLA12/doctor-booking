@@ -17,56 +17,56 @@ const CONTACTS: CountryContact[] = [
     name: "India",
     phone: "+91 98765 43210",
     phoneRaw: "+919876543210",
-    email: "support.in@docbook.in",
+    email: "support.in@clinikbook.health",
   },
   {
     flag: "🇺🇸",
     name: "USA",
     phone: "+1 (800) 123 4567",
     phoneRaw: "+18001234567",
-    email: "support.us@docbook.in",
+    email: "support.us@clinikbook.health",
   },
   {
     flag: "🇬🇧",
     name: "UK",
     phone: "+44 800 123 4567",
     phoneRaw: "+448001234567",
-    email: "support.uk@docbook.in",
+    email: "support.uk@clinikbook.health",
   },
   {
     flag: "🇦🇺",
     name: "Australia",
     phone: "+61 1800 123 456",
     phoneRaw: "+611800123456",
-    email: "support.au@docbook.in",
+    email: "support.au@clinikbook.health",
   },
   {
     flag: "🇦🇪",
     name: "UAE",
     phone: "+971 800 123 456",
     phoneRaw: "+971800123456",
-    email: "support.ae@docbook.in",
+    email: "support.ae@clinikbook.health",
   },
   {
     flag: "🇸🇬",
     name: "Singapore",
     phone: "+65 6123 4567",
     phoneRaw: "+6561234567",
-    email: "support.sg@docbook.in",
+    email: "support.sg@clinikbook.health",
   },
   {
     flag: "🇨🇦",
     name: "Canada",
     phone: "+1 (888) 765 4321",
     phoneRaw: "+18887654321",
-    email: "support.ca@docbook.in",
+    email: "support.ca@clinikbook.health",
   },
 ];
 
 export default function ContactSection() {
   const [selected, setSelected] = useState<CountryContact>(CONTACTS[0]);
 
-  const mailtoHref = `mailto:${selected.email}?subject=Complaint%20%2F%20Issue%20Report&body=Hello%20DocBook%20Support%2C%0A%0AI%20would%20like%20to%20report%20the%20following%20issue%3A%0A%0A%5BDescribe%20your%20issue%20here%5D%0A%0ARegion%3A%20${encodeURIComponent(selected.name)}%0A%0AThank%20you.`;
+  const mailtoHref = `mailto:${selected.email}?subject=Complaint%20%2F%20Issue%20Report&body=Hello%20ClinikBook%20Support%2C%0A%0AI%20would%20like%20to%20report%20the%20following%20issue%3A%0A%0A%5BDescribe%20your%20issue%20here%5D%0A%0ARegion%3A%20${encodeURIComponent(selected.name)}%0A%0AThank%20you.`;
 
   return (
     <div>

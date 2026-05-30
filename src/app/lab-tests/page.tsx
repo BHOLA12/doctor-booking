@@ -15,7 +15,8 @@ import {
   ChevronRight, 
   ChevronLeft,
   Lock,
-  ChevronDown
+  ChevronDown,
+  FlaskConical
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -654,12 +655,13 @@ export default function LabTestsPage() {
               Scale your diagnostic laboratory footprint.
             </h2>
             <p className="text-slate-400 text-xs sm:text-sm mt-3 max-w-2xl leading-relaxed">
-              Integrate your test menus with DocBook. Manage automated home sample pickup logs and dispatch secure electronic lab reports directly to patient dashboards.
+              Integrate your test menus with ClinikBook. Manage automated home sample pickup logs and dispatch secure electronic lab reports directly to patient dashboards.
             </p>
           </div>
           <Link href="/register/lab" className="w-full md:w-auto shrink-0 relative z-10">
-            <button className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-teal-500 text-white font-bold text-sm rounded-2xl transition-all duration-300 shadow-lg shadow-teal-900/30 hover:scale-[1.02] active:scale-[0.98] cursor-pointer whitespace-nowrap border-none">
-              Register as Partner Lab 🧪
+            <button className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-cta hover:bg-[#025684] text-white font-bold text-sm rounded-2xl transition-all duration-300 shadow-lg active:scale-[0.98] cursor-pointer whitespace-nowrap border-none">
+              <FlaskConical className="h-4 w-4 text-white" />
+              Register as Partner Lab
             </button>
           </Link>
         </div>
