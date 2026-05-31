@@ -1,3 +1,5 @@
+import { MEDICINES } from "./medicines-data";
+
 export type Brand = {
   id: string;
   name: string;
@@ -133,38 +135,99 @@ export const CONDITION_MEDICINES: ConditionMedicine[] = [
   { id: "cm37", name: "Chyawanprash Special", salt: "Amla and Herbal Paste", price: 245, mrp: 290, discount: 15, brandId: "b12", conditionId: "c16", imageEmoji: "🏺", availability: "In Stock" },
 ];
 
-// Pre-computed cache
-const conditionCache = new Map<string, { medicines: ConditionMedicine[], brands: Brand[] }>();
+export function mapSlugToMedicineCategory(slug: string): string {
+  if (slug === "diabetes") return "Diabetes";
+  if (slug === "heart-care") return "Heart & BP";
+  if (slug === "stomach-care") return "Digestive Health";
+  if (slug === "derma-care") return "Skin Care";
+  if (slug === "bone-joint" || slug === "liver-care" || slug === "kidney-care") return "Vitamins & Supplements";
+  if (slug === "neuro-brain") return "Neuro & Brain";
+  if (slug === "thyroid-care") return "Thyroid Care";
+  if (slug === "womens-health") return "Women Health";
+  if (slug === "child-care") return "Child Care";
+  if (slug === "ayurveda") return "Ayurveda & Herbal";
+  if (slug === "cold-fever") return "Cold & Fever";
+  return "";
+}
 
 export function getConditionData(slug: string) {
-  if (conditionCache.has(slug)) return conditionCache.get(slug)!;
-
   const category = PROBLEM_CATEGORIES.find(c => c.slug === slug);
   if (!category) return null;
 
-  const medicines = CONDITION_MEDICINES.filter(m => m.conditionId === category.id);
-  const brandIds = Array.from(new Set(medicines.map(m => m.brandId)));
-  const brands = BRANDS.filter(b => brandIds.includes(b.id));
+  const medCategory = mapSlugToMedicineCategory(slug);
+  const matchedMedicines = MEDICINES.filter(m => m.category === medCategory);
 
-  const result = { medicines, brands };
-  conditionCache.set(slug, result);
-  return result;
+  // Group manufacturers to make brands dynamically
+  const manufacturers = Array.from(new Set(matchedMedicines.map(m => m.manufacturer)));
+  const brands = manufacturers.map((name, index) => ({
+    id: `brand-${name.toLowerCase().replace(/[^a-z0-9]/g, "-")}`,
+    name,
+    emoji: "🏢",
+    description: `Trusted manufacturer of medicines in this category.`,
+    medicineCount: matchedMedicines.filter(m => m.manufacturer === name).length,
+  }));
+
+  // Map matchedMedicines to ConditionMedicine format
+  const medicines = matchedMedicines.map(m => ({
+    id: m.id,
+    name: m.name,
+    salt: m.salt,
+    price: m.price,
+    mrp: m.mrp,
+    discount: m.discount,
+    brandId: `brand-${m.manufacturer.toLowerCase().replace(/[^a-z0-9]/g, "-")}`,
+    conditionId: category.id,
+    imageEmoji: m.imageEmoji,
+    image: m.image,
+    availability: m.availability as "In Stock" | "Out of Stock",
+  }));
+
+  return { medicines, brands };
 }
 
 export function getMedicinesByBrand(brandId: string, conditionId: string) {
-  return CONDITION_MEDICINES.filter(m => m.brandId === brandId && m.conditionId === conditionId);
+  const category = PROBLEM_CATEGORIES.find(c => c.id === conditionId);
+  if (!category) return [];
+
+  const medCategory = mapSlugToMedicineCategory(category.slug);
+  return MEDICINES.filter(m => 
+    m.category === medCategory && 
+    `brand-${m.manufacturer.toLowerCase().replace(/[^a-z0-9]/g, "-")}` === brandId
+  ).map(m => ({
+    id: m.id,
+    name: m.name,
+    salt: m.salt,
+    price: m.price,
+    mrp: m.mrp,
+    discount: m.discount,
+    brandId,
+    conditionId,
+    imageEmoji: m.imageEmoji,
+    image: m.image,
+    availability: m.availability as "In Stock" | "Out of Stock",
+  }));
 }
 
-export function getBrandsBySalt(salt: string, conditionId: string) {
-  const medicinesWithSalt = CONDITION_MEDICINES.filter(m => m.salt === salt && m.conditionId === conditionId);
-  const brandIds = Array.from(new Set(medicinesWithSalt.map(m => m.brandId)));
-  return BRANDS.filter(b => brandIds.includes(b.id)).map(b => {
-    const specificMedicine = medicinesWithSalt.find(m => m.brandId === b.id);
+export function getBrandsBySalt(saltName: string, conditionId?: string) {
+  // Normalize the salt search key (take first word, e.g. "Paracetamol" or "Metformin")
+  const searchSalt = saltName.toLowerCase().split(/[ +]/)[0];
+  if (!searchSalt) return [];
+
+  // Filter medicines by salt
+  const matched = MEDICINES.filter(m => 
+    m.salt.toLowerCase().includes(searchSalt)
+  );
+
+  return matched.map(m => {
     return {
-      ...b,
-      price: specificMedicine?.price || 0,
-      mrp: specificMedicine?.mrp || 0,
-      discount: specificMedicine?.discount || 0,
+      id: m.id,
+      name: m.manufacturer,
+      emoji: m.imageEmoji || "💊",
+      description: m.name, // Use actual medicine name as description
+      medicineCount: 1,
+      price: m.price,
+      mrp: m.mrp,
+      discount: m.discount,
     };
   });
 }

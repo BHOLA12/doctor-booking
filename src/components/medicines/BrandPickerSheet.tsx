@@ -82,8 +82,8 @@ export default function BrandPickerSheet({
                 className="w-full mt-4 h-10 rounded-xl gap-2 bg-teal-600 hover:bg-teal-500 text-white font-extrabold shadow-md shadow-teal-600/10 hover:shadow-teal-500/20 transition-all duration-200 active:scale-[0.98]"
                 onClick={() => {
                   addItem({
-                    id: `${brand.id}-${medicineName}`,
-                    name: `${medicineName} (${brand.name})`,
+                    id: brand.id,
+                    name: brand.description || `${medicineName} (${brand.name})`,
                     salt: saltName,
                     price: brand.price,
                     mrp: brand.mrp,

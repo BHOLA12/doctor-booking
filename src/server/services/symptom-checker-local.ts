@@ -19,7 +19,7 @@ const CONDITION_RULES: ConditionRule[] = [
     reason: "Symptoms are characteristic of a viral upper respiratory infection.",
     suggestedTests: ["Physical examination"],
     precautions: ["Stay hydrated", "Get plenty of rest", "Use saline nasal drops"],
-    suggestedMedicines: ["Calpol 650", "Ascoril LS Syrup", "Allegra 120"],
+    suggestedMedicines: ["Dolo 650", "Allegra 120"],
     suggestedSpecialists: ["General Physician"],
   },
   {
@@ -29,7 +29,7 @@ const CONDITION_RULES: ConditionRule[] = [
     reason: "High fever and systemic symptoms like muscle pain often indicate influenza.",
     suggestedTests: ["Rapid influenza diagnostic test", "Complete blood count"],
     precautions: ["Isolation to prevent spread", "Rest and hydration", "Monitor temperature"],
-    suggestedMedicines: ["Calpol 650", "Allegra 120", "Asthalin Inhaler"],
+    suggestedMedicines: ["Dolo 650", "Allegra 120"],
     suggestedSpecialists: ["General Physician", "Pulmonologist"],
   },
   {
@@ -39,7 +39,7 @@ const CONDITION_RULES: ConditionRule[] = [
     reason: "Unilateral throbbing pain with sensory sensitivity is typical for migraines.",
     suggestedTests: ["Neurological exam", "MRI if recurring or severe"],
     precautions: ["Rest in a dark, quiet room", "Identify and avoid triggers", "Stay hydrated"],
-    suggestedMedicines: ["Vasograin", "Gabapin NT", "Shelcal 500"],
+    suggestedMedicines: ["Vasograin", "Gabapin NT"],
     suggestedSpecialists: ["Neurologist", "General Physician"],
   },
   {
@@ -49,7 +49,7 @@ const CONDITION_RULES: ConditionRule[] = [
     reason: "Abdominal discomfort and gastrointestinal distress point to digestive issues.",
     suggestedTests: ["Stool culture", "Breath test for H. pylori", "Endoscopy if chronic"],
     precautions: ["Drink ORS to stay hydrated", "Eat bland foods (BRAT diet)", "Avoid spicy food"],
-    suggestedMedicines: ["Pan 40", "Omez 20", "Digene Syrup"],
+    suggestedMedicines: ["Pantop 40", "Mucaine Gel"],
     suggestedSpecialists: ["Gastroenterologist", "General Physician"],
   },
   {
@@ -59,7 +59,7 @@ const CONDITION_RULES: ConditionRule[] = [
     reason: "Itchy, watery eyes and sneezing without fever often indicate allergies.",
     suggestedTests: ["Skin prick test", "IgE blood test"],
     precautions: ["Avoid known allergens", "Keep windows closed during high pollen", "Use air purifiers"],
-    suggestedMedicines: ["Allegra 120", "Refresh Tears Drops", "Betnovate N"],
+    suggestedMedicines: ["Allegra 120", "Cetrizine 10mg"],
     suggestedSpecialists: ["Allergist", "Dermatologist"],
   },
   {
@@ -69,7 +69,7 @@ const CONDITION_RULES: ConditionRule[] = [
     reason: "Classic symptoms of hyperglycaemia require immediate diagnostic verification.",
     suggestedTests: ["HbA1c test", "Fasting blood sugar", "Oral glucose tolerance test"],
     precautions: ["Monitor sugar intake", "Regular exercise", "Seek medical consultation"],
-    suggestedMedicines: ["Metformin 500", "Glycomet GP1", "Janumet 50/500"],
+    suggestedMedicines: ["Metformin 500", "Glycomet GP1"],
     suggestedSpecialists: ["Diabetologist", "Endocrinologist", "General Physician"],
   },
   {
@@ -79,7 +79,7 @@ const CONDITION_RULES: ConditionRule[] = [
     reason: "Localized skin irritation and itching suggest a dermatological condition.",
     suggestedTests: ["Skin biopsy", "Patch testing"],
     precautions: ["Moisturize regularly", "Avoid harsh soaps", "Use mild cleansers"],
-    suggestedMedicines: ["Betnovate N", "Clingard Gel"],
+    suggestedMedicines: ["Calamine Lotion"],
     suggestedSpecialists: ["Dermatologist"],
   },
 ];
