@@ -169,7 +169,7 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ id: st
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Est. Delivery</p>
                   <p className="text-sm font-black text-slate-900">
-                    {currentStatus === "DELIVERED" ? "Delivered ✅" : "12 – 15 Mins"}
+                    {currentStatus === "DELIVERED" ? "Delivered ✅" : "25 – 30 Mins"}
                   </p>
                 </div>
               </div>

@@ -1790,7 +1790,7 @@ function MedicinesContent() {
               Local Retail Pharmacy Owner? Upgrade to an Intelligent Digital Counter.
             </h2>
             <p className="text-slate-400 text-sm mt-1 leading-relaxed">
-              Onboard your retail pharmacy medical stock indices. Get our premium, offline-first desktop POS billing software entirely free and fulfill 15-minute hyper-local patient orders.
+              Onboard your retail pharmacy medical stock indices. Get our premium, offline-first desktop POS billing software entirely free and fulfill 30-minute hyper-local patient orders (within 1-2 km).
             </p>
           </div>
           <Link href="/register/chemist" className="w-full md:w-auto shrink-0">

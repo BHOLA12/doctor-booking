@@ -592,7 +592,7 @@ export default function LabTestsPage() {
               </div>
               <div>
                 <h4 className="font-extrabold text-xs text-slate-800">Home Sample Collection</h4>
-                <p className="text-[10px] text-slate-500 mt-0.5">Convenient & hassle-free</p>
+                <p className="text-[10px] text-slate-500 mt-0.5">Order now & our professional will collect samples from your home</p>
               </div>
             </div>
 
@@ -744,11 +744,16 @@ export default function LabTestsPage() {
                     <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Collection Options</span>
                     <div className="mt-0.5">
                       {selectedDetailsTest.homeCollection ? (
-                        <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100/90 text-[10px] font-bold border-0">
-                          🏠 Free Home Sample Collection
-                        </Badge>
+                        <div className="flex flex-col gap-1">
+                          <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100/90 text-[10px] font-bold border-0 w-fit">
+                            🏠 Free Home Sample Collection
+                          </Badge>
+                          <p className="text-[9px] text-emerald-600 font-bold leading-normal mt-0.5">
+                            * Our certified health partner will visit your home to collect the samples at your preferred time.
+                          </p>
+                        </div>
                       ) : (
-                        <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-100/90 text-[10px] font-bold border-0">
+                        <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-100/90 text-[10px] font-bold border-0 w-fit">
                           🏥 Lab Visit Required
                         </Badge>
                       )}

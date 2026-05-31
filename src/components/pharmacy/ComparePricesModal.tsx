@@ -60,7 +60,7 @@ export default function ComparePricesModal({ isOpen, onClose, medicine }: Compar
         {
           store: "Ajay Medical Hall",
           price: 0.94,
-          delivery: "15-20 mins",
+          delivery: "25-30 mins (1-2 km)",
           rating: 4.6,
           verified: true,
           stock: "High",
@@ -68,7 +68,7 @@ export default function ComparePricesModal({ isOpen, onClose, medicine }: Compar
         {
           store: "Hindustan Medical Hall",
           price: 1.0,
-          delivery: "12-15 mins",
+          delivery: "25-30 mins (1-2 km)",
           rating: 4.8,
           verified: true,
           stock: "Medium",
@@ -76,7 +76,7 @@ export default function ComparePricesModal({ isOpen, onClose, medicine }: Compar
         {
           store: "Gudvil Medical Hall",
           price: 1.05,
-          delivery: "30-45 mins",
+          delivery: "35-45 mins",
           rating: 4.5,
           verified: true,
           stock: "Low",
