@@ -625,7 +625,7 @@ function MedicinesContent() {
                     Upload handwritten notes or digital PDFs. Our integrated AI-OCR engine decodes doctor instructions and flags molecules in nearby inventories instantly.
                   </p>
                   <div className="pt-2">
-                    <button onClick={() => setPrescriptionOpen(true)} className="inline-flex items-center justify-center rounded-full bg-indigo-650 px-7 py-3.5 text-xs font-black uppercase tracking-wider text-white shadow-lg shadow-indigo-650/25 transition hover:bg-indigo-700">
+                    <button onClick={() => setPrescriptionOpen(true)} className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-7 py-3.5 text-xs font-black uppercase tracking-wider text-white shadow-lg shadow-indigo-600/25 transition hover:bg-indigo-700">
                       Scan Prescription
                       <Paperclip className="ml-2 w-4 h-4" />
                     </button>
@@ -635,7 +635,7 @@ function MedicinesContent() {
                   <div className="relative w-72 h-72 rounded-[2.5rem] bg-indigo-50 border border-indigo-100 p-6 flex items-center justify-center shadow-inner">
                     <div className="text-8xl filter drop-shadow-md">📋</div>
                     <div className="absolute -top-4 -left-4 bg-white border border-indigo-100 rounded-2xl p-3.5 shadow-md text-center">
-                      <p className="text-xl font-black text-indigo-650">Auto</p>
+                      <p className="text-xl font-black text-indigo-600">Auto</p>
                       <p className="text-[9px] uppercase tracking-wider font-extrabold text-stone-400">Compliance Mapping</p>
                     </div>
                   </div>
@@ -1626,7 +1626,7 @@ function MedicinesContent() {
             >
                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 sm:gap-4">
-                     <div className="h-10 w-10 sm:h-12 sm:w-12 bg-indigo-50 rounded-xl sm:rounded-2xl flex items-center justify-center text-indigo-650 shrink-0">
+                     <div className="h-10 w-10 sm:h-12 sm:w-12 bg-indigo-50 rounded-xl sm:rounded-2xl flex items-center justify-center text-indigo-600 shrink-0">
                         📋
                      </div>
                      <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Prescription Compliance</h3>
