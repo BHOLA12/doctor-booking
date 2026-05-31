@@ -153,6 +153,8 @@ export interface SymptomCheckerResult {
   }>;
   suggestedTests: string[];
   precautions: string[];
+  suggestedMedicines?: string[];
+  suggestedSpecialists?: string[];
   disclaimer: string;
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Brain, Loader2, Sparkles, AlertCircle, FileText } from "lucide-react";
 import { ReportAnalysisResult, SymptomCheckerResult } from "@/types";
 import { Badge } from "@/components/ui/badge";
@@ -129,6 +130,37 @@ export default function PatientAiPanel() {
                 </div>
               </div>
               
+              
+              {symptomResult.suggestedMedicines && symptomResult.suggestedMedicines.length > 0 && (
+                <div className="border-t pt-3">
+                  <p className="font-semibold text-xs mb-2 text-slate-800 uppercase tracking-wider">Suggested OTC Medicines</p>
+                  <div className="flex flex-wrap gap-2">
+                    {symptomResult.suggestedMedicines.map((med, idx) => (
+                      <Link key={idx} href={`/medicines?search=${encodeURIComponent(med)}`}>
+                        <Badge variant="secondary" className="bg-primary/5 text-primary border border-primary/10 hover:bg-primary/10 text-xs px-2.5 py-1 font-bold rounded-lg cursor-pointer flex items-center gap-1">
+                          💊 {med}
+                        </Badge>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {symptomResult.suggestedSpecialists && symptomResult.suggestedSpecialists.length > 0 && (
+                <div className="border-t pt-3">
+                  <p className="font-semibold text-xs mb-2 text-slate-800 uppercase tracking-wider">Recommended Specialists</p>
+                  <div className="flex flex-wrap gap-2">
+                    {symptomResult.suggestedSpecialists.map((spec, idx) => (
+                      <Link key={idx} href={`/doctors?specialization=${encodeURIComponent(spec)}`}>
+                        <Badge variant="outline" className="bg-teal-50 text-teal-750 border-teal-200/60 hover:bg-teal-150/50 text-xs px-2.5 py-1 font-bold rounded-lg cursor-pointer flex items-center gap-1">
+                          👨‍⚕️ {spec} (Find Nearby)
+                        </Badge>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <p className="text-xs text-muted-foreground border-t pt-3">
                 ⚠️ {symptomResult.disclaimer}
               </p>

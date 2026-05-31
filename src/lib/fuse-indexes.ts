@@ -28,7 +28,7 @@ const medicineIndex = new Fuse<Medicine>(MEDICINES, {
 
 export type MedicineResult = Pick<
   Medicine,
-  "id" | "name" | "salt" | "price" | "mrp" | "discount" | "category" | "imageEmoji" | "availability"
+  "id" | "name" | "salt" | "price" | "mrp" | "discount" | "category" | "imageEmoji" | "availability" | "manufacturer"
 >;
 
 export function searchMedicines(query: string, limit = 10): MedicineResult[] {
@@ -51,6 +51,7 @@ function toMedicineResult(m: Medicine): MedicineResult {
     category: m.category,
     imageEmoji: m.imageEmoji,
     availability: m.availability,
+    manufacturer: m.manufacturer,
   };
 }
 

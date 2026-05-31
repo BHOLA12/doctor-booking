@@ -143,7 +143,7 @@ async function callOpenAI<T>(prompt: string, fallback: T): Promise<T> {
 
 export async function analyzeSymptoms(symptoms: string): Promise<SymptomCheckerResult> {
   const localAnalysis = getLocalSymptomAnalysis(symptoms);
-  const prompt = `You are a medical triage assistant. Return JSON with fields possibleDiseases[{name,probability,reason}], suggestedTests[], precautions[], disclaimer. Symptoms: ${symptoms}`;
+  const prompt = `You are a medical triage assistant. Return JSON with fields possibleDiseases[{name,probability,reason}], suggestedTests[], precautions[], suggestedMedicines[], suggestedSpecialists[], disclaimer. Symptoms: ${symptoms}`;
   
   if (GROQ_API_KEY) {
     return callGroq<SymptomCheckerResult>(prompt, localAnalysis);

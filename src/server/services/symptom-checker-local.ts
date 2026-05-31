@@ -7,6 +7,8 @@ interface ConditionRule {
   reason: string;
   suggestedTests: string[];
   precautions: string[];
+  suggestedMedicines: string[];
+  suggestedSpecialists: string[];
 }
 
 const CONDITION_RULES: ConditionRule[] = [
@@ -17,6 +19,8 @@ const CONDITION_RULES: ConditionRule[] = [
     reason: "Symptoms are characteristic of a viral upper respiratory infection.",
     suggestedTests: ["Physical examination"],
     precautions: ["Stay hydrated", "Get plenty of rest", "Use saline nasal drops"],
+    suggestedMedicines: ["Calpol 650", "Ascoril LS Syrup", "Allegra 120"],
+    suggestedSpecialists: ["General Physician"],
   },
   {
     name: "Influenza (Flu)",
@@ -25,6 +29,8 @@ const CONDITION_RULES: ConditionRule[] = [
     reason: "High fever and systemic symptoms like muscle pain often indicate influenza.",
     suggestedTests: ["Rapid influenza diagnostic test", "Complete blood count"],
     precautions: ["Isolation to prevent spread", "Rest and hydration", "Monitor temperature"],
+    suggestedMedicines: ["Calpol 650", "Allegra 120", "Asthalin Inhaler"],
+    suggestedSpecialists: ["General Physician", "Pulmonologist"],
   },
   {
     name: "Migraine",
@@ -33,6 +39,8 @@ const CONDITION_RULES: ConditionRule[] = [
     reason: "Unilateral throbbing pain with sensory sensitivity is typical for migraines.",
     suggestedTests: ["Neurological exam", "MRI if recurring or severe"],
     precautions: ["Rest in a dark, quiet room", "Identify and avoid triggers", "Stay hydrated"],
+    suggestedMedicines: ["Vasograin", "Gabapin NT", "Shelcal 500"],
+    suggestedSpecialists: ["Neurologist", "General Physician"],
   },
   {
     name: "Gastritis / Food Poisoning",
@@ -41,6 +49,8 @@ const CONDITION_RULES: ConditionRule[] = [
     reason: "Abdominal discomfort and gastrointestinal distress point to digestive issues.",
     suggestedTests: ["Stool culture", "Breath test for H. pylori", "Endoscopy if chronic"],
     precautions: ["Drink ORS to stay hydrated", "Eat bland foods (BRAT diet)", "Avoid spicy food"],
+    suggestedMedicines: ["Pan 40", "Omez 20", "Digene Syrup"],
+    suggestedSpecialists: ["Gastroenterologist", "General Physician"],
   },
   {
     name: "Seasonal Allergies",
@@ -49,6 +59,8 @@ const CONDITION_RULES: ConditionRule[] = [
     reason: "Itchy, watery eyes and sneezing without fever often indicate allergies.",
     suggestedTests: ["Skin prick test", "IgE blood test"],
     precautions: ["Avoid known allergens", "Keep windows closed during high pollen", "Use air purifiers"],
+    suggestedMedicines: ["Allegra 120", "Refresh Tears Drops", "Betnovate N"],
+    suggestedSpecialists: ["Allergist", "Dermatologist"],
   },
   {
     name: "Diabetes (Screening)",
@@ -57,6 +69,8 @@ const CONDITION_RULES: ConditionRule[] = [
     reason: "Classic symptoms of hyperglycaemia require immediate diagnostic verification.",
     suggestedTests: ["HbA1c test", "Fasting blood sugar", "Oral glucose tolerance test"],
     precautions: ["Monitor sugar intake", "Regular exercise", "Seek medical consultation"],
+    suggestedMedicines: ["Metformin 500", "Glycomet GP1", "Janumet 50/500"],
+    suggestedSpecialists: ["Diabetologist", "Endocrinologist", "General Physician"],
   },
   {
     name: "Dermatitis / Eczema",
@@ -65,6 +79,8 @@ const CONDITION_RULES: ConditionRule[] = [
     reason: "Localized skin irritation and itching suggest a dermatological condition.",
     suggestedTests: ["Skin biopsy", "Patch testing"],
     precautions: ["Moisturize regularly", "Avoid harsh soaps", "Use mild cleansers"],
+    suggestedMedicines: ["Betnovate N", "Clingard Gel"],
+    suggestedSpecialists: ["Dermatologist"],
   },
 ];
 
@@ -101,6 +117,8 @@ export function getLocalSymptomAnalysis(symptomsText: string): SymptomCheckerRes
       ],
       suggestedTests: ["Complete Blood Count (CBC)", "General Physician Consultation"],
       precautions: ["Monitor symptoms for 48 hours", "Rest and adequate hydration"],
+      suggestedMedicines: ["Calpol 650"],
+      suggestedSpecialists: ["General Physician"],
       disclaimer: "No specific matches found. Please consult a doctor for an accurate diagnosis.",
     };
   }
@@ -116,6 +134,8 @@ export function getLocalSymptomAnalysis(symptomsText: string): SymptomCheckerRes
     })),
     suggestedTests: Array.from(new Set(topResults.flatMap((r) => r.rule.suggestedTests))).slice(0, 4),
     precautions: Array.from(new Set(topResults.flatMap((r) => r.rule.precautions))).slice(0, 4),
+    suggestedMedicines: Array.from(new Set(topResults.flatMap((r) => r.rule.suggestedMedicines))).slice(0, 4),
+    suggestedSpecialists: Array.from(new Set(topResults.flatMap((r) => r.rule.suggestedSpecialists))).slice(0, 3),
     disclaimer: "This is a local keyword-based screening and should not be taken as a medical diagnosis.",
   };
 }

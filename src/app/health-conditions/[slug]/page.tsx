@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { 
   ChevronLeft, 
@@ -34,6 +34,8 @@ export default function ConditionDetailPage() {
   const [navMode, setNavMode] = useState<"medicine" | "brand">("medicine");
   const [search, setSearch] = useState("");
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
+  const [apiMedicines, setApiMedicines] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   
   // Brand Picker Sheet state
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -47,12 +49,53 @@ export default function ConditionDetailPage() {
     category ? getConditionData(category.slug) : null, 
   [category]);
 
+  const searchQuery = useMemo(() => {
+    if (!category) return "";
+    const label = category.label;
+    if (label === "Heart Care") return "Heart & BP";
+    if (label === "Stomach Care") return "Digestive Health";
+    if (label === "Derma Care") return "Skin Care";
+    if (label === "Bone & Joint") return "Vitamins & Supplements";
+    if (label === "Liver Care") return "Vitamins & Supplements";
+    if (label === "Kidney Care") return "Vitamins & Supplements";
+    if (label === "Neuro & Brain") return "Neuro & Brain";
+    if (label === "Thyroid Care") return "Thyroid Care";
+    if (label === "Women Health") return "Women Health";
+    if (label === "Child Care") return "Child Care";
+    if (label === "Ayurveda & Herbal") return "Ayurveda & Herbal";
+    return label;
+  }, [category]);
+
+  useEffect(() => {
+    if (!category || !searchQuery) return;
+    async function fetchMedicines() {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/search?category=medicines&q=${encodeURIComponent(searchQuery)}&limit=30`);
+        if (res.ok) {
+          const result = await res.json();
+          if (result.results && Array.isArray(result.results.medicines)) {
+            setApiMedicines(result.results.medicines);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch medicines from search API:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchMedicines();
+  }, [category, searchQuery]);
+
   const filteredMedicines = useMemo(() => {
     if (!data) return [];
-    let list = data.medicines;
+    let list = apiMedicines;
     
     if (navMode === "brand" && selectedBrand) {
-      list = getMedicinesByBrand(selectedBrand, category!.id);
+      list = list.filter(m => {
+        const brand = data.brands.find(b => b.id === selectedBrand);
+        return m.manufacturer?.toLowerCase().includes(brand?.name.toLowerCase() || "");
+      });
     }
     
     if (search.trim()) {
@@ -64,9 +107,9 @@ export default function ConditionDetailPage() {
     }
     
     return list;
-  }, [data, navMode, selectedBrand, search, category]);
+  }, [data, apiMedicines, navMode, selectedBrand, search]);
 
-  if (!category || !data) {
+  if (!category || !data || loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] p-8">
         <Loader2 className="h-10 w-10 text-primary animate-spin mb-4" />
