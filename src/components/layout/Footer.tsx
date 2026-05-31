@@ -11,7 +11,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <Link href="/" className="flex items-center gap-3.5 mb-5 group">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-950 shadow-md shadow-slate-950/20 overflow-hidden relative shrink-0 border border-slate-800">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-md shadow-slate-200/20 overflow-hidden relative shrink-0 border border-slate-200/60">
                 <Image src="/logo.png" alt="ClinikBook" width={64} height={64} className="object-contain p-1.5 transition-transform group-hover:scale-105" />
               </div>
               <div className="flex flex-col">

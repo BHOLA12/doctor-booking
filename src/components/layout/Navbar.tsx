@@ -83,7 +83,7 @@ export default function Navbar() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group shrink-0">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-950 shadow-md shadow-slate-950/20 overflow-hidden relative shrink-0">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white border border-slate-200/60 shadow-sm overflow-hidden relative shrink-0">
               <Image src="/logo.png" alt="ClinikBook" width={44} height={44} className="object-contain p-1" />
             </div>
             <span className="text-xl font-extrabold tracking-tight text-foreground">

@@ -79,7 +79,7 @@ function LoginContent() {
           <div className="inline-flex items-center justify-center mb-5">
             <div className="relative">
               <div className="absolute inset-0 rounded-full bg-slate-900 blur-xl opacity-50 scale-110" />
-              <div className="relative h-20 w-20 flex items-center justify-center rounded-2xl bg-slate-950 shadow-lg overflow-hidden shrink-0 border border-white/10">
+              <div className="relative h-20 w-20 flex items-center justify-center rounded-2xl bg-white shadow-lg overflow-hidden shrink-0 border border-slate-200/60">
                 <Image src="/logo.png" alt="ClinikBook" width={80} height={80} className="object-contain p-2" />
               </div>
             </div>
