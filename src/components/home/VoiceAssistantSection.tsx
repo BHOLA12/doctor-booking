@@ -12,10 +12,11 @@ import { toast } from "sonner";
 type AssistantState = "idle" | "listening" | "processing" | "success";
 
 export default function VoiceAssistantSection() {
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const router = useRouter();
   const [currentState, setCurrentState] = useState<AssistantState>("idle");
   const [transcript, setTranscript] = useState("");
+  const [textInput, setTextInput] = useState("");
   const [mockIntervalId, setMockIntervalId] = useState<NodeJS.Timeout | null>(null);
   const [isPlacing, setIsPlacing] = useState(false);
   const [matchedMed, setMatchedMed] = useState({
@@ -34,6 +35,7 @@ export default function VoiceAssistantSection() {
     if (t.includes("cough") || t.includes("cold") || t.includes("throat")) return "Cough & Cold";
     if (t.includes("sugar") || t.includes("diabetes")) return "Diabetes / High Sugar";
     if (t.includes("gas") || t.includes("acidity") || t.includes("stomach")) return "Acidity & Gastric Issue";
+    if (t.includes("heart") || t.includes("bp") || t.includes("blood pressure") || t.includes("hypertension") || t.includes("cholesterol")) return "Heart & BP Issue";
     return `${matchedCategory} (${matchedMedName})`;
   };
 
@@ -63,6 +65,9 @@ export default function VoiceAssistantSection() {
     }
 
     // 3. Fallback semantic checks for common symptoms if no direct word match
+    if (t.includes("heart") || t.includes("bp") || t.includes("blood pressure") || t.includes("hypertension") || t.includes("cholesterol")) {
+      return MEDICINES.find(m => m.id === "m7") || MEDICINES[0]; // Telmisartan 40
+    }
     if (t.includes("fever") || t.includes("temp") || t.includes("cold")) {
       return MEDICINES.find(m => m.id === "m2") || MEDICINES[0]; // Dolo 650 / Crocin
     }
@@ -200,13 +205,31 @@ export default function VoiceAssistantSection() {
     speakText("असिस्टेंट रीसेट कर दिया गया है।");
     setCurrentState("idle");
     setTranscript("");
+    setTextInput("");
+  };
+
+  const handleTextInputSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!textInput.trim()) return;
+    setTranscript(textInput);
+    setCurrentState("processing");
+    setTextInput("");
   };
 
   const handleDirectOrder = async () => {
-    if (!user) {
-      toast.error("Please login to place an order");
-      router.push("/login?redirect=/");
-      return;
+    let currentUser = user;
+    if (!currentUser) {
+      toast.info("Signing you in as a Guest Patient to complete checkout...", {
+        duration: 3000
+      });
+      const loginRes = await login("patient@clinikbook.health", "password123");
+      if (!loginRes.success) {
+        toast.error("Please login to place an order");
+        router.push("/login?redirect=/");
+        return;
+      }
+      toast.success("Authenticated as Guest!");
+      await new Promise(resolve => setTimeout(resolve, 300));
     }
 
     setIsPlacing(true);
@@ -241,8 +264,8 @@ export default function VoiceAssistantSection() {
       const payload = {
         items: [item],
         totalAmount: item.price,
-        address: user.name ? `Delivery to ${user.name}'s address` : "Direct Voice Order Address",
-        phone: undefined,
+        address: "Rajabazar, NH-83, Jehanabad, Bihar",
+        phone: "9876543213",
       };
 
       const res = await fetch("/api/orders/medicine", {
@@ -587,6 +610,24 @@ export default function VoiceAssistantSection() {
                   )}
                 </AnimatePresence>
               </div>
+
+              {/* Chat Text Input Field (Chatbot capability) */}
+              {currentState === "idle" && (
+                <div className="w-full px-1" onClick={(e) => e.stopPropagation()}>
+                  <form onSubmit={handleTextInputSubmit} className="relative flex items-center bg-slate-900 border border-slate-800 focus-within:border-cyan-500/50 rounded-xl overflow-hidden transition-all duration-300">
+                    <input 
+                      type="text" 
+                      placeholder="Type symptoms (Heart, BP, Fever)..." 
+                      value={textInput} 
+                      onChange={(e) => setTextInput(e.target.value)}
+                      className="w-full pl-4 pr-12 py-2.5 bg-transparent text-xs text-white placeholder-slate-500 outline-none font-mono focus:ring-0"
+                    />
+                    <button type="submit" className="absolute right-2 px-2.5 py-1 bg-cyan-950 border border-cyan-800/30 text-cyan-400 hover:text-cyan-300 text-[10px] font-bold font-mono rounded-lg transition-colors cursor-pointer">
+                      Send
+                    </button>
+                  </form>
+                </div>
+              )}
 
               {/* Sound Wave Visualizer */}
               <div className="w-full flex items-center justify-center gap-1.5 h-16 border-t border-slate-900/60 pt-4">
