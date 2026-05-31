@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import { 
   ChevronLeft, 
   Search, 
@@ -129,25 +130,69 @@ export default function ConditionDetailPage() {
 
   return (
     <div className="min-h-screen bg-slate-50/50 pb-20">
-      {/* Category Header */}
-      <div className="bg-white border-b sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center gap-4 mb-4">
+      {/* Category Hero Banner */}
+      <div className={`relative overflow-hidden bg-gradient-to-r ${category.color} border-b border-slate-200/50`}>
+        {/* Decorative background glow shapes */}
+        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 h-80 w-80 bg-white/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/4 h-64 w-64 bg-primary/5 rounded-full blur-3xl" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14 relative z-10">
+          <div className="flex items-center gap-3 mb-6">
             <button 
               onClick={() => router.back()}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors"
+              className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/80 backdrop-blur-md border border-slate-200/40 shadow-sm hover:bg-white hover:scale-105 active:scale-95 transition-all"
             >
-              <ArrowLeft className="h-5 w-5 text-slate-600" />
+              <ArrowLeft className="h-5 w-5 text-slate-700" />
             </button>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 text-2xl">
-              {category.emoji}
-            </div>
-            <div>
-              <h1 className="text-xl font-black text-slate-900">{category.label}</h1>
-              <p className="text-xs text-slate-500 font-medium uppercase tracking-tighter">Condition Specific Solutions</p>
-            </div>
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest bg-white/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200/30">
+              Condition Care
+            </span>
           </div>
 
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="max-w-xl text-center md:text-left">
+              <div className="flex flex-col md:flex-row items-center gap-3 mb-4">
+                <span className="text-4xl md:text-5xl select-none filter drop-shadow-sm">{category.emoji}</span>
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 leading-tight animate-fade-in">
+                  {category.label}
+                </h1>
+              </div>
+              <p className="text-base md:text-lg text-slate-600 leading-relaxed font-medium">
+                {category.description}
+              </p>
+              
+              <div className="mt-6 flex flex-wrap justify-center md:justify-start gap-4">
+                <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm px-3.5 py-2 rounded-xl border border-slate-200/20 text-xs font-bold text-slate-700 shadow-sm">
+                  <span className="text-emerald-500">✓</span> 100% Genuine Medicines
+                </div>
+                <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm px-3.5 py-2 rounded-xl border border-slate-200/20 text-xs font-bold text-slate-700 shadow-sm">
+                  <span className="text-emerald-500">✓</span> Verified Brands
+                </div>
+              </div>
+            </div>
+
+            {/* Large 3D Illustration on detail page */}
+            <div className="relative flex h-36 w-36 md:h-44 md:w-44 items-center justify-center rounded-3xl bg-white border border-slate-200/60 shadow-xl shadow-slate-100/80 overflow-hidden shrink-0 transition-transform duration-500 hover:scale-105">
+              {category.image ? (
+                <Image 
+                  src={category.image} 
+                  alt={category.label} 
+                  fill 
+                  sizes="(max-width: 768px) 144px, 176px" 
+                  className="object-contain p-3.5" 
+                  priority
+                />
+              ) : (
+                <span className="text-6xl select-none">{category.emoji}</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Sticky Search and Filter Controls */}
+      <div className="bg-white border-b sticky top-0 z-30 shadow-sm/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
             <Tabs 
               value={navMode} 
@@ -158,10 +203,10 @@ export default function ConditionDetailPage() {
               className="w-full md:w-auto"
             >
               <TabsList className="bg-slate-100 p-1 h-12 rounded-2xl w-full">
-                <TabsTrigger value="medicine" className="rounded-xl flex-1 gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                <TabsTrigger value="medicine" className="rounded-xl flex-1 gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm font-bold text-sm">
                   <LayoutGrid className="h-4 w-4" /> By Medicine
                 </TabsTrigger>
-                <TabsTrigger value="brand" className="rounded-xl flex-1 gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                <TabsTrigger value="brand" className="rounded-xl flex-1 gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm font-bold text-sm">
                   <Building2 className="h-4 w-4" /> By Brand
                 </TabsTrigger>
               </TabsList>
@@ -173,7 +218,7 @@ export default function ConditionDetailPage() {
                 placeholder={`Search in ${category.label}...`}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 h-12 rounded-2xl border-slate-200 bg-white focus:ring-4 focus:ring-primary/10 transition-all"
+                className="pl-10 h-12 rounded-2xl border-slate-200 bg-white focus:ring-4 focus:ring-primary/10 transition-all font-medium text-sm"
               />
             </div>
           </div>
