@@ -211,15 +211,9 @@ function MedicinesContent() {
   const [selectedTower, setSelectedTower] = useState("Tower C-4 (New Delhi)");
   const [isRouting, setIsRouting] = useState(true);
 
-  // Initialize medicines list with some images set to null/undefined to showcase fallback & scraping
+  // Initialize medicines list
   const [medicinesList, setMedicinesList] = useState<Medicine[]>(() => {
-    return MEDICINES.map((med, index) => {
-      // Clear image for every 3rd medicine to trigger fallback placeholder and background scraper
-      if (index % 3 === 0) {
-        return { ...med, image: undefined };
-      }
-      return med;
-    });
+    return MEDICINES;
   });
 
   // Filters & Search
