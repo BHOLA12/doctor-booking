@@ -372,7 +372,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: true,
     dosage: "10 Tablets",
     imageEmoji: "🧠",
-    image: "/images/categories/capsule.webp",
+    image: "/images/medicines/gabapin.png",
   },
   {
     id: "m24",
@@ -387,7 +387,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: true,
     dosage: "14 Tablets",
     imageEmoji: "💊",
-    image: "/images/categories/tablet.webp",
+    image: "/images/medicines/vasograin.png",
   },
   {
     id: "m25",
@@ -402,7 +402,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: false,
     dosage: "10 Tablets",
     imageEmoji: "🤰",
-    image: "/images/categories/syrup.webp",
+    image: "/images/medicines/orofer_xt.png",
   },
   {
     id: "m26",
@@ -417,7 +417,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: false,
     dosage: "30 Tablets",
     imageEmoji: "💊",
-    image: "/images/categories/tablet.webp",
+    image: "/images/medicines/folvite.png",
   },
   {
     id: "m27",
@@ -432,7 +432,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: false,
     dosage: "15ml Drops",
     imageEmoji: "👶",
-    image: "/images/categories/child-care.png",
+    image: "/images/medicines/crocin_drops.png",
   },
   {
     id: "m28",
@@ -447,7 +447,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: false,
     dosage: "60 Capsules",
     imageEmoji: "🌿",
-    image: "/images/categories/ayurveda.png",
+    image: "/images/medicines/ashwagandha.png",
   },
   {
     id: "m29",
@@ -462,7 +462,7 @@ export const MEDICINES: Medicine[] = [
     requiresPrescription: false,
     dosage: "500g Paste",
     imageEmoji: "🏺",
-    image: "/images/categories/ayurveda.png",
+    image: "/images/medicines/chyawanprash.png",
   }
 ];
 
