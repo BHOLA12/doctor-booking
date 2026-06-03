@@ -37,11 +37,11 @@ This platform has been engineered to industry standards, incorporating advanced 
 
 Explore the detailed architecture and codebase layout:
 
-* 📂 **[Onboarding Guide](./docs/onboarding_guide.md)**: Roadmap to set up local environments, critical folders, and knowledge transfers.
-* 🏛️ **[System Architecture](./docs/architecture_document.md)**: Deep dive into the request lifecycle, data flow, folder structure, and service interactions.
-* 🔌 **[API Reference](./docs/api_documentation.md)**: Complete guide to REST endpoints, payload schemas, authorization roles, and sample responses.
-* 🗄️ **[Database Reference](./docs/database_documentation.md)**: Schema design, relationships, and performance indexing.
-* 🔍 **[Security & Performance Audit](./docs/security_performance_audit.md)**: Detailed report on vulnerability mitigations and query optimization runs.
+* 📂 **[Development Guide](./docs/DEVELOPMENT.md)**: Setup instructions, seeding scripts, and directory guides.
+* 🏛️ **[System Architecture](./docs/ARCHITECTURE.md)**: Deep dive into the data flows, structures, and service lifecycles.
+* 🔌 **[API Reference](./docs/API_REFERENCE.md)**: Full REST routes reference, validation payloads, and sample outputs.
+* 🗄️ **[Database Design](./docs/DATABASE.md)**: Conceptual Postgres models, indexing priorities, and relationships.
+* 🔍 **[Security & Audit logs](./docs/SECURITY.md)**: OWASP remediations, XSS checks, and performance log patterns.
 
 ---
 
