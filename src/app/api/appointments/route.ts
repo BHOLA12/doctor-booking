@@ -4,24 +4,18 @@ import {
   createAppointment,
   listAppointments,
 } from "@/server/controllers/appointments-controller";
+import { apiError, UnauthorizedError } from "@/app/api/error-handler";
 
 export async function GET(request: NextRequest) {
   try {
     const session = await getSession();
     if (!session) {
-      return NextResponse.json(
-        { success: false, error: "Not authenticated" },
-        { status: 401 }
-      );
+      throw new UnauthorizedError();
     }
 
     return await listAppointments(request, session);
   } catch (error) {
-    console.error("Appointments list error:", error);
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+    return apiError(error);
   }
 }
 
@@ -29,18 +23,12 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getSession();
     if (!session) {
-      return NextResponse.json(
-        { success: false, error: "Not authenticated" },
-        { status: 401 }
-      );
+      throw new UnauthorizedError();
     }
 
     return await createAppointment(request, session);
   } catch (error) {
-    console.error("Appointment create error:", error);
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+    return apiError(error);
   }
 }
+

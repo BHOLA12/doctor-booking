@@ -4,7 +4,7 @@ import {
   reportAnalysisSchema,
   symptomCheckerSchema,
   prescriptionSuggestionSchema,
-} from "@/lib/validations";
+} from "@/lib/schemas";
 import {
   analyzeReportText,
   analyzeSymptoms,
@@ -20,7 +20,7 @@ export async function checkSymptoms(request: Request) {
     return fail(validation.error.issues[0].message, 400);
   }
 
-  const result = await analyzeSymptoms(validation.data.symptoms);
+  const result = await analyzeSymptoms(validation.data.symptoms, validation.data.history);
   return ok(result);
 }
 

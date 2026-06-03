@@ -226,6 +226,13 @@ function MedicinesContent() {
     setSearch(urlSearch);
   }, [searchParams]);
 
+  // Automatically open prescription upload modal if upload=true is in the query params
+  useEffect(() => {
+    if (searchParams.get("upload") === "true") {
+      setPrescriptionOpen(true);
+    }
+  }, [searchParams]);
+
   const [activeCategory, setActiveCategory] = useState("All");
   const [cartOpen, setCartOpen] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
@@ -1701,7 +1708,29 @@ function MedicinesContent() {
                     />
                     <Button 
                       className="w-full h-12 sm:h-14 rounded-2xl font-black text-base sm:text-lg bg-[#5B8C5A] hover:bg-[#4a7249] text-white"
-                      onClick={() => setScanning(true)}
+                      onClick={() => {
+                        // Start a simulated scan with a mockup prescription for instant testing
+                        setScanning(true);
+                        setOcrProgress({ status: "Reading demo prescription...", progress: 10 });
+                        setDetectedMedicines([]);
+                        
+                        setTimeout(() => {
+                          setOcrProgress({ status: "Extracting active ingredients...", progress: 45 });
+                        }, 800);
+                        
+                        setTimeout(() => {
+                          setOcrProgress({ status: "Matching molecules to nearby stocks...", progress: 80 });
+                        }, 1600);
+                        
+                        setTimeout(() => {
+                          // Select some common medicines as detected (Paracetamol, Azithromycin, Telmisartan)
+                          const demoMeds = MEDICINES.filter(m => 
+                            m.id === "m1" || m.id === "m2" || m.id === "m3"
+                          );
+                          setDetectedMedicines(demoMeds);
+                          setOcrProgress({ status: "Complete", progress: 100 });
+                        }, 2400);
+                      }}
                     >
                       Process Prescription
                     </Button>

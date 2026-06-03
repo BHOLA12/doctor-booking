@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { cookies } from "next/headers";
+import { prisma } from "@/lib/prisma";
 
 function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET;
@@ -14,7 +15,7 @@ function getJwtSecret(): string {
 }
 
 const ACCESS_TOKEN_EXPIRY = "30m";
-const REFRESH_TOKEN_EXPIRY = "30d";
+const REFRESH_TOKEN_EXPIRY = "8h"; // 8 hours session duration limit
 const ACCESS_TOKEN_COOKIE = "clinikbook_access_token";
 const REFRESH_TOKEN_COOKIE = "clinikbook_refresh_token";
 
@@ -24,6 +25,7 @@ export interface JWTPayload {
   role: string;
   name: string;
   isVerified?: boolean;
+  sessionId?: string; // Link session record for server-side revocation checks
 }
 
 export async function hashPassword(password: string): Promise<string> {
@@ -106,15 +108,39 @@ export function getRefreshTokenCookieOptions() {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax" as const,
     path: "/",
-    maxAge: 60 * 60 * 24 * 30, // 30 days
+    maxAge: 60 * 60 * 8, // 8 hours max Age
   };
 }
 
+/**
+ * Standard server-side session hook. Validates the stateless JWT token,
+ * and performs database verification to check if the session is still active
+ * and user has not been suspended or logged out.
+ */
 export async function getSession(): Promise<JWTPayload | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
-  if (!token) return null;
-  return verifyAccessToken(token);
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
+    if (!token) return null;
+
+    const payload = verifyAccessToken(token);
+    if (!payload || !payload.sessionId) return null;
+
+    // Database validity verification check on every request (Fix 3)
+    const session = await prisma.session.findUnique({
+      where: { id: payload.sessionId },
+      select: { isValid: true, expiresAt: true },
+    });
+
+    if (!session || !session.isValid || session.expiresAt <= new Date()) {
+      return null;
+    }
+
+    return payload;
+  } catch (error) {
+    console.error("Session verification failure:", error);
+    return null;
+  }
 }
 
 export function getRefreshTokenHash(token: string) {
@@ -122,4 +148,5 @@ export function getRefreshTokenHash(token: string) {
 }
 
 export { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE, hashValue };
+
 

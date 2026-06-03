@@ -86,57 +86,131 @@ const CONDITION_RULES: ConditionRule[] = [
 
 export function getLocalSymptomAnalysis(symptomsText: string): SymptomCheckerResult {
   const normalizedText = symptomsText.toLowerCase();
-  const results: { rule: ConditionRule; score: number }[] = [];
+  
+  // Emergency checks matching system guidelines
+  const isEmergency = 
+    normalizedText.includes("chest pain") ||
+    normalizedText.includes("chest pressure") ||
+    normalizedText.includes("breathlessness") ||
+    normalizedText.includes("difficulty breathing") ||
+    normalizedText.includes("slurred speech") ||
+    normalizedText.includes("drooping") ||
+    normalizedText.includes("severe bleeding") ||
+    normalizedText.includes("unconscious") ||
+    normalizedText.includes("poison") ||
+    normalizedText.includes("overdose") ||
+    normalizedText.includes("head injury");
 
-  CONDITION_RULES.forEach((rule) => {
-    let matchCount = 0;
-    rule.keywords.forEach((keyword) => {
-      if (normalizedText.includes(keyword)) {
-        matchCount++;
-      }
-    });
+  let severity: "critical" | "high" | "medium" | "low" = "medium";
+  let actionRequired = "";
+  let bookingPriority = "Medium";
+  let consultationMode = "OPD Consultation";
+  let emergencyMessage = "";
 
-    if (matchCount > 0) {
-      // Calculate score based on percentage of keywords matched
-      const score = (matchCount / rule.keywords.length) * rule.probability;
-      results.push({ rule, score });
-    }
-  });
-
-  // Sort by score descending
-  results.sort((a, b) => b.score - a.score);
-
-  if (results.length === 0) {
-    return {
-      possibleDiseases: [
-        { 
-          name: "General Viral Syndrome", 
-          probability: 0.3, 
-          reason: "Symptoms are non-specific and may relate to various mild viral infections." 
-        }
-      ],
-      suggestedTests: ["Complete Blood Count (CBC)", "General Physician Consultation"],
-      precautions: ["Monitor symptoms for 48 hours", "Rest and adequate hydration"],
-      suggestedMedicines: ["Calpol 650"],
-      suggestedSpecialists: ["General Physician"],
-      disclaimer: "No specific matches found. Please consult a doctor for an accurate diagnosis.",
-    };
+  if (isEmergency) {
+    severity = "critical";
+    actionRequired = "instant_doctor_connect";
+    bookingPriority = "Critical";
+    consultationMode = "Emergency Video Consultation";
+    emergencyMessage = "Potentially critical emergency detected! Seek immediate medical attention.";
+  } else if (
+    normalizedText.includes("blood") || 
+    normalizedText.includes("high fever") || 
+    normalizedText.includes("severe abdominal")
+  ) {
+    severity = "high";
+    bookingPriority = "High";
+    consultationMode = "Earliest Available Appointment";
+  } else if (
+    normalizedText.includes("fatigue") ||
+    normalizedText.includes("mild") ||
+    normalizedText.includes("scratch")
+  ) {
+    severity = "low";
+    bookingPriority = "Low";
+    consultationMode = "Next Available Slot";
   }
 
-  // Take top 3
-  const topResults = results.slice(0, 3);
-  
+  // Specialty mapping
+  const specialties: string[] = [];
+  const searchKeywords: string[] = [];
+  let doctorType = "General Physician";
+
+  if (normalizedText.includes("chest") || normalizedText.includes("heart") || normalizedText.includes("bp") || normalizedText.includes("blood pressure")) {
+    specialties.push("Cardiologist");
+    doctorType = "Cardiologist";
+    searchKeywords.push("heart", "bp", "cardio");
+  }
+  if (normalizedText.includes("stomach") || normalizedText.includes("vomit") || normalizedText.includes("acidity") || normalizedText.includes("digestion")) {
+    specialties.push("Gastroenterologist");
+    doctorType = "Gastroenterologist";
+    searchKeywords.push("gastric", "stomach", "acidity");
+  }
+  if (normalizedText.includes("child") || normalizedText.includes("baby") || normalizedText.includes("infant") || normalizedText.includes("pediatric")) {
+    specialties.push("Pediatrician");
+    doctorType = "Pediatrician";
+    searchKeywords.push("child", "pediatrician", "baby");
+  }
+  if (normalizedText.includes("eye") || normalizedText.includes("vision") || normalizedText.includes("blind")) {
+    specialties.push("Ophthalmologist");
+    doctorType = "Ophthalmologist";
+    searchKeywords.push("eye", "vision");
+  }
+  if (normalizedText.includes("skin") || normalizedText.includes("rash") || normalizedText.includes("itching") || normalizedText.includes("eczema")) {
+    specialties.push("Dermatologist");
+    doctorType = "Dermatologist";
+    searchKeywords.push("skin", "dermatologist", "rash");
+  }
+  if (normalizedText.includes("bone") || normalizedText.includes("joint") || normalizedText.includes("fracture") || normalizedText.includes("ortho")) {
+    specialties.push("Orthopedic");
+    doctorType = "Orthopedic Specialist";
+    searchKeywords.push("bone", "joint", "ortho");
+  }
+  if (normalizedText.includes("pregnant") || normalizedText.includes("periods") || normalizedText.includes("gynec")) {
+    specialties.push("Gynecologist");
+    doctorType = "Gynecologist";
+    searchKeywords.push("women health", "pregnancy", "gynecologist");
+  }
+  if (normalizedText.includes("diabetes") || normalizedText.includes("sugar") || normalizedText.includes("thyroid")) {
+    specialties.push("Endocrinologist");
+    doctorType = "Endocrinologist";
+    searchKeywords.push("diabetes", "thyroid");
+  }
+  if (normalizedText.includes("ear") || normalizedText.includes("nose") || normalizedText.includes("throat") || normalizedText.includes("ent")) {
+    specialties.push("ENT Specialist");
+    doctorType = "ENT Specialist";
+    searchKeywords.push("ent", "ear", "nose", "throat");
+  }
+
+  if (specialties.length === 0) {
+    specialties.push("General Physician");
+    searchKeywords.push("general physician", "fever", "cough");
+  }
+
+  // Local first aid advice in simple Hindi matching prompt rules
+  let firstAidAdvice = "Filhaal aaram kariye aur paani peete rahiye. Agar pareshani badhe toh turant doctor se sampark/appointment book karein.";
+  if (isEmergency) {
+    firstAidAdvice = "Bina kisi deri ke let jayein, body movement na karein aur turant emergency contact number par call karein.";
+  } else if (normalizedText.includes("burn")) {
+    firstAidAdvice = "Jale hue hisse par thanda paani dalein, koi tel ya cream turant na lagayein, aur doctor se contact karein.";
+  } else if (normalizedText.includes("stomach") || normalizedText.includes("vomit")) {
+    firstAidAdvice = "ORS ka ghol peete rahein taaki dehydration na ho. Halka khana hi khayein.";
+  }
+
   return {
-    possibleDiseases: topResults.map((r) => ({
-      name: r.rule.name,
-      probability: Math.min(0.95, r.score + 0.1), // Add a bit of base probability
-      reason: r.rule.reason,
-    })),
-    suggestedTests: Array.from(new Set(topResults.flatMap((r) => r.rule.suggestedTests))).slice(0, 4),
-    precautions: Array.from(new Set(topResults.flatMap((r) => r.rule.precautions))).slice(0, 4),
-    suggestedMedicines: Array.from(new Set(topResults.flatMap((r) => r.rule.suggestedMedicines))).slice(0, 4),
-    suggestedSpecialists: Array.from(new Set(topResults.flatMap((r) => r.rule.suggestedSpecialists))).slice(0, 3),
-    disclaimer: "This is a local keyword-based screening and should not be taken as a medical diagnosis.",
+    understood_problem: `Symptoms analyzed locally: ${symptomsText}`,
+    specialty_needed: specialties,
+    doctor_type: doctorType,
+    consultation_mode: consultationMode,
+    booking_priority: bookingPriority,
+    is_emergency: isEmergency,
+    emergency_message: emergencyMessage,
+    action_required: actionRequired,
+    first_aid_advice: firstAidAdvice,
+    doctor_search_keywords: searchKeywords,
+    language_detected: normalizedText.match(/[\u0900-\u097F]/) ? "Hindi" : "English/Hinglish",
+    severity: severity,
+    confidence_score: 0.65
   };
 }
 

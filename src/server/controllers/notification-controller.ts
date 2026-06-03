@@ -3,8 +3,6 @@ import { syncUpcomingAppointmentNotifications } from "@/server/services/notifica
 import { fail, ok } from "@/server/utils/api";
 
 export async function listNotifications(userId: string) {
-  await syncUpcomingAppointmentNotifications(userId);
-
   const notifications = await prisma.notification.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },

@@ -1,53 +1,59 @@
 import { prisma } from "@/lib/prisma";
-import { prescriptionSaveSchema } from "@/lib/validations";
+import { prescriptionSaveSchema, sanitizePayload } from "@/lib/schemas";
 import { createPrescription } from "@/server/services/prescription-service";
-import { fail, ok } from "@/server/utils/api";
+import { apiError, ForbiddenError } from "@/app/api/error-handler";
+import { ok } from "@/server/utils/api";
 
 export async function listPrescriptions(session: { userId: string; role: string }) {
-  const where =
-    session.role === "DOCTOR" || session.role === "PATHOLOGIST"
-      ? {
-          doctor: {
-            userId: session.userId,
-          },
-        }
-      : {
-          patientId: session.userId,
-        };
+  try {
+    const where =
+      session.role === "DOCTOR" || session.role === "PATHOLOGIST"
+        ? {
+            doctor: {
+              userId: session.userId,
+            },
+          }
+        : {
+            patientId: session.userId,
+          };
 
-  const prescriptions = await prisma.prescription.findMany({
-    where,
-    include: {
-      patient: {
-        select: { id: true, name: true, email: true, phone: true, avatar: true },
+    const prescriptions = await prisma.prescription.findMany({
+      where,
+      include: {
+        patient: {
+          select: { id: true, name: true, email: true, phone: true, avatar: true },
+        },
       },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+      orderBy: { createdAt: "desc" },
+    });
 
-  return ok(prescriptions);
+    return ok(prescriptions);
+  } catch (error) {
+    return apiError(error);
+  }
 }
 
 export async function savePrescription(request: Request, session: { userId: string; role: string }) {
-  if (session.role !== "DOCTOR" && session.role !== "PATHOLOGIST") {
-    return fail("Only doctors can save prescriptions", 403);
-  }
-
-  const body = await request.json();
-  const validation = prescriptionSaveSchema.safeParse(body);
-
-  if (!validation.success) {
-    return fail(validation.error.issues[0].message, 400);
-  }
-
   try {
+    if (session.role !== "DOCTOR" && session.role !== "PATHOLOGIST") {
+      throw new ForbiddenError("Only doctors can save prescriptions");
+    }
+
+    const body = await request.json();
+    
+    // 1. Validate payload inputs before writing to DB
+    const validated = prescriptionSaveSchema.parse(body);
+
+    // 2. Escape user inputs recursively for XSS mitigation
+    const cleanInput = sanitizePayload(validated);
+
     const prescription = await createPrescription({
       doctorUserId: session.userId,
-      ...validation.data,
+      ...cleanInput,
     });
 
     return ok(prescription, { status: 201, message: "Prescription saved" });
   } catch (error) {
-    return fail(error instanceof Error ? error.message : "Failed to save prescription", 400);
+    return apiError(error);
   }
 }

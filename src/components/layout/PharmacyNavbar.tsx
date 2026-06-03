@@ -14,7 +14,8 @@ import {
   Tag, 
   Grid2X2,
   Stethoscope,
-  Building2
+  Building2,
+  Pill
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,11 +28,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export default function PharmacyNavbar() {
   const { cartCount } = useCart();
   const { user } = useAuth();
   const [location, setLocation] = useState("Noida, Sector 18");
+  const [open, setOpen] = useState(false);
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-border/60 shadow-sm">
@@ -134,9 +137,87 @@ export default function PharmacyNavbar() {
             </Button>
 
             {/* Mobile Menu */}
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="h-6 w-6" />
-            </Button>
+            <Sheet open={open} onOpenChange={setOpen}>
+              <SheetTrigger render={<Button variant="ghost" size="icon" className="md:hidden h-10 w-10" />}>
+                <Menu className="h-6 w-6" />
+              </SheetTrigger>
+              <SheetContent side="right" className="w-80 p-0">
+                <div className="flex flex-col h-full bg-white text-slate-800">
+                  <div className="p-5 border-b border-slate-100 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600 border border-teal-100">
+                      <Pill className="h-5 w-5" />
+                    </div>
+                    <span className="text-lg font-black tracking-tight text-slate-900">
+                      Clinik<span className="text-teal-600">Pharmacy</span>
+                    </span>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                    {/* Sourcing Location display on mobile */}
+                    <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-teal-600" />
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Deliver to</span>
+                      </div>
+                      <p className="text-sm font-extrabold text-slate-800">{location}</p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <Link
+                        href="/offers"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-xl hover:bg-slate-50 transition-colors text-slate-700"
+                      >
+                        <Tag className="h-4 w-4 text-teal-600" />
+                        Offers & Discounts
+                      </Link>
+
+                      <Link
+                        href="/pharmacy/dashboard"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-xl hover:bg-slate-50 transition-colors text-slate-700"
+                      >
+                        <Building2 className="h-4 w-4 text-teal-600" />
+                        Store Portal
+                      </Link>
+
+                      <div className="pt-3 border-t border-slate-100 mt-3">
+                        <div className="px-4 pb-2 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                          Shop by Category
+                        </div>
+                        {["All Medicines", "Personal Care", "Baby Care", "Nutrition"].map((cat) => (
+                          <Link
+                            key={cat}
+                            href={`/pharmacy`}
+                            onClick={() => {
+                              setOpen(false);
+                            }}
+                            className="flex items-center gap-3 w-full px-4 py-2.5 text-xs font-bold rounded-lg hover:bg-slate-50 text-left transition-colors text-slate-600"
+                          >
+                            <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
+                            {cat}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 border-t border-slate-100 space-y-2">
+                    <Button variant="outline" className="w-full rounded-xl h-11 border-rose-100 text-rose-700 bg-rose-50/50 hover:bg-rose-50 hover:text-rose-800 gap-2 font-bold uppercase tracking-tight">
+                      <PhoneCall className="h-4 w-4" />
+                      Emergency Order
+                    </Button>
+
+                    {!user && (
+                      <Link href="/login" className="block w-full">
+                        <Button className="w-full rounded-xl h-11 bg-teal-600 hover:bg-teal-500 text-white font-bold" onClick={() => setOpen(false)}>
+                          Login
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>

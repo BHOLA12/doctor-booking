@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import SearchBar from "@/components/shared/SearchBar";
 import VoiceAssistantSection from "@/components/home/VoiceAssistantSection";
@@ -21,13 +21,28 @@ import {
   Building,
   Store,
   Calendar,
-  Loader2
+  Loader2,
+  Search
 } from "lucide-react";
 
 export default function HomePage() {
   const [showLocationTooltip, setShowLocationTooltip] = useState(false);
   const [currentLocation, setCurrentLocation] = useState("Jehanabad, Bihar");
   const [isDetecting, setIsDetecting] = useState(false);
+  const [manualLocation, setManualLocation] = useState("");
+  const tooltipRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (tooltipRef.current && !tooltipRef.current.contains(event.target as Node)) {
+        setShowLocationTooltip(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const detectLocation = () => {
     if (!navigator.geolocation) {
@@ -86,69 +101,6 @@ export default function HomePage() {
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 z-10 text-center">
           
-          {/* Active Grid Location Badge */}
-          <div className="inline-block relative mb-6">
-            <button
-              onClick={() => setShowLocationTooltip(!showLocationTooltip)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 hover:border-primary/40 text-xs font-bold text-slate-700 transition-all shadow-sm cursor-pointer hover:shadow-md group"
-            >
-              {isDetecting ? (
-                <Loader2 className="h-3.5 w-3.5 text-primary animate-spin" />
-              ) : (
-                <MapPin className="h-3.5 w-3.5 text-primary group-hover:scale-110 transition-transform" />
-              )}
-              <span>{currentLocation}</span>
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-600">Grid Active</span>
-              <ChevronDown className={`h-3 w-3 text-slate-400 transition-transform duration-300 ${showLocationTooltip ? 'rotate-180' : ''}`} />
-            </button>
- 
-            <AnimatePresence>
-              {showLocationTooltip && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-80 sm:w-96 bg-white border border-slate-200 rounded-2xl shadow-2xl p-4 z-50 text-left"
-                >
-                  <div className="flex items-center gap-2 pb-2 mb-2 border-b border-slate-100">
-                    <Info className="h-4 w-4 text-primary" />
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Logistics Grid Nodes</span>
-                  </div>
-                  <div className="space-y-2">
-                    {locations.map((loc, idx) => (
-                      <div key={idx} className="flex flex-col gap-0.5 p-2 rounded-lg bg-slate-50 hover:bg-slate-100/80 transition-colors">
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs font-bold text-slate-800">{loc.name}</span>
-                          <span className="text-[9px] font-black text-slate-500 bg-white border border-slate-200 px-1.5 py-0.5 rounded shadow-sm">
-                            {loc.status}
-                          </span>
-                        </div>
-                        <span className="text-[10px] text-slate-400 leading-tight mt-0.5">{loc.desc}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      detectLocation();
-                    }}
-                    disabled={isDetecting}
-                    className="w-full mt-4 py-3 bg-primary hover:bg-primary/95 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-extrabold text-xs rounded-xl tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 shadow-md shadow-primary/10 hover:shadow-primary/20 active:scale-[0.98] cursor-pointer"
-                  >
-                    {isDetecting ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <MapPin className="h-3.5 w-3.5" />
-                    )}
-                    {isDetecting ? "Detecting Location..." : "Detect Live Location"}
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
           {/* Crisp typography & Value proposition */}
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.15] max-w-4xl mx-auto mb-6">
             Book a Doctor or Order Medicines in{" "}
@@ -157,15 +109,226 @@ export default function HomePage() {
             </span>
           </h1>
 
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed mb-10 max-w-xl mx-auto">
+          <p className="text-base sm:text-lg text-slate-600 leading-relaxed mb-8 max-w-xl mx-auto">
             Direct neighborhood partnerships. Zero markup. Better than walk-in experience.
           </p>
+          {/* Unified Location + Search Bar */}
+          <div className="w-full max-w-2xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center bg-white p-1.5 sm:p-2 rounded-2xl sm:rounded-full border border-slate-200 shadow-md hover:shadow-lg focus-within:shadow-lg focus-within:border-primary/30 transition-all mb-6 relative text-left">
+            
+            {/* Location selector section */}
+            <div ref={tooltipRef} className="relative shrink-0 border-b sm:border-b-0 sm:border-r border-slate-100 pb-1.5 sm:pb-0 sm:pr-2 pl-2 sm:pl-3">
+              <button
+                onClick={() => setShowLocationTooltip(!showLocationTooltip)}
+                className="w-full sm:w-36 flex items-center justify-between gap-2 py-2 sm:py-1 text-xs font-black text-slate-800 transition-all cursor-pointer group h-10 outline-hidden border-0 bg-transparent"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  {isDetecting ? (
+                    <Loader2 className="h-3.5 w-3.5 text-primary animate-spin" />
+                  ) : (
+                    <MapPin className="h-3.5 w-3.5 text-primary group-hover:scale-110 transition-transform shrink-0" />
+                  )}
+                  <span className="truncate text-left">{currentLocation.split(",")[0]}</span>
+                </div>
+                <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-300 shrink-0 ${showLocationTooltip ? 'rotate-180' : ''}`} />
+              </button>
 
-          {/* Direct Search Bar */}
-          <div className="w-full max-w-lg mx-auto flex justify-center mb-8">
-            <div className="w-full bg-white p-2 rounded-2xl border border-slate-200 shadow-md">
-              <SearchBar />
+              <AnimatePresence>
+                {showLocationTooltip && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 15, scale: 0.95 }}
+                    className="absolute left-0 top-[calc(100%+8px)] w-[22rem] bg-white border border-slate-200 rounded-3xl shadow-2xl p-5 z-50 text-left overflow-hidden ring-1 ring-black/5"
+                  >
+                    {/* Subtle top decoration */}
+                    <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-primary via-cta to-indigo-500" />
+                    
+                    {/* Header */}
+                    <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+                      <div className="flex items-center gap-2">
+                        <div className="h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Activity className="h-3.5 w-3.5 text-primary" />
+                        </div>
+                        <span className="text-[11px] font-black uppercase tracking-wider text-slate-800">
+                          Logistics Control Panel
+                        </span>
+                      </div>
+                      <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                        <span className="h-1 w-1 rounded-full bg-emerald-500 animate-ping" />
+                        Online
+                      </span>
+                    </div>
+
+                    {/* Manual Location Search */}
+                    <div className="mb-4">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+                        Search Delivery Location
+                      </label>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                        <input
+                          type="text"
+                          placeholder="Enter City, Town or Pincode..."
+                          value={manualLocation}
+                          onChange={(e) => setManualLocation(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && manualLocation.trim() !== "") {
+                              setCurrentLocation(manualLocation.trim());
+                              setManualLocation("");
+                              setShowLocationTooltip(false);
+                            }
+                          }}
+                          className="w-full pl-9 pr-20 py-2.5 text-xs font-semibold text-slate-800 bg-slate-50 border border-slate-200 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 rounded-xl transition-all outline-none placeholder:text-slate-400"
+                        />
+                        <button
+                          onClick={() => {
+                            if (manualLocation.trim() !== "") {
+                              setCurrentLocation(manualLocation.trim());
+                              setManualLocation("");
+                              setShowLocationTooltip(false);
+                            }
+                          }}
+                          className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-[10px] uppercase tracking-widest px-3 py-1.5 rounded-lg transition-all active:scale-[0.97]"
+                        >
+                          Set
+                        </button>
+                      </div>
+
+                      {/* Quick Suggestions */}
+                      <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase mr-1">Quick Select:</span>
+                        {["Jehanabad", "Gaya", "Patna", "Muzaffarpur"].map((city) => (
+                          <button
+                            key={city}
+                            onClick={() => {
+                              setCurrentLocation(`${city}, Bihar`);
+                              setShowLocationTooltip(false);
+                            }}
+                            className="text-[10px] font-extrabold text-slate-600 hover:text-primary bg-slate-100 hover:bg-primary/5 border border-slate-200 hover:border-primary/20 px-2.5 py-1 rounded-lg transition-all"
+                          >
+                            {city}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Active Nodes List */}
+                    <div className="space-y-2 mb-4">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                        Active Grid System
+                      </span>
+                      <div className="space-y-2 border-l-2 border-slate-100 pl-3.5 ml-1">
+                        {locations.map((loc, idx) => {
+                          const isActive = currentLocation.toLowerCase().includes(loc.name.split(",")[0].toLowerCase());
+                          return (
+                            <div
+                              key={idx}
+                              onClick={() => {
+                                setCurrentLocation(loc.name);
+                                setShowLocationTooltip(false);
+                              }}
+                              className={`group relative flex flex-col gap-0.5 p-2.5 rounded-xl border transition-all cursor-pointer ${
+                                isActive
+                                  ? "bg-primary/5 border-primary/20 shadow-sm"
+                                  : "bg-slate-50/50 border-slate-150 hover:bg-slate-50 hover:border-slate-300"
+                              }`}
+                            >
+                              {/* Connector dot indicator */}
+                              <span className={`absolute -left-[1.2rem] top-4.5 h-2.5 w-2.5 rounded-full border-2 border-white transition-all ${
+                                isActive 
+                                  ? "bg-primary ring-4 ring-primary/10" 
+                                  : "bg-slate-300 group-hover:bg-slate-400"
+                              }`} />
+                              
+                              <div className="flex justify-between items-center">
+                                <span className={`text-xs font-black transition-colors ${isActive ? "text-primary" : "text-slate-800"}`}>
+                                  {loc.name}
+                                </span>
+                                <span className={`text-[9px] font-bold px-2 py-0.5 rounded-md ${
+                                  loc.status.includes("🟢") || loc.status.includes("Live")
+                                    ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
+                                    : "bg-amber-50 text-amber-700 border border-amber-100"
+                                }`}>
+                                  {loc.status}
+                                </span>
+                              </div>
+                              <span className="text-[10px] text-slate-500 leading-normal mt-0.5">
+                                {loc.desc}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Auto GPS Trigger */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        detectLocation();
+                      }}
+                      disabled={isDetecting}
+                      className="w-full py-3 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-black text-xs rounded-xl tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 shadow-lg shadow-slate-950/10 hover:shadow-slate-950/20 active:scale-[0.98] cursor-pointer"
+                    >
+                      {isDetecting ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <MapPin className="h-3.5 w-3.5" />
+                      )}
+                      {isDetecting ? "Detecting Location..." : "Detect Live GPS Location"}
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
+
+            {/* Search Bar section */}
+            <div className="flex-1 w-full relative sm:pl-2">
+              <SearchBar minimal />
+            </div>
+          </div>
+
+          {/* Quick Prescription Upload & Voice Search Hints */}
+          <div className="w-full max-w-2xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10 text-left">
+            
+            {/* Quick Upload Prescription Card */}
+            <Link href="/medicines?upload=true" className="group">
+              <div className="h-[5.5rem] flex items-center gap-4 p-4 bg-gradient-to-br from-white to-slate-50 hover:to-teal-50/10 rounded-2xl border border-slate-200 hover:border-teal-500/20 shadow-xs hover:shadow-md transition-all relative overflow-hidden">
+                <div className="absolute right-0 bottom-0 text-7xl opacity-5 select-none translate-x-2 translate-y-4 group-hover:scale-110 transition-transform">📄</div>
+                <div className="h-11 w-11 rounded-xl bg-teal-500 text-white flex items-center justify-center shadow-lg shadow-teal-500/10 shrink-0 group-hover:scale-105 transition-transform">
+                  <Pill className="h-5 w-5" />
+                </div>
+                <div>
+                  <span className="flex items-center gap-1.5 text-[9px] font-black text-teal-700 bg-teal-50 border border-teal-100/50 px-2 py-0.5 rounded-md uppercase tracking-wider w-fit">
+                    Quick Upload
+                  </span>
+                  <h4 className="text-xs font-black text-slate-800 mt-1">Upload Doctor's Prescription</h4>
+                  <p className="text-[10px] text-slate-400 leading-normal mt-0.5 font-medium">Order in 30 seconds via WhatsApp/Direct Upload</p>
+                </div>
+              </div>
+            </Link>
+
+            {/* Quick Voice Assistant Card */}
+            <button
+              onClick={() => {
+                const el = document.getElementById("voice-assistant");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="group h-[5.5rem] flex items-center gap-4 p-4 bg-gradient-to-br from-white to-slate-50 hover:to-indigo-50/10 rounded-2xl border border-slate-200 hover:border-primary/20 shadow-xs hover:shadow-md transition-all relative cursor-pointer text-left overflow-hidden w-full"
+            >
+              <div className="absolute right-0 bottom-0 text-7xl opacity-5 select-none translate-x-2 translate-y-4 group-hover:scale-110 transition-transform font-bold">🎤</div>
+              <div className="h-11 w-11 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/10 shrink-0 group-hover:scale-105 transition-transform">
+                <Activity className="h-5 w-5 animate-pulse" />
+              </div>
+              <div>
+                <span className="flex items-center gap-1.5 text-[9px] font-black text-primary bg-primary/5 border border-primary/10 px-2 py-0.5 rounded-md uppercase tracking-wider w-fit">
+                  Voice Assistant
+                </span>
+                <h4 className="text-xs font-black text-slate-800 mt-1">Talk to ClinikBook Assistant</h4>
+                <p className="text-[10px] text-slate-400 leading-normal mt-0.5 font-medium">Click to speak & search: "बुखार की दवा दिखाओ"</p>
+              </div>
+            </button>
+
           </div>
 
           <p className="text-xs text-slate-400 flex items-center justify-center gap-1.5">

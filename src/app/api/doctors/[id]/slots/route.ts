@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { bulkSlotsSchema, sanitizePayload } from "@/lib/schemas";
+import { apiError, ForbiddenError, NotFoundError, UnauthorizedError } from "@/app/api/error-handler";
 
 export async function GET(
   request: NextRequest,
@@ -15,11 +17,7 @@ export async function GET(
 
     return NextResponse.json({ success: true, data: slots });
   } catch (error) {
-    console.error("Slots fetch error:", error);
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+    return apiError(error);
   }
 }
 
@@ -29,55 +27,56 @@ export async function POST(
 ) {
   try {
     const session = await getSession();
-    if (!session || (session.role !== "DOCTOR" && session.role !== "PATHOLOGIST")) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 403 }
-      );
+    if (!session) {
+      throw new UnauthorizedError();
+    }
+
+    if (session.role !== "ADMIN" && session.role !== "DOCTOR" && session.role !== "PATHOLOGIST") {
+      throw new ForbiddenError("Only healthcare providers can configure schedules");
     }
 
     const { id } = await params;
     const doctor = await prisma.doctor.findUnique({ where: { id } });
-    if (!doctor || doctor.userId !== session.userId) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 403 }
-      );
+    if (!doctor) {
+      throw new NotFoundError("Doctor profile not found");
     }
 
-    const body = await request.json();
-    const { slots } = body; // Array of { dayOfWeek, startTime, endTime, isActive }
-
-    if (!Array.isArray(slots)) {
-      return NextResponse.json(
-        { success: false, error: "Slots must be an array" },
-        { status: 400 }
-      );
+    // Verify IDOR ownership - check if this profile belongs to the authenticated user
+    if (doctor.userId !== session.userId && session.role !== "ADMIN") {
+      throw new ForbiddenError("You cannot modify availability for other providers");
     }
 
-    // Delete existing slots for this doctor and recreate
-    await prisma.slot.deleteMany({ where: { doctorId: id } });
+    // 1. Zod input validation BEFORE executing DB edits
+    const jsonBody = await request.json();
+    const validated = bulkSlotsSchema.parse(jsonBody);
 
-    const created = await prisma.slot.createMany({
-      data: slots.map((slot: { dayOfWeek: number; startTime: string; endTime: string; isActive?: boolean }) => ({
-        doctorId: id,
-        dayOfWeek: slot.dayOfWeek,
-        startTime: slot.startTime,
-        endTime: slot.endTime,
-        isActive: slot.isActive ?? true,
-      })),
+    // 2. Escape inputs recursively to prevent stored XSS attacks
+    const sanitizedSlots = sanitizePayload(validated.slots);
+
+    // 3. Database transaction: delete existing slots and createMany concurrently, roll back on errors
+    const count = await prisma.$transaction(async (tx) => {
+      await tx.slot.deleteMany({ where: { doctorId: id } });
+
+      const created = await tx.slot.createMany({
+        data: sanitizedSlots.map((slot) => ({
+          doctorId: id,
+          dayOfWeek: slot.dayOfWeek,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          isActive: slot.isActive ?? true,
+        })),
+      });
+
+      return created.count;
     });
 
     return NextResponse.json({
       success: true,
-      data: { count: created.count },
+      data: { count },
       message: "Slots updated successfully",
     });
   } catch (error) {
-    console.error("Slots update error:", error);
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+    return apiError(error);
   }
 }
+

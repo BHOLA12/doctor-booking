@@ -2,12 +2,31 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, ArrowUpRight, Sparkles, Cpu, Check, RotateCcw, Volume2, Store, MapPin, Zap, Loader2 } from "lucide-react";
+import { 
+  Mic, 
+  ArrowUpRight, 
+  Sparkles, 
+  Cpu, 
+  Check, 
+  RotateCcw, 
+  Volume2, 
+  Store, 
+  MapPin, 
+  Zap, 
+  Loader2, 
+  ShieldCheck, 
+  Activity, 
+  PhoneCall, 
+  AlertTriangle, 
+  ArrowRight 
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { MEDICINES } from "@/lib/medicines-data";
 import { toast } from "sonner";
+import { SymptomCheckerResult } from "@/types";
+import { getLocalSymptomAnalysis } from "@/server/services/symptom-checker-local";
 
 type AssistantState = "idle" | "listening" | "processing" | "success";
 
@@ -19,6 +38,9 @@ export default function VoiceAssistantSection() {
   const [textInput, setTextInput] = useState("");
   const [mockIntervalId, setMockIntervalId] = useState<NodeJS.Timeout | null>(null);
   const [isPlacing, setIsPlacing] = useState(false);
+  const [symptomResult, setSymptomResult] = useState<SymptomCheckerResult | null>(null);
+  const [isMedIntent, setIsMedIntent] = useState(false);
+  const [isGreetingIntent, setIsGreetingIntent] = useState(false);
   const [matchedMed, setMatchedMed] = useState({
     symptom: "Fever & Joint Pain",
     name: "Paracetamol 650mg",
@@ -26,6 +48,7 @@ export default function VoiceAssistantSection() {
     chemist: "Jehanabad Pharmacy",
     savings: "35% Lower Price! 🟢"
   });
+  const [chatHistory, setChatHistory] = useState<{ role: "user" | "assistant"; text: string }[]>([]);
 
   const getSymptomFromTranscript = (text: string, matchedMedName: string, matchedCategory: string) => {
     const t = text.toLowerCase();
@@ -91,6 +114,28 @@ export default function VoiceAssistantSection() {
     return MEDICINES[0];
   };
 
+  const isMedicineQuery = (text: string) => {
+    const t = text.toLowerCase();
+    const orderKeywords = ["order", "buy", "purchase", "delivery", "chemist", "pharmacy", "medicine", "tablet", "capsule", "syrup", "salt", "mg", "ml"];
+    if (orderKeywords.some(kw => t.includes(kw))) {
+      return true;
+    }
+    for (const m of MEDICINES) {
+      const name = m.name.toLowerCase();
+      const salt = m.salt.toLowerCase();
+      if (t.includes(name) || t.includes(salt)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  const isGreetingQuery = (text: string) => {
+    const t = text.toLowerCase().trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g,"");
+    const greetings = ["hi", "hello", "hey", "hola", "namaste", "pranam", "kaise ho", "kaise ho aap", "good morning", "good afternoon", "good evening", "hii"];
+    return greetings.includes(t) || t === "aarogya" || t === "hi aarogya" || t === "hello aarogya" || t === "hii aarogya";
+  };
+
   const runMockSpeechSimulation = () => {
     setTranscript("");
     let phraseIdx = 0;
@@ -116,20 +161,68 @@ export default function VoiceAssistantSection() {
     setMockIntervalId(interval);
   };
 
-  const speakText = (text: string, lang: string = "hi-IN") => {
+  const getMaleVoice = (voices: SpeechSynthesisVoice[], lang: string) => {
+    const l = lang.toLowerCase();
+    const langVoices = voices.filter(v => v.lang.toLowerCase().includes(l));
+    if (langVoices.length === 0) return null;
+
+    if (l.includes("hi")) {
+      const hemant = langVoices.find(v => v.name.toLowerCase().includes("hemant"));
+      if (hemant) return hemant;
+    }
+
+    const maleNames = ["hemant", "ravi", "david", "mark", "george", "male", "standard-b", "standard-d"];
+    for (const name of maleNames) {
+      const found = langVoices.find(v => v.name.toLowerCase().includes(name));
+      if (found) return found;
+    }
+
+    return langVoices[0];
+  };
+
+  const speakText = (text: string, lang: string = "hi-IN", autoListenAfter: boolean = false) => {
     if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.rate = 0.9;
-      utterance.pitch = 1.0;
+      utterance.pitch = 0.85; // Lower pitch for a male tone
       utterance.lang = lang;
       
       const voices = window.speechSynthesis.getVoices();
-      const voice = voices.find(v => v.lang.toLowerCase().includes(lang.toLowerCase()));
+      const voice = getMaleVoice(voices, lang);
       if (voice) {
         utterance.voice = voice;
       }
+
+      if (autoListenAfter) {
+        // Prevent GC of utterance by attaching to window
+        (window as any)._activeUtterance = utterance;
+        
+        let recognitionStarted = false;
+        const triggerStart = () => {
+          if (recognitionStarted) return;
+          recognitionStarted = true;
+          (window as any)._activeUtterance = null;
+          startRecognition();
+        };
+
+        // Safety fallback timeout based on text length (approx 100ms/char, min 3s)
+        const durationEstimate = Math.max(3000, text.length * 100 + 1000);
+        const safetyTimeout = setTimeout(triggerStart, durationEstimate);
+
+        utterance.onend = () => {
+          clearTimeout(safetyTimeout);
+          triggerStart();
+        };
+        utterance.onerror = () => {
+          clearTimeout(safetyTimeout);
+          triggerStart();
+        };
+      }
+      
       window.speechSynthesis.speak(utterance);
+    } else if (autoListenAfter) {
+      startRecognition();
     }
   };
 
@@ -147,6 +240,8 @@ export default function VoiceAssistantSection() {
       rec.interimResults = true;
       rec.lang = "en-IN";
 
+      let hasError = false;
+
       rec.onstart = () => {
         setCurrentState("listening");
         setTranscript("Listening for symptoms...");
@@ -158,13 +253,24 @@ export default function VoiceAssistantSection() {
       };
 
       rec.onerror = (err: any) => {
-        console.error("Speech recognition error:", err);
+        console.warn("Speech recognition warning:", err.error || err);
+        hasError = true;
+        
+        if (err.error === "not-allowed") {
+          toast.warning("Microphone access is blocked. Please enable mic permissions or type your symptoms below.", {
+            id: "mic-permission-warning",
+            duration: 4000
+          });
+        }
+        
         setCurrentState("listening");
         runMockSpeechSimulation();
       };
 
       rec.onend = () => {
-        setCurrentState("processing");
+        if (!hasError) {
+          setCurrentState("processing");
+        }
       };
 
       rec.start();
@@ -179,13 +285,38 @@ export default function VoiceAssistantSection() {
     if (currentState === "idle" || currentState === "success") {
       if (typeof window !== "undefined" && window.speechSynthesis) {
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance("मैं सुन रहा हूँ, please describe your symptoms.");
+        const utterance = new SpeechSynthesisUtterance("हाय, मैं आरोग्य बोल रहा हूँ। क्लीनिकबुक में आपका स्वागत है।");
         utterance.rate = 0.95;
-        utterance.pitch = 1.0;
+        utterance.pitch = 0.85; // Lower pitch for masculine tone
         utterance.lang = "hi-IN";
         
-        utterance.onend = () => {
+        const voices = window.speechSynthesis.getVoices();
+        const voice = getMaleVoice(voices, "hi-IN");
+        if (voice) {
+          utterance.voice = voice;
+        }
+        
+        // Prevent GC of utterance by attaching to window
+        (window as any)._activeUtterance = utterance;
+        
+        let recognitionStarted = false;
+        const triggerStart = () => {
+          if (recognitionStarted) return;
+          recognitionStarted = true;
+          (window as any)._activeUtterance = null;
           startRecognition();
+        };
+
+        // Safety fallback timeout (3s) to prevent hanging on "Assistant preparing..."
+        const safetyTimeout = setTimeout(triggerStart, 3000);
+
+        utterance.onend = (e) => {
+          clearTimeout(safetyTimeout);
+          triggerStart();
+        };
+        utterance.onerror = (e) => {
+          clearTimeout(safetyTimeout);
+          triggerStart();
         };
 
         setCurrentState("listening");
@@ -194,6 +325,17 @@ export default function VoiceAssistantSection() {
       } else {
         startRecognition();
       }
+    }
+  };
+
+  const handleCardClick = () => {
+    if (currentState === "idle" || currentState === "success") {
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      handleStartListening();
+    } else if (currentState === "listening") {
+      handleReset();
     }
   };
 
@@ -206,6 +348,8 @@ export default function VoiceAssistantSection() {
     setCurrentState("idle");
     setTranscript("");
     setTextInput("");
+    setSymptomResult(null);
+    setChatHistory([]);
   };
 
   const handleTextInputSubmit = (e: React.FormEvent) => {
@@ -294,78 +438,153 @@ export default function VoiceAssistantSection() {
   };
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let active = true;
 
     if (currentState === "processing") {
-      const t = transcript || "paracetamol";
+      const t = transcript || "fever and headache";
+      
+      // Detect if user is greeting, ordering medicine, or needs doctor consult
+      const isGreeting = isGreetingQuery(t);
+      setIsGreetingIntent(isGreeting);
+
+      if (isGreeting) {
+        setSymptomResult(null);
+        setMatchedMed({
+          symptom: t,
+          name: "",
+          query: "",
+          chemist: "",
+          savings: ""
+        });
+        const speakMsg = "हाय, मैं आरोग्य बोल रहा हूँ। क्लीनिकबुक में आपका स्वागत है।";
+        speakText(speakMsg, "hi-IN", true);
+        setChatHistory(prev => [
+          ...prev,
+          { role: "user", text: t },
+          { role: "assistant", text: speakMsg }
+        ]);
+        setCurrentState("success");
+        return;
+      }
+
+      const isMed = isMedicineQuery(t);
+      setIsMedIntent(isMed);
+
+      // Calculate local matching fallback variables just in case
       const matchedMedicine = findBestMedicineMatch(t);
       const symptom = getSymptomFromTranscript(t, matchedMedicine.name, matchedMedicine.category);
-      
       const chemists = ["Hindustan Medical Hall", "Jehanabad Pharmacy", "Ajay Medical Hall", "Green Medical Hall", "Gudvil Medical Hall"];
       const chemistIndex = Math.abs(matchedMedicine.id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0)) % chemists.length;
       const chemist = chemists[chemistIndex];
       const savings = `${matchedMedicine.discount}% Lower Price! 🟢`;
 
-      setMatchedMed({
-        symptom,
-        name: matchedMedicine.name,
-        query: matchedMedicine.id,
-        chemist,
-        savings
-      });
+      const performTriage = async () => {
+        try {
+          const response = await fetch("/api/ai/symptoms", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ symptoms: t, history: chatHistory }),
+          });
 
-      // Language detection helper
-      const detectLanguage = (text: string): "hi" | "en" => {
-        const textLower = text.toLowerCase();
-        
-        // Detect Devanagari script characters
-        if (/[\u0900-\u097F]/.test(text)) return "hi";
-        
-        // Detect common Hinglish terms for medical issues
-        const hindiWords = [
-          "dard", "bukhar", "khansi", "sardi", "jukaam", "zukam", "pet",
-          "gas", "kamzori", "thakan", "chakar", "ulti", "goli", "dawai", "badan"
-        ];
-        if (hindiWords.some(word => textLower.includes(word))) {
-          return "hi";
+          const data = await response.json();
+          if (!active) return;
+
+          if (response.ok && data.success) {
+            setSymptomResult(data.data);
+            
+            // Set local fallback matching values too
+            setMatchedMed({
+              symptom: data.data.understood_problem || symptom,
+              name: isMed ? matchedMedicine.name : (data.data.doctor_type || matchedMedicine.name),
+              query: isMed ? matchedMedicine.name : (data.data.doctor_search_keywords[0] || matchedMedicine.id),
+              chemist,
+              savings
+            });
+
+            // Speak out findings
+            let speakMsg = "";
+            let speakLang = "en-IN";
+
+            if (isMed) {
+              const hasHindi = t.match(/[\u0900-\u097F]/) || t.includes("dilao") || t.includes("chahiye") || t.includes("chahie") || t.includes("order") || t.includes("dedo");
+              speakLang = hasHindi ? "hi-IN" : "en-IN";
+              speakMsg = speakLang === "hi-IN"
+                ? `${matchedMedicine.name} मिल गया है, आप इसे अभी आर्डर कर सकते हैं।`
+                : `I found ${matchedMedicine.name}. You can order it now from ${chemist}.`;
+            } else {
+              speakLang = data.data.language_detected === "Hindi" ? "hi-IN" : "en-IN";
+              if (data.data.is_emergency) {
+                speakMsg = data.data.language_detected === "Hindi" 
+                  ? "यह एक मेडिकल इमरजेंसी हो सकती है। तुरंत डॉक्टर से संपर्क करें।" 
+                  : "This could be a medical emergency. Please connect with a doctor immediately.";
+              } else {
+                speakMsg = data.data.first_aid_advice || (
+                  data.data.language_detected === "Hindi"
+                    ? `आपके लक्षणों के लिए, ${data.data.doctor_type} से परामर्श करने की सलाह दी जाती है।`
+                    : `For your symptoms, consulting a ${data.data.doctor_type} is recommended.`
+                );
+              }
+            }
+
+            speakText(speakMsg, speakLang, true);
+            setChatHistory(prev => [
+              ...prev,
+              { role: "user", text: t },
+              { role: "assistant", text: speakMsg }
+            ]);
+            setCurrentState("success");
+          } else {
+            throw new Error("Triage API error");
+          }
+        } catch (err) {
+          console.error("Home page triage error, using local fallback:", err);
+          if (!active) return;
+          
+          const local = getLocalSymptomAnalysis(t);
+          setSymptomResult(local);
+          setMatchedMed({
+            symptom: local.understood_problem || symptom,
+            name: isMed ? matchedMedicine.name : (local.doctor_type || matchedMedicine.name),
+            query: isMed ? matchedMedicine.name : (local.doctor_search_keywords[0] || matchedMedicine.id),
+            chemist,
+            savings
+          });
+
+          let speakMsg = "";
+          let speakLang = "en-IN";
+
+          if (isMed) {
+            const hasHindi = t.match(/[\u0900-\u097F]/) || t.includes("dilao") || t.includes("chahiye") || t.includes("chahie") || t.includes("order") || t.includes("dedo");
+            speakLang = hasHindi ? "hi-IN" : "en-IN";
+            speakMsg = speakLang === "hi-IN"
+              ? `${matchedMedicine.name} मिल गया है, आप इसे अभी आर्डर कर सकते हैं।`
+              : `I found ${matchedMedicine.name}. You can order it now.`;
+          } else {
+            speakLang = local.language_detected === "Hindi" ? "hi-IN" : "en-IN";
+            if (local.is_emergency) {
+              speakMsg = local.language_detected === "Hindi" 
+                ? "यह एक मेडिकल इमरजेंसी हो सकती है। तुरंत संपर्क करें।" 
+                : "This could be a medical emergency. Please contact a doctor.";
+            } else {
+              speakMsg = local.first_aid_advice;
+            }
+          }
+
+          speakText(speakMsg, speakLang, true);
+          setChatHistory(prev => [
+            ...prev,
+            { role: "user", text: t },
+            { role: "assistant", text: speakMsg }
+          ]);
+          setCurrentState("success");
         }
-        return "en";
       };
 
-      const lang = detectLanguage(t);
-      let speakMsg = "";
-      let speakLang = "en-IN";
-
-      if (lang === "hi") {
-        const getHindiSymptom = (sName: string) => {
-          const s = sName.toLowerCase();
-          if (s.includes("dehydration")) return "डीहाइड्रेशन और कमजोरी";
-          if (s.includes("fever")) return "बुखार";
-          if (s.includes("pain") || s.includes("headache")) return "शरीर दर्द और सिर दर्द";
-          if (s.includes("cough") || s.includes("cold")) return "खांसी और जुकाम";
-          if (s.includes("sugar") || s.includes("diabetes")) return "डायबिटीज";
-          if (s.includes("gas") || s.includes("acidity")) return "एसिडिटी और गैस";
-          return sName;
-        };
-
-        const hindiSymptom = getHindiSymptom(symptom);
-        speakMsg = `मुझे आपके लक्षण के लिए दवा मिल गई है। ${hindiSymptom} के लिए, मैं ${matchedMedicine.name} लेने की सलाह देता हूँ, जो आपको ${chemist} पर मिल जाएगी। इससे आपकी ${matchedMedicine.discount} प्रतिशत बचत होगी। आर्डर करने के लिए आर्डर नाओ बटन दबाएँ।`;
-        speakLang = "hi-IN";
-      } else {
-        speakMsg = `I found a medicine recommendation. For ${symptom}, I suggest ${matchedMedicine.name} from ${chemist}, saving you ${matchedMedicine.discount} percent. You can click the order now button to place your order.`;
-        speakLang = "en-IN";
-      }
-
-      // Speak out the suggestion in the matched language
-      speakText(speakMsg, speakLang);
-
-      timer = setTimeout(() => {
-        setCurrentState("success");
-      }, 2500);
+      void performTriage();
     }
 
     return () => {
-      if (timer) clearTimeout(timer);
+      active = false;
     };
   }, [currentState]);
 
@@ -381,7 +600,7 @@ export default function VoiceAssistantSection() {
   const waveHeights = [24, 40, 16, 48, 32, 56, 28, 44, 20];
 
   return (
-    <section className="relative py-24 bg-[#030712] overflow-hidden border-b border-slate-900">
+    <section id="voice-assistant" className="relative py-24 bg-[#030712] overflow-hidden border-b border-slate-900">
       {/* Background ambient glowing shapes */}
       <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[350px] h-[350px] bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute top-1/3 right-1/4 -translate-y-1/2 w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-[120px] pointer-events-none" />
@@ -393,9 +612,10 @@ export default function VoiceAssistantSection() {
           {/* LEFT COLUMN: INTERACTIVE VISUALIZER */}
           <div className="lg:col-span-5 flex justify-center w-full">
             <div 
-              onClick={currentState === "idle" ? handleStartListening : undefined}
-              className={`relative w-full max-w-[420px] aspect-square rounded-[2rem] bg-slate-950/65 border border-slate-800/80 shadow-[0_0_50px_rgba(0,0,0,0.8)] backdrop-blur-md p-8 flex flex-col items-center justify-between overflow-hidden transition-all duration-300 ${
-                currentState === "idle" ? "cursor-pointer hover:border-cyan-500/30 group" : ""
+              onClick={handleCardClick}
+              className={`relative w-full max-w-[420px] aspect-square rounded-[2rem] bg-slate-950/65 border border-slate-800/80 shadow-[0_0_50px_rgba(0,0,0,0.8)] backdrop-blur-md p-8 flex flex-col items-center justify-between overflow-hidden transition-all duration-300 cursor-pointer ${
+                currentState === "idle" ? "hover:border-cyan-500/30 group" : 
+                currentState === "success" ? "hover:border-emerald-500/30" : "hover:border-red-500/30"
               }`}
             >
               {/* Corner accent lines */}
@@ -559,53 +779,145 @@ export default function VoiceAssistantSection() {
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className="w-full space-y-3 bg-slate-900/90 border border-emerald-500/20 rounded-2xl p-3 text-left shadow-lg"
+                      className="w-full space-y-3 bg-slate-900/90 border border-cyan-500/20 rounded-2xl p-4 text-left shadow-lg"
                     >
-                      <div className="flex items-center gap-1.5 border-b border-slate-800 pb-1.5 mb-1.5">
-                        <Zap className="h-3.5 w-3.5 text-emerald-400" />
-                        <span className="text-[10px] font-black uppercase text-emerald-400 tracking-wider font-mono">Grid Optimized</span>
-                      </div>
-                      <div className="space-y-1.5 font-mono text-[10px] text-slate-300">
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">SYMPTOM:</span>
-                          <span className="text-slate-200 font-bold">{matchedMed.symptom}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">PRESCRIPTION:</span>
-                          <span className="text-slate-200 font-bold">{matchedMed.name}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">NEAREST CHEMIST:</span>
-                          <span className="text-slate-200 font-bold">{matchedMed.chemist}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-emerald-400 font-bold pt-1 border-t border-slate-800/80">
-                          <span>SAVINGS:</span>
-                          <span>{matchedMed.savings}</span>
-                        </div>
-                      </div>
-                      <div className="flex gap-2 pt-1">
-                        <button 
-                          onClick={handleDirectOrder}
-                          disabled={isPlacing}
-                          className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[9px] uppercase tracking-wider rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1 disabled:opacity-50"
-                        >
-                          {isPlacing ? (
-                            <>
-                              <Loader2 className="h-3 w-3 animate-spin" />
-                              Placing...
-                            </>
-                          ) : (
-                            "Order Now"
-                          )}
-                        </button>
-                        <button 
-                          onClick={handleReset} 
-                          disabled={isPlacing}
-                          className="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors cursor-pointer flex items-center justify-center disabled:opacity-50"
-                        >
-                          <RotateCcw className="h-3 w-3" />
-                        </button>
-                      </div>
+                      {isGreetingIntent ? (
+                        <>
+                          <div className="flex items-center gap-1.5 border-b border-slate-800 pb-1.5 mb-1.5">
+                            <Sparkles className="h-3.5 w-3.5 text-cyan-400 animate-pulse" />
+                            <span className="text-[10px] font-black uppercase text-cyan-400 tracking-wider font-mono">Aarogya AI Active</span>
+                          </div>
+                          <div className="space-y-2 text-slate-350 text-[11px] leading-relaxed font-sans">
+                            <p className="font-semibold text-slate-100 text-xs">
+                              Namaste! Main Aarogya bol raha hu. Clinikbook mein aapka swagat hai. 🙏
+                            </p>
+                            <p>
+                              Aap mujhe apne symptoms (jaise: fever, stomach pain) bata sakte hain ya kisi dawai (medicine) ka naam le sakte hain.
+                            </p>
+                          </div>
+                          <div className="flex gap-2 pt-2">
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStartListening();
+                              }} 
+                              className="flex-grow py-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-[9px] uppercase tracking-wider rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1"
+                            >
+                              Talk to me
+                            </button>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleReset();
+                              }} 
+                              className="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
+                            >
+                              <RotateCcw className="h-3 w-3" />
+                            </button>
+                          </div>
+                        </>
+                      ) : isMedIntent ? (
+                        <>
+                          <div className="flex items-center gap-1.5 border-b border-slate-800 pb-1.5 mb-1.5">
+                            <Zap className="h-3.5 w-3.5 text-emerald-400" />
+                            <span className="text-[10px] font-black uppercase text-emerald-400 tracking-wider font-mono">Grid Optimized</span>
+                          </div>
+                          <div className="space-y-1.5 font-mono text-[10px] text-slate-300">
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">MEDICINE:</span>
+                              <span className="text-slate-200 font-bold">{matchedMed.name}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">NEAREST CHEMIST:</span>
+                              <span className="text-slate-200 font-bold">{matchedMed.chemist}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-emerald-400 font-bold pt-1 border-t border-slate-800/80">
+                              <span>SAVINGS:</span>
+                              <span>{matchedMed.savings}</span>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 pt-1">
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDirectOrder();
+                              }}
+                              disabled={isPlacing}
+                              className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[9px] uppercase tracking-wider rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1 disabled:opacity-50"
+                            >
+                              {isPlacing ? (
+                                <>
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                  Placing...
+                                </>
+                              ) : (
+                                "Order Now"
+                              )}
+                            </button>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleReset();
+                              }} 
+                              disabled={isPlacing}
+                              className="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors cursor-pointer flex items-center justify-center disabled:opacity-50"
+                            >
+                              <RotateCcw className="h-3 w-3" />
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-1.5 border-b border-slate-800 pb-1.5 mb-1.5">
+                            <Sparkles className="h-3.5 w-3.5 text-cyan-400 animate-pulse" />
+                            <span className="text-[10px] font-black uppercase text-cyan-400 tracking-wider font-mono">Triage Recommended</span>
+                          </div>
+                          <div className="space-y-1.5 font-mono text-[10px] text-slate-300">
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">UNDERSTOOD:</span>
+                              <span className="text-slate-200 font-bold truncate max-w-[150px]">{symptomResult?.understood_problem || matchedMed.symptom}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">DOCTOR TYPE:</span>
+                              <span className="text-cyan-400 font-bold">{symptomResult?.doctor_type || "General Physician"}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">SEVERITY:</span>
+                              <span className={`font-bold uppercase ${
+                                symptomResult?.severity === "critical" ? "text-rose-400 animate-pulse" :
+                                symptomResult?.severity === "high" ? "text-orange-400" :
+                                symptomResult?.severity === "medium" ? "text-amber-400" : "text-emerald-400"
+                              }`}>{symptomResult?.severity || "medium"}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-slate-400 pt-1 border-t border-slate-800/80">
+                              <span>PRIORITY:</span>
+                              <span className="text-slate-200">{symptomResult?.booking_priority || "Standard"}</span>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 pt-1">
+                            <Link 
+                              href={`/doctors?specialization=${encodeURIComponent(symptomResult?.specialty_needed?.[0] || "General Physician")}`}
+                              className="flex-1"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <button 
+                                className="w-full py-1.5 bg-cyan-600 hover:bg-cyan-550 text-white font-bold text-[9px] uppercase tracking-wider rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1"
+                              >
+                                Book Doctor
+                              </button>
+                            </Link>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleReset();
+                              }} 
+                              className="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
+                            >
+                              <RotateCcw className="h-3 w-3" />
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -678,73 +990,245 @@ export default function VoiceAssistantSection() {
             </div>
           </div>
 
-          {/* RIGHT COLUMN: TEXT CONTENT & CTAS */}
+          {/* RIGHT COLUMN: TEXT CONTENT & CTAS OR AI TRIAGE OUTPUT CARD */}
           <div className="lg:col-span-7 text-left space-y-6">
-            
-            {/* Interactive voice search indicator pill */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-cyan-400 text-[10px] font-bold uppercase tracking-wider">
-              <Sparkles className="h-3 w-3 text-cyan-400" />
-              <span>Interactive Voice & Search</span>
-            </div>
-
-            {/* Premium heading */}
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.15]">
-              Meet Your Personal <br />
-              <span className="bg-gradient-to-r from-cyan-400 via-teal-400 to-blue-500 bg-clip-text text-transparent">
-                Hyperlocal Health Assistant.
-              </span>
-            </h2>
-
-            {/* Description */}
-            <p className="text-slate-400 text-sm sm:text-base leading-relaxed font-normal">
-              No more typing long names or searching multiple stores. Just speak naturally. 
-              ClinikBook&apos;s advanced AI agent listens to your symptoms, matches prescriptions with 
-              closest verified doctors, and splits your medicine cart across local pharmacies to find 
-              the absolute lowest bill instantly.
-            </p>
-
-            {/* Quick stats / Features */}
-            <div className="grid grid-cols-2 gap-4 border-t border-slate-900 pt-6">
-              <div className="flex gap-2.5">
-                <div className="mt-1 h-5 w-5 rounded-md bg-cyan-950 border border-cyan-800/40 flex items-center justify-center">
-                  <Check className="h-3 w-3 text-cyan-400" />
-                </div>
-                <div>
-                  <h4 className="text-white text-xs font-black uppercase tracking-wider">Natural Voice Input</h4>
-                  <p className="text-slate-500 text-[11px] mt-0.5">Simply describe symptoms in normal English or Hindi</p>
-                </div>
-              </div>
-              <div className="flex gap-2.5">
-                <div className="mt-1 h-5 w-5 rounded-md bg-cyan-950 border border-cyan-800/40 flex items-center justify-center">
-                  <Check className="h-3 w-3 text-cyan-400" />
-                </div>
-                <div>
-                  <h4 className="text-white text-xs font-black uppercase tracking-wider">Split-Cart Optimization</h4>
-                  <p className="text-slate-500 text-[11px] mt-0.5">Compare and split medications across local stores</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Call to action buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <button
-                onClick={handleStartListening}
-                className="group relative inline-flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs uppercase tracking-wider transition-all duration-300 hover:shadow-[0_0_25px_rgba(6,182,212,0.45)] active:scale-[0.98] cursor-pointer"
+            {currentState === "success" && symptomResult && !isMedIntent ? (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ type: "spring", stiffness: 100, damping: 15 }}
+                className="space-y-4 rounded-3xl border border-slate-800 bg-slate-950/80 p-6 backdrop-blur-md relative overflow-hidden"
               >
-                <Mic className="h-4.5 w-4.5 text-cyan-200 animate-pulse group-hover:scale-110 transition-transform" />
-                <span className="text-white">🤖 Talk to Live Agent</span>
-              </button>
+                {/* Accent glow line */}
+                <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-cyan-500 via-teal-400 to-blue-500" />
+                
+                {/* Header Triage Status */}
+                <div className="flex items-center justify-between pb-3 border-b border-slate-900">
+                  <div className="flex items-center gap-2">
+                    <Activity className="h-4 w-4 text-cyan-400 animate-pulse" />
+                    <span className="text-xs font-black uppercase tracking-wider text-slate-200 font-mono">
+                      Aarogya AI Triage Output
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold text-slate-500 font-mono">Severity:</span>
+                    {symptomResult.severity === "critical" && (
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-black text-rose-400 bg-rose-950/30 border border-rose-800/40 px-2.5 py-0.5 rounded-full animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.2)] font-mono">
+                        <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+                        Critical (Emergency)
+                      </span>
+                    )}
+                    {symptomResult.severity === "high" && (
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-black text-orange-400 bg-orange-950/30 border border-orange-800/40 px-2.5 py-0.5 rounded-full font-mono">
+                        <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                        High Urgency
+                      </span>
+                    )}
+                    {symptomResult.severity === "medium" && (
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-black text-amber-400 bg-amber-950/30 border border-amber-800/40 px-2.5 py-0.5 rounded-full font-mono">
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                        Medium
+                      </span>
+                    )}
+                    {symptomResult.severity === "low" && (
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-black text-emerald-400 bg-emerald-950/30 border border-emerald-800/40 px-2.5 py-0.5 rounded-full font-mono">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        Low Priority
+                      </span>
+                    )}
+                  </div>
+                </div>
 
-              <button
-                onClick={currentState === "success" ? handleReset : handleStartListening}
-                className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-850 font-bold text-xs uppercase tracking-wider transition-all duration-300 active:scale-[0.98] cursor-pointer group"
-              >
-                <span>
-                  {currentState === "success" ? "Try Another Search" : "See How It Works"}
-                </span>
-                <ArrowUpRight className="h-4 w-4 text-slate-500 group-hover:text-slate-350 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              </button>
-            </div>
+                {/* Emergency Banner Alert */}
+                {symptomResult.is_emergency && (
+                  <div className="bg-rose-950/40 border border-rose-800/40 text-rose-200 rounded-xl p-4 flex flex-col gap-2.5 relative overflow-hidden">
+                    <div className="absolute right-2 bottom-0 opacity-10 select-none text-7xl font-bold">🚨</div>
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-4.5 w-4.5 text-rose-500 shrink-0" />
+                      <span className="font-extrabold text-xs uppercase tracking-wider text-rose-300 font-mono">
+                        Critical Emergency Match Detected
+                      </span>
+                    </div>
+                    <p className="text-[11px] font-semibold leading-relaxed">
+                      {symptomResult.emergency_message || "This is a potentially critical health state. Immediate medical attention is highly advised."}
+                    </p>
+                    
+                    {symptomResult.action_required === "instant_doctor_connect" && (
+                      <div className="mt-1 flex flex-wrap gap-2">
+                        <Link href="/online-consultation" className="w-full sm:w-auto">
+                          <button className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 bg-rose-600 hover:bg-rose-500 text-white font-black uppercase text-[9px] tracking-wider px-3.5 py-2 rounded-lg transition-all active:scale-[0.98] cursor-pointer">
+                            <PhoneCall className="h-3 w-3" /> Instant Doctor Connect
+                          </button>
+                        </Link>
+                        <Link href="/hospitals" className="w-full sm:w-auto">
+                          <button className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 border border-rose-850 text-rose-300 bg-slate-950 hover:bg-rose-950/20 font-bold text-[9px] uppercase tracking-wider px-3.5 py-2 rounded-lg cursor-pointer">
+                            Nearest Hospital 🏥
+                          </button>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Understood Problem Summary */}
+                <div className="bg-slate-900/40 p-4 rounded-xl border border-slate-800/80">
+                  <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1 font-mono">
+                    Understood Symptoms
+                  </p>
+                  <p className="text-xs font-semibold text-slate-300 leading-relaxed font-mono">
+                    "{symptomResult.understood_problem}"
+                  </p>
+                </div>
+
+                 {/* Primary Routing Suggestion Card */}
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="border border-slate-800/80 p-3.5 rounded-xl bg-slate-900/20">
+                    <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wider block mb-1 font-mono">
+                      Specialty Needed
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {symptomResult.specialty_needed.map((spec, idx) => (
+                        <Link key={idx} href={`/doctors?specialization=${encodeURIComponent(spec)}`}>
+                          <span className="bg-cyan-500/10 text-cyan-400 border border-cyan-800/40 hover:bg-cyan-500/15 font-black text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md cursor-pointer transition-all">
+                            👨‍⚕️ {spec}
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="border border-slate-800/80 p-3.5 rounded-xl bg-slate-900/20">
+                    <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5 font-mono">
+                      Booking Recommendation
+                    </span>
+                    <div className="text-xs font-black text-slate-200 font-mono">
+                      {symptomResult.doctor_type}
+                    </div>
+                    <span className="text-[9px] font-medium text-slate-500 block mt-0.5 font-mono">
+                      Mode: {symptomResult.consultation_mode} ({symptomResult.booking_priority})
+                    </span>
+                  </div>
+                </div>
+
+                {/* First Aid Response Banner */}
+                {symptomResult.first_aid_advice && (
+                  <div className="bg-emerald-950/20 border border-emerald-900/30 rounded-xl p-4 flex gap-3.5 items-start">
+                    <div className="h-8 w-8 rounded-lg bg-emerald-950/40 border border-emerald-800/40 flex items-center justify-center shrink-0">
+                      <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h5 className="text-[9px] font-black text-emerald-400 uppercase tracking-wider mb-0.5 font-mono">
+                        First Aid Response (प्राथमिक उपचार)
+                      </h5>
+                      <p className="text-xs font-bold text-emerald-300 leading-relaxed font-sans">
+                        {symptomResult.first_aid_advice}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions & Doctor Search Keywords */}
+                <div className="border-t border-slate-900 pt-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wider font-mono">
+                      Search Tags:
+                    </span>
+                    {symptomResult.doctor_search_keywords && symptomResult.doctor_search_keywords.length > 0 ? (
+                      symptomResult.doctor_search_keywords.map((kw, idx) => (
+                        <span key={idx} className="text-[9px] font-bold text-slate-400 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-lg font-mono">
+                          #{kw}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-[9px] font-bold text-slate-400 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-lg font-mono">
+                        #general_triage
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2 w-full md:w-auto">
+                    <Link href={`/doctors?search=${encodeURIComponent(symptomResult.doctor_search_keywords?.[0] || symptomResult.doctor_type)}`} className="flex-1 md:flex-initial">
+                      <button className="w-full inline-flex items-center justify-center gap-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-extrabold text-[9px] uppercase tracking-wider py-2.5 px-4 rounded-lg transition-all active:scale-[0.98] cursor-pointer">
+                        Book Doctor <ArrowRight className="h-3 w-3" />
+                      </button>
+                    </Link>
+                    <button 
+                      onClick={handleReset}
+                      className="inline-flex items-center justify-center gap-1 bg-slate-900 hover:bg-slate-805 border border-slate-800 text-slate-400 hover:text-white font-extrabold text-[9px] uppercase tracking-wider px-3.5 py-2.5 rounded-lg transition-all active:scale-[0.98] cursor-pointer font-mono"
+                    >
+                      Reset
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ) : (
+              <>
+                {/* Interactive voice search indicator pill */}
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-cyan-400 text-[10px] font-bold uppercase tracking-wider">
+                  <Sparkles className="h-3 w-3 text-cyan-400" />
+                  <span>Live Voice & AI Search</span>
+                </div>
+
+                {/* Premium heading */}
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.15]">
+                  Meet Your Personal <br />
+                  <span className="bg-gradient-to-r from-cyan-400 via-teal-400 to-blue-500 bg-clip-text text-transparent">
+                    Hyperlocal Health Assistant.
+                  </span>
+                </h2>
+
+                {/* Description */}
+                <p className="text-slate-400 text-sm sm:text-base leading-relaxed font-normal">
+                  No more typing long names or searching multiple stores. Just speak naturally. 
+                  ClinikBook&apos;s advanced AI agent listens to your symptoms, matches prescriptions with 
+                  closest verified doctors, and splits your medicine cart across local pharmacies to find 
+                  the absolute lowest bill instantly.
+                </p>
+
+                {/* Quick stats / Features */}
+                <div className="grid grid-cols-2 gap-4 border-t border-slate-900 pt-6">
+                  <div className="flex gap-2.5">
+                    <div className="mt-1 h-5 w-5 rounded-md bg-cyan-950 border border-cyan-800/40 flex items-center justify-center">
+                      <Check className="h-3 w-3 text-cyan-400" />
+                    </div>
+                    <div>
+                      <h4 className="text-white text-xs font-black uppercase tracking-wider font-mono">Natural Voice Input</h4>
+                      <p className="text-slate-500 text-[11px] mt-0.5">Simply describe symptoms in normal English or Hindi</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2.5">
+                    <div className="mt-1 h-5 w-5 rounded-md bg-cyan-950 border border-cyan-800/40 flex items-center justify-center">
+                      <Check className="h-3 w-3 text-cyan-400" />
+                    </div>
+                    <div>
+                      <h4 className="text-white text-xs font-black uppercase tracking-wider font-mono">Split-Cart Optimization</h4>
+                      <p className="text-slate-500 text-[11px] mt-0.5">Compare and split medications across local stores</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Call to action buttons */}
+                <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                  <button
+                    onClick={handleStartListening}
+                    className="group relative inline-flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs uppercase tracking-wider transition-all duration-300 hover:shadow-[0_0_25px_rgba(6,182,212,0.45)] active:scale-[0.98] cursor-pointer"
+                  >
+                    <Mic className="h-4.5 w-4.5 text-cyan-200 animate-pulse group-hover:scale-110 transition-transform" />
+                    <span className="text-white">🤖 Talk to Live Agent</span>
+                  </button>
+
+                  <button
+                    onClick={currentState === "success" ? handleReset : handleStartListening}
+                    className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-full bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-850 font-bold text-xs uppercase tracking-wider transition-all duration-300 active:scale-[0.98] cursor-pointer group"
+                  >
+                    <span>
+                      {currentState === "success" ? "Try Another Search" : "See How It Works"}
+                    </span>
+                    <ArrowUpRight className="h-4 w-4 text-slate-500 group-hover:text-slate-350 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  </button>
+                </div>
+              </>
+            )}
 
           </div>
 

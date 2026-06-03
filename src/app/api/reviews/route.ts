@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
-import { reviewSchema } from "@/lib/validations";
+import { reviewSchema, sanitizePayload } from "@/lib/schemas";
+import { apiError, ForbiddenError, UnauthorizedError } from "@/app/api/error-handler";
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,11 +28,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, data: reviews });
   } catch (error) {
-    console.error("Reviews fetch error:", error);
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+    return apiError(error);
   }
 }
 
@@ -39,23 +36,16 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getSession();
     if (!session) {
-      return NextResponse.json(
-        { success: false, error: "Not authenticated" },
-        { status: 401 }
-      );
+      throw new UnauthorizedError();
     }
 
     const body = await request.json();
-    const validation = reviewSchema.safeParse(body);
+    // 1. Zod input checks BEFORE touches DB
+    const validated = reviewSchema.parse(body);
 
-    if (!validation.success) {
-      return NextResponse.json(
-        { success: false, error: validation.error.issues[0].message },
-        { status: 400 }
-      );
-    }
-
-    const { doctorId, rating, comment } = validation.data;
+    // 2. Escape user inputs recursively for XSS protection
+    const cleanInput = sanitizePayload(validated);
+    const { doctorId, rating, comment } = cleanInput;
 
     // Check if user already reviewed this doctor
     const existing = await prisma.review.findUnique({
@@ -74,30 +64,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const review = await prisma.review.create({
-      data: {
-        patientId: session.userId,
-        doctorId,
-        rating,
-        comment: comment || null,
-      },
-    });
+    // 3. Database Transaction: create review and update doctor avg stats concurrently
+    const review = await prisma.$transaction(async (tx) => {
+      const createdReview = await tx.review.create({
+        data: {
+          patientId: session.userId,
+          doctorId,
+          rating,
+          comment: comment || null,
+        },
+      });
 
-    // Update doctor's average rating
-    const allReviews = await prisma.review.findMany({
-      where: { doctorId },
-      select: { rating: true },
-    });
+      const allReviews = await tx.review.findMany({
+        where: { doctorId },
+        select: { rating: true },
+      });
 
-    const avgRating =
-      allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
+      const avgRating =
+        allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
 
-    await prisma.doctor.update({
-      where: { id: doctorId },
-      data: {
-        rating: Math.round(avgRating * 10) / 10,
-        totalReviews: allReviews.length,
-      },
+      await tx.doctor.update({
+        where: { id: doctorId },
+        data: {
+          rating: Math.round(avgRating * 10) / 10,
+          totalReviews: allReviews.length,
+        },
+      });
+
+      return createdReview;
     });
 
     return NextResponse.json(
@@ -105,10 +99,6 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Review create error:", error);
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+    return apiError(error);
   }
 }

@@ -1,83 +1,112 @@
-/**
- * Simple in-memory LRU cache for search results.
- * Max 200 entries, configurable TTL per entry.
- * Falls back gracefully — no external dependency needed.
- */
+import { Redis } from "@upstash/redis";
 
-type CacheEntry<T> = {
-  value: T;
-  expiresAt: number;
-};
+const redisUrl = process.env.UPSTASH_REDIS_URL;
+const redisToken = process.env.UPSTASH_REDIS_TOKEN;
 
-class LRUCache<T> {
-  private cache = new Map<string, CacheEntry<T>>();
-  private readonly maxSize: number;
-
-  constructor(maxSize = 200) {
-    this.maxSize = maxSize;
-  }
-
-  get(key: string): T | null {
+// Local fallback in-memory cache for development environments
+class LocalCacheFallback {
+  private cache = new Map<string, { value: any; expiresAt: number }>();
+  
+  get(key: string): any | null {
     const entry = this.cache.get(key);
     if (!entry) return null;
     if (Date.now() > entry.expiresAt) {
       this.cache.delete(key);
       return null;
     }
-    // Move to end (most recently used)
-    this.cache.delete(key);
-    this.cache.set(key, entry);
     return entry.value;
   }
 
-  set(key: string, value: T, ttlSeconds = 60): void {
-    if (this.cache.has(key)) this.cache.delete(key);
-    if (this.cache.size >= this.maxSize) {
-      // Evict the oldest entry
-      const firstKey = this.cache.keys().next().value;
-      if (firstKey) this.cache.delete(firstKey);
-    }
+  set(key: string, value: any, ttlSeconds = 60): void {
     this.cache.set(key, {
       value,
       expiresAt: Date.now() + ttlSeconds * 1000,
     });
   }
 
-  has(key: string): boolean {
-    return this.get(key) !== null;
-  }
-
   delete(key: string): void {
     this.cache.delete(key);
   }
+}
 
-  clear(): void {
-    this.cache.clear();
+const localCache = new LocalCacheFallback();
+
+export const redis = redisUrl && redisToken
+  ? new Redis({ url: redisUrl, token: redisToken })
+  : null;
+
+/**
+ * Retrieves a cached item. Support async Redis lookups with in-memory fallbacks.
+ */
+export async function getCached<T>(key: string): Promise<T | null> {
+  if (redis) {
+    try {
+      const data = await redis.get(key);
+      if (data) {
+        // Upstash redis auto-parses JSON, but we check if it is string and parse
+        return typeof data === "string" ? JSON.parse(data) : (data as T);
+      }
+      return null;
+    } catch (e) {
+      console.warn("⚠️ Redis get cached failure, reverting to memory fallback:", e);
+    }
   }
+  return localCache.get(key) as T | null;
+}
 
-  get size(): number {
-    return this.cache.size;
+/**
+ * Sets a cache item with a custom time-to-live (TTL).
+ */
+export async function setCached<T>(key: string, value: T, ttlSeconds = 60): Promise<void> {
+  if (redis) {
+    try {
+      await redis.set(key, JSON.stringify(value), { ex: ttlSeconds });
+      return;
+    } catch (e) {
+      console.warn("⚠️ Redis set cached failure, reverting to memory fallback:", e);
+    }
   }
+  localCache.set(key, value, ttlSeconds);
 }
 
-// Singleton — shared across all API route invocations in the same Node process
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const globalCache = globalThis as typeof globalThis & { __searchCache?: LRUCache<any> };
-if (!globalCache.__searchCache) {
-  globalCache.__searchCache = new LRUCache(200);
+/**
+ * Deletes a specific cache item.
+ */
+export async function deleteCached(key: string): Promise<void> {
+  if (redis) {
+    try {
+      await redis.del(key);
+      return;
+    } catch (e) {
+      console.warn("⚠️ Redis delete cached failure, reverting to memory fallback:", e);
+    }
+  }
+  localCache.delete(key);
 }
 
-export const searchCache = globalCache.__searchCache as LRUCache<unknown>;
-
-/** Convenience wrapper */
-export function getCached<T>(key: string): T | null {
-  return searchCache.get(key) as T | null;
-}
-
-export function setCached<T>(key: string, value: T, ttlSeconds = 60): void {
-  searchCache.set(key, value, ttlSeconds);
+/**
+ * Clears caches matching a given prefix (Bust cache pattern).
+ */
+export async function bustCachePattern(pattern: string): Promise<void> {
+  if (redis) {
+    try {
+      const keys = await redis.keys(pattern);
+      if (keys.length > 0) {
+        await redis.del(...keys);
+      }
+    } catch (e) {
+      console.warn("⚠️ Redis pattern bust failure:", e);
+    }
+  }
 }
 
 export function buildCacheKey(...parts: (string | number)[]): string {
   return parts.map(String).join(":").toLowerCase().trim();
 }
+
+// Backwards compatibility layer for legacy searchCache call syntax
+export const searchCache = {
+  delete: async (key: string) => {
+    await deleteCached(key);
+  }
+};

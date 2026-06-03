@@ -64,37 +64,4 @@ export async function GET() {
   }
 }
 
-export async function PUT(request: NextRequest) {
-  try {
-    const session = await getSession();
-    if (!session || session.role !== "ADMIN") {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 403 }
-      );
-    }
 
-    const body = await request.json();
-    const { doctorId, isApproved } = body;
-
-    const doctor = await prisma.doctor.update({
-      where: { id: doctorId },
-      data: { isApproved },
-      include: {
-        user: { select: { name: true, email: true } },
-      },
-    });
-
-    return NextResponse.json({
-      success: true,
-      data: doctor,
-      message: `Doctor ${isApproved ? "approved" : "rejected"} successfully`,
-    });
-  } catch (error) {
-    console.error("Admin approve error:", error);
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}

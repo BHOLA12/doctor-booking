@@ -63,21 +63,69 @@ export async function enrichAppointmentsWithQueue<T extends {
   createdAt: Date;
   priorityRank: number;
 }>(appointments: T[]) {
-  return Promise.all(
-    appointments.map(async (appointment) => {
-      const queue = await getQueueMetricsForAppointment({
-        appointmentId: appointment.id,
-        doctorId: appointment.doctorId,
-        date: appointment.date,
-        createdAt: appointment.createdAt,
-        priorityRank: appointment.priorityRank,
-      });
+  if (appointments.length === 0) return [];
 
+  // Extract unique filter criteria for the bulk query
+  const doctorIds = Array.from(new Set(appointments.map((a) => a.doctorId)));
+  const dates = Array.from(new Set(appointments.map((a) => a.date)));
+
+  // Bulk query all active appointments for the target doctors and dates in ONE database hit (Fix 7)
+  const allActiveAppointments = await prisma.appointment.findMany({
+    where: {
+      doctorId: { in: doctorIds },
+      date: { in: dates },
+      status: { in: ACTIVE_APPOINTMENT_STATUSES },
+    },
+    orderBy: [{ priorityRank: "asc" }, { createdAt: "asc" }],
+    select: {
+      id: true,
+      doctorId: true,
+      date: true,
+      priorityRank: true,
+      createdAt: true,
+    },
+  });
+
+  // Group active items by "doctorId:date" in-memory
+  const grouped = new Map<string, typeof allActiveAppointments>();
+  for (const active of allActiveAppointments) {
+    const key = `${active.doctorId}:${active.date}`;
+    if (!grouped.has(key)) {
+      grouped.set(key, []);
+    }
+    grouped.get(key)!.push(active);
+  }
+
+  // Map each original appointment to its queue metrics in-memory
+  return appointments.map((appointment) => {
+    const key = `${appointment.doctorId}:${appointment.date}`;
+    const activeList = grouped.get(key) || [];
+
+    const queueIndex = activeList.findIndex((item) => item.id === appointment.id);
+
+    if (queueIndex >= 0) {
+      const queueNumber = queueIndex + 1;
       return {
         ...appointment,
-        queueNumber: queue.queueNumber,
-        estimatedWaitMinutes: queue.estimatedWaitMinutes,
+        queueNumber,
+        estimatedWaitMinutes: queueIndex * DEFAULT_APPOINTMENT_DURATION_MINUTES,
       };
-    })
-  );
+    }
+
+    // Fallback if the appointment is not currently in the active list (calculate relative positioning)
+    const queueNumber =
+      activeList.filter((item) => {
+        if (item.priorityRank !== appointment.priorityRank) {
+          return item.priorityRank < appointment.priorityRank;
+        }
+        return item.createdAt < appointment.createdAt;
+      }).length + 1;
+
+    return {
+      ...appointment,
+      queueNumber,
+      estimatedWaitMinutes: (queueNumber - 1) * DEFAULT_APPOINTMENT_DURATION_MINUTES,
+    };
+  });
 }
+

@@ -8,7 +8,7 @@ import GlobalSearch from "@/components/shared/GlobalSearch";
  * Hero search bar that opens the GlobalSearch dropdown on focus/click.
  * Closes on outside click or ESC key.
  */
-export default function SearchBar() {
+export default function SearchBar({ minimal = false }: { minimal?: boolean }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -42,7 +42,10 @@ export default function SearchBar() {
       <button
         id="hero-search-trigger"
         onClick={() => setOpen(true)}
-        className="w-full flex items-center gap-3 h-12 pl-4 pr-4 rounded-xl border border-border bg-background/80 backdrop-blur-sm shadow-sm hover:border-primary/40 hover:shadow-md transition-all text-left group"
+        className={minimal 
+          ? "w-full flex items-center gap-3 h-10 bg-transparent text-left group outline-hidden border-0 cursor-pointer" 
+          : "w-full flex items-center gap-3 h-12 pl-4 pr-4 rounded-xl border border-border bg-background/80 backdrop-blur-sm shadow-sm hover:border-primary/40 hover:shadow-md transition-all text-left group"
+        }
         aria-label="Open search"
         aria-expanded={open}
         aria-haspopup="dialog"

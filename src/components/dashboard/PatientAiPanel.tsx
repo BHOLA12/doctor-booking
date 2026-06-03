@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Brain, Loader2, Sparkles, AlertCircle, FileText } from "lucide-react";
+import { Brain, Loader2, Sparkles, AlertCircle, FileText, AlertTriangle, Activity, PhoneCall, ArrowRight, ShieldCheck } from "lucide-react";
 import { ReportAnalysisResult, SymptomCheckerResult } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -78,92 +78,153 @@ export default function PatientAiPanel() {
             Analyze Symptoms
           </Button>
           {symptomResult && (
-            <div className="space-y-4 rounded-lg border p-4">
-              <div className="flex items-center gap-2 text-amber-600">
-                <AlertCircle className="h-4 w-4" />
-                <span className="text-xs font-medium">AI-Assisted Screening</span>
+            <div className="space-y-4 rounded-2xl border border-slate-200 p-5 bg-white shadow-xs">
+              {/* Header Triage Status */}
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-primary animate-pulse" />
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-800">
+                    Aarogya AI Triage Output
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 font-sans">
+                  <span className="text-[10px] font-bold text-slate-400">Severity:</span>
+                  {symptomResult.severity === "critical" && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-black text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-100 animate-pulse">
+                      <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+                      Critical (Emergency)
+                    </span>
+                  )}
+                  {symptomResult.severity === "high" && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-black text-orange-600 bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-100">
+                      <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                      High Urgency
+                    </span>
+                  )}
+                  {symptomResult.severity === "medium" && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-black text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-100">
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                      Medium
+                    </span>
+                  )}
+                  {symptomResult.severity === "low" && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      Low Priority
+                    </span>
+                  )}
+                </div>
               </div>
-              
-              <div>
-                <p className="font-medium mb-2">Possible Conditions</p>
-                <div className="space-y-2">
-                  {symptomResult.possibleDiseases.map((item, idx) => (
-                    <div key={idx} className="space-y-1">
-                      <div className="flex justify-between text-sm">
-                        <span>{item.name}</span>
-                        <span className="font-medium">{Math.round(item.probability * 100)}%</span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-primary rounded-full transition-all" 
-                          style={{ width: `${item.probability * 100}%` }}
-                        />
-                      </div>
-                      <p className="text-xs text-muted-foreground">{item.reason}</p>
+
+              {/* Emergency Banner Alert */}
+              {symptomResult.is_emergency && (
+                <div className="bg-rose-50 border border-rose-200 text-rose-900 rounded-xl p-4 flex flex-col gap-2.5 relative overflow-hidden">
+                  <div className="absolute right-2 bottom-0 opacity-10 select-none text-7xl font-bold">🚨</div>
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0" />
+                    <span className="font-extrabold text-sm uppercase tracking-wide">
+                      Critical Emergency Match Detected
+                    </span>
+                  </div>
+                  <p className="text-xs font-semibold leading-relaxed">
+                    {symptomResult.emergency_message || "This is a potentially critical health state. Immediate medical attention is highly advised."}
+                  </p>
+                  
+                  {symptomResult.action_required === "instant_doctor_connect" && (
+                    <div className="mt-1 flex flex-wrap gap-2">
+                      <Link href="/online-consultation" className="w-full sm:w-auto">
+                        <Button size="sm" className="w-full bg-rose-600 hover:bg-rose-700 text-white font-black uppercase text-[10px] tracking-wider rounded-lg flex items-center justify-center gap-2 py-2.5 cursor-pointer">
+                          <PhoneCall className="h-3.5 w-3.5" /> Instant Doctor Connect
+                        </Button>
+                      </Link>
+                      <Link href="/hospitals" className="w-full sm:w-auto">
+                        <Button size="sm" variant="outline" className="w-full border-rose-300 text-rose-700 bg-white hover:bg-rose-50 font-bold text-[10px] uppercase tracking-wider rounded-lg py-2.5 cursor-pointer">
+                          Nearest Hospital 🏥
+                        </Button>
+                      </Link>
                     </div>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="grid sm:grid-cols-2 gap-3">
-                <div>
-                  <p className="font-medium text-sm mb-1">Suggested Tests</p>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    {symptomResult.suggestedTests.map((test, idx) => (
-                      <li key={idx} className="flex items-center gap-2">
-                        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                        {test}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <p className="font-medium text-sm mb-1">Precautions</p>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    {symptomResult.precautions.map((prec, idx) => (
-                      <li key={idx} className="flex items-center gap-2">
-                        <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                        {prec}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              
-              
-              {symptomResult.suggestedMedicines && symptomResult.suggestedMedicines.length > 0 && (
-                <div className="border-t pt-3">
-                  <p className="font-semibold text-xs mb-2 text-slate-800 uppercase tracking-wider">Suggested OTC Medicines</p>
-                  <div className="flex flex-wrap gap-2">
-                    {symptomResult.suggestedMedicines.map((med, idx) => (
-                      <Link key={idx} href={`/medicines?search=${encodeURIComponent(med)}`}>
-                        <Badge variant="secondary" className="bg-primary/5 text-primary border border-primary/10 hover:bg-primary/10 text-xs px-2.5 py-1 font-bold rounded-lg cursor-pointer flex items-center gap-1">
-                          💊 {med}
-                        </Badge>
-                      </Link>
-                    ))}
-                  </div>
+                  )}
                 </div>
               )}
 
-              {symptomResult.suggestedSpecialists && symptomResult.suggestedSpecialists.length > 0 && (
-                <div className="border-t pt-3">
-                  <p className="font-semibold text-xs mb-2 text-slate-800 uppercase tracking-wider">Recommended Specialists</p>
-                  <div className="flex flex-wrap gap-2">
-                    {symptomResult.suggestedSpecialists.map((spec, idx) => (
+              {/* Understood Problem Summary */}
+              <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                  Understood Problem
+                </p>
+                <p className="text-xs font-semibold text-slate-800 leading-relaxed">
+                  "{symptomResult.understood_problem}"
+                </p>
+              </div>
+
+               {/* Primary Routing Suggestion Card */}
+              <div className="grid grid-cols-1 gap-3">
+                <div className="border border-slate-150 p-3.5 rounded-xl bg-slate-50/50">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                    Specialty Needed
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {symptomResult.specialty_needed.map((spec, idx) => (
                       <Link key={idx} href={`/doctors?specialization=${encodeURIComponent(spec)}`}>
-                        <Badge variant="outline" className="bg-teal-50 text-teal-750 border-teal-200/60 hover:bg-teal-150/50 text-xs px-2.5 py-1 font-bold rounded-lg cursor-pointer flex items-center gap-1">
-                          👨‍⚕️ {spec} (Find Nearby)
+                        <Badge className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary/15 font-black text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md cursor-pointer">
+                          👨‍⚕️ {spec}
                         </Badge>
                       </Link>
                     ))}
                   </div>
                 </div>
+
+                <div className="border border-slate-150 p-3.5 rounded-xl bg-slate-50/50">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                    Booking Recommendation
+                  </span>
+                  <div className="text-xs font-black text-slate-800">
+                    {symptomResult.doctor_type}
+                  </div>
+                  <span className="text-[10px] font-medium text-slate-500 block mt-0.5">
+                    Mode: {symptomResult.consultation_mode} ({symptomResult.booking_priority})
+                  </span>
+                </div>
+              </div>
+
+              {/* First Aid Response Banner */}
+              {symptomResult.first_aid_advice && (
+                <div className="bg-emerald-50/70 border border-emerald-100/60 rounded-xl p-4 flex gap-3.5 items-start">
+                  <div className="h-8 w-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
+                    <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h5 className="text-[10px] font-black text-emerald-800 uppercase tracking-wider mb-0.5">
+                      First Aid Response (प्राथमिक उपचार)
+                    </h5>
+                    <p className="text-xs font-bold text-emerald-700 leading-relaxed">
+                      {symptomResult.first_aid_advice}
+                    </p>
+                  </div>
+                </div>
               )}
 
-              <p className="text-xs text-muted-foreground border-t pt-3">
-                ⚠️ {symptomResult.disclaimer}
-              </p>
+              {/* Actions & Doctor Search Keywords */}
+              {symptomResult.doctor_search_keywords && symptomResult.doctor_search_keywords.length > 0 && (
+                <div className="border-t border-slate-100 pt-4 flex flex-col gap-3">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                      Search Tags:
+                    </span>
+                    {symptomResult.doctor_search_keywords.map((kw, idx) => (
+                      <span key={idx} className="text-[10px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg">
+                        #{kw}
+                      </span>
+                    ))}
+                  </div>
+
+                  <Link href={`/doctors?search=${encodeURIComponent(symptomResult.doctor_search_keywords[0] || "")}`} className="w-full">
+                    <button className="w-full inline-flex items-center justify-center gap-1 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-[10px] uppercase tracking-wider py-2.5 rounded-lg transition-all active:scale-[0.98] cursor-pointer">
+                      Find Doctors <ArrowRight className="h-3 w-3" />
+                    </button>
+                  </Link>
+                </div>
+              )}
             </div>
           )}
         </CardContent>

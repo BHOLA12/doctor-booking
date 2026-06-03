@@ -9,21 +9,20 @@ import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
 } from "@/lib/auth";
-import { registerSchema } from "@/lib/validations";
+import { registerSchema, sanitizePayload } from "@/lib/schemas";
 import { createSession } from "@/server/services/session-service";
-import { logAuditEvent } from "@/server/services/audit-service";
+import { logAuditEvent } from "@/lib/audit-log";
+import { apiError } from "@/app/api/error-handler";
+import { randomUUID } from "crypto";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const validation = registerSchema.safeParse(body);
+    // 1. Zod input validation BEFORE touches DB
+    const validated = registerSchema.parse(body);
 
-    if (!validation.success) {
-      return NextResponse.json(
-        { success: false, error: validation.error.issues[0].message },
-        { status: 400 }
-      );
-    }
+    // 2. Escape user inputs recursively to mitigate XSS injections
+    const cleanInput = sanitizePayload(validated);
 
     const {
       name,
@@ -52,7 +51,7 @@ export async function POST(request: NextRequest) {
       state,
       latitude,
       longitude,
-    } = validation.data;
+    } = cleanInput;
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
@@ -138,12 +137,16 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // 3. Pre-generate Session ID for database-backed revocation
+    const sessionId = randomUUID();
+
     const payload = {
       userId: user.id,
       email: user.email,
       role: user.role,
       name: user.name,
       isVerified: user.isVerified,
+      sessionId, // Embedded for session cookies verification
     };
 
     const accessToken = signAccessToken(payload);
@@ -151,7 +154,9 @@ export async function POST(request: NextRequest) {
     const ipAddress = request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? null;
     const userAgent = request.headers.get("user-agent") ?? null;
 
+    // 4. Persist the session to database with 8-hour TTL limits
     await createSession({
+      id: sessionId,
       userId: user.id,
       refreshToken,
       ipAddress,
@@ -161,8 +166,8 @@ export async function POST(request: NextRequest) {
     await logAuditEvent({
       userId: user.id,
       action: "REGISTER",
-      entity: "User",
-      entityId: user.id,
+      resourceId: user.id,
+      resourceType: "user",
       ipAddress,
       userAgent,
     });
@@ -192,11 +197,8 @@ export async function POST(request: NextRequest) {
     response.cookies.set(ACCESS_TOKEN_COOKIE, accessToken, getAccessTokenCookieOptions());
     response.cookies.set(REFRESH_TOKEN_COOKIE, refreshToken, getRefreshTokenCookieOptions());
     return response;
-  } catch (error: any) {
-    console.error("Registration error:", error);
-    return NextResponse.json(
-      { success: false, error: error.message || "Internal server error" },
-      { status: 500 }
-    );
+  } catch (error) {
+    return apiError(error);
   }
 }
+

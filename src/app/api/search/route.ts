@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCached, setCached, buildCacheKey } from "@/lib/search-cache";
 import { searchMedicines, searchLabTests, searchDietPlans } from "@/lib/fuse-indexes";
+import { z } from "zod";
+import { sanitizeHtml } from "@/lib/schemas";
+import { apiError } from "@/app/api/error-handler";
 
 export const dynamic = "force-dynamic";
 
@@ -25,13 +28,27 @@ const PAGE_SIZES: Record<SearchCategory, number> = {
   nutrition: 20,
 };
 
+const searchParamsSchema = z.object({
+  q: z.string().default("").transform((val) => sanitizeHtml(val.trim())),
+  category: z.enum(["all", "doctors", "medicines", "lab-tests", "nutrition"]).default("all"),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).optional(),
+});
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const query = (searchParams.get("q") || "").trim();
-    const category = (searchParams.get("category") || "all") as SearchCategory;
-    const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
-    const limit = parseInt(searchParams.get("limit") || String(PAGE_SIZES[category]));
+    const params = searchParamsSchema.parse({
+      q: searchParams.get("q") ?? undefined,
+      category: searchParams.get("category") ?? undefined,
+      page: searchParams.get("page") ?? undefined,
+      limit: searchParams.get("limit") ?? undefined,
+    });
+
+    const query = params.q;
+    const category = params.category;
+    const page = params.page;
+    const limit = params.limit ?? PAGE_SIZES[category];
 
     if (!query) {
       return NextResponse.json({
@@ -46,7 +63,7 @@ export async function GET(request: NextRequest) {
 
     // ── Cache key ──
     const cacheKey = buildCacheKey("search", category, query, `p${page}`, `l${limit}`);
-    const cached = getCached<object>(cacheKey);
+    const cached = await getCached<object>(cacheKey);
     if (cached) {
       return NextResponse.json({ ...cached, fromCache: true });
     }
@@ -65,10 +82,9 @@ export async function GET(request: NextRequest) {
     // Doctors — DB with cache
     if (category === "all" || category === "doctors") {
       const doctorCacheKey = buildCacheKey("doctors", query, `p${page}`, `l${doctorLimit}`);
-      let doctorData = getCached<{ rows: DoctorResult[]; count: number }>(doctorCacheKey);
+      let doctorData = await getCached<{ rows: DoctorResult[]; count: number }>(doctorCacheKey);
 
       if (!doctorData) {
-        const qLower = query.toLowerCase();
         const [rows, count] = await Promise.all([
           prisma.doctor.findMany({
             where: {
@@ -118,7 +134,7 @@ export async function GET(request: NextRequest) {
           })),
           count,
         };
-        setCached(doctorCacheKey, doctorData, 60); // 60s TTL
+        await setCached(doctorCacheKey, doctorData, 60); // 60s TTL
       }
 
       doctors = doctorData.rows;
@@ -168,14 +184,10 @@ export async function GET(request: NextRequest) {
     };
 
     // Cache the full response for 60s
-    setCached(cacheKey, response, 60);
+    await setCached(cacheKey, response, 60);
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Search API error:", error);
-    return NextResponse.json(
-      { success: false, error: "Search failed" },
-      { status: 500 }
-    );
+    return apiError(error);
   }
 }

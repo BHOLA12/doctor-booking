@@ -101,15 +101,15 @@ model Session {
 }
 
 model AuditLog {
-  id          String   @id @default(cuid())
-  userId      String?
-  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  action      String
-  entity      String?
-  entityId    String?
-  ipAddress   String?
-  userAgent   String?
-  createdAt   DateTime @default(now())
+  id           String   @id @default(cuid())
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action       String
+  resourceId   String?
+  resourceType String?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
 
   @@index([userId])
   @@index([createdAt(sort: Desc)])

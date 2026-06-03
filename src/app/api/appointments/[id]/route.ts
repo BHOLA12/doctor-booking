@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { updateAppointmentStatus } from "@/server/controllers/appointments-controller";
+import { apiError, UnauthorizedError } from "@/app/api/error-handler";
 
 export async function PUT(
   request: NextRequest,
@@ -9,19 +10,13 @@ export async function PUT(
   try {
     const session = await getSession();
     if (!session) {
-      return NextResponse.json(
-        { success: false, error: "Not authenticated" },
-        { status: 401 }
-      );
+      throw new UnauthorizedError();
     }
 
     const { id } = await params;
     return await updateAppointmentStatus(request, session, id);
   } catch (error) {
-    console.error("Appointment update error:", error);
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+    return apiError(error);
   }
 }
+

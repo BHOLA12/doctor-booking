@@ -141,7 +141,13 @@ export const medicalReportSchema = z.object({
 });
 
 export const symptomCheckerSchema = z.object({
-  symptoms: z.string().min(10, "Please describe the symptoms in more detail"),
+  symptoms: z.string().min(1, "Please describe the symptoms"),
+  history: z.array(
+    z.object({
+      role: z.enum(["user", "assistant"]),
+      text: z.string()
+    })
+  ).optional()
 });
 
 export const reportAnalysisSchema = z.object({

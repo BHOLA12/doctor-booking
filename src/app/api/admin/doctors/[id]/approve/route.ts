@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { apiError, ForbiddenError } from "@/app/api/error-handler";
 
 // PUT /api/admin/doctors/[id]/approve
 // Body: { isApproved: boolean }
@@ -11,10 +12,7 @@ export async function PUT(
   try {
     const session = await getSession();
     if (!session || session.role !== "ADMIN") {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 403 }
-      );
+      throw new ForbiddenError("Only platform administrators can approve providers");
     }
 
     const { id } = await params;
@@ -42,10 +40,7 @@ export async function PUT(
       message: `Doctor ${isApproved ? "approved" : "rejected"} successfully`,
     });
   } catch (error) {
-    console.error("Admin approve doctor error:", error);
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+    return apiError(error);
   }
 }
+

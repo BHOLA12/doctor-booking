@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCached, setCached, buildCacheKey } from "@/lib/search-cache";
+import { apiError } from "@/app/api/error-handler";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
       `l${limit}`
     );
 
-    const cached = getCached<object>(cacheKey);
+    const cached = await getCached<object>(cacheKey);
     if (cached) {
       return NextResponse.json({ ...cached, fromCache: true });
     }
@@ -117,14 +118,10 @@ export async function GET(request: NextRequest) {
     };
 
     // Cache 90s for non-search browsing, 30s for active searches (fresher results)
-    setCached(cacheKey, result, search ? 30 : 90);
+    await setCached(cacheKey, result, search ? 30 : 90);
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Doctors list error:", error);
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+    return apiError(error);
   }
 }

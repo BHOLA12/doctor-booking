@@ -12,8 +12,8 @@ export async function logAuditEvent(options: {
     data: {
       userId: options.userId || null,
       action: options.action,
-      entity: options.entity || null,
-      entityId: options.entityId || null,
+      resourceType: options.entity || null,
+      resourceId: options.entityId || null,
       ipAddress: options.ipAddress || null,
       userAgent: options.userAgent || null,
     },

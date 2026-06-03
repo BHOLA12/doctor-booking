@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { appointmentSchema } from "@/lib/validations";
+import { appointmentSchema, sanitizePayload } from "@/lib/schemas";
 import { fail, ok } from "@/server/utils/api";
 import { createAppointmentBookedNotifications } from "@/server/services/notification-service";
 import {
@@ -74,13 +74,11 @@ export async function listAppointments(request: NextRequest, session: { userId: 
 
 export async function createAppointment(request: NextRequest, session: { userId: string }) {
   const body = await request.json();
-  const validation = appointmentSchema.safeParse(body);
+  // 1. Zod input validation BEFORE touches DB
+  const validated = appointmentSchema.parse(body);
 
-  if (!validation.success) {
-    return fail(validation.error.issues[0].message, 400);
-  }
-
-  const data = validation.data;
+  // 2. Escape user input values recursively to prevent XSS
+  const data = sanitizePayload(validated);
   const appointmentType = data.isEmergency ? "EMERGENCY" : data.appointmentType;
   const priorityRank = resolvePriorityRank(appointmentType);
 

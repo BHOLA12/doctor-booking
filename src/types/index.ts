@@ -146,16 +146,19 @@ export interface PrescriptionInfo {
 }
 
 export interface SymptomCheckerResult {
-  possibleDiseases: Array<{
-    name: string;
-    probability: number;
-    reason: string;
-  }>;
-  suggestedTests: string[];
-  precautions: string[];
-  suggestedMedicines?: string[];
-  suggestedSpecialists?: string[];
-  disclaimer: string;
+  understood_problem: string;
+  specialty_needed: string[];
+  doctor_type: string;
+  consultation_mode: string;
+  booking_priority: string;
+  is_emergency: boolean;
+  emergency_message: string;
+  action_required: string;
+  first_aid_advice: string;
+  doctor_search_keywords: string[];
+  language_detected: string;
+  severity: "critical" | "high" | "medium" | "low";
+  confidence_score: number;
 }
 
 export interface ReportAnalysisResult {

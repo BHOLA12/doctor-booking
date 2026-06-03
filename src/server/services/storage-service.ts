@@ -1,33 +1,38 @@
 import "server-only";
-
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import { randomUUID } from "crypto";
+import { uploadToS3 } from "@/lib/s3";
 
-const ALLOWED_EXTENSIONS = [".pdf", ".png", ".jpg", ".jpeg", ".webp"];
-const PUBLIC_DIR = path.join(process.cwd(), "public");
+const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "application/pdf"];
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB hard limit
 
 export async function saveUploadedFile(input: {
   file: File;
   folder: string;
 }) {
-  const extension = path.extname(input.file.name).toLowerCase();
-
-  if (!ALLOWED_EXTENSIONS.includes(extension)) {
-    throw new Error("Unsupported file type");
+  // Validate file size before parsing buffers
+  if (input.file.size > MAX_FILE_SIZE_BYTES) {
+    throw new Error("File size exceeds the 10MB safety limit");
   }
 
-  const safeFolder = path.join(PUBLIC_DIR, input.folder);
-  await mkdir(safeFolder, { recursive: true });
-
-  const fileName = `${randomUUID()}${extension}`;
-  const absolutePath = path.join(safeFolder, fileName);
   const bytes = await input.file.arrayBuffer();
+  const buffer = Buffer.from(bytes);
 
-  await writeFile(absolutePath, Buffer.from(bytes));
+  // Dynamic import of file-type to support ESM package inside Next.js node environments
+  const { fileTypeFromBuffer } = await import("file-type");
+  const verifiedType = await fileTypeFromBuffer(buffer);
+
+  if (!verifiedType || !ALLOWED_MIME_TYPES.includes(verifiedType.mime)) {
+    throw new Error("Unsupported file type. Only JPEG, PNG, and PDF files are allowed.");
+  }
+
+  // Generate safe server-side UUID filename (ignore original client file naming vectors)
+  const uniqueKey = `${input.folder}/${randomUUID()}.${verifiedType.ext}`.replace(/\\/g, "/");
+
+  // Stream binary buffer to secure private S3 store
+  await uploadToS3(uniqueKey, buffer, verifiedType.mime);
 
   return {
-    fileName: input.file.name,
-    fileUrl: `/${input.folder}/${fileName}`.replace(/\\/g, "/"),
+    fileName: input.file.name, // Keep the original name for metadata display
+    fileUrl: uniqueKey,        // Save the unique S3 Key as url pointer in DB
   };
 }

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getRefreshTokenHash } from "@/lib/auth";
 
 export async function createSession(options: {
+  id?: string;
   userId: string;
   refreshToken: string;
   ipAddress?: string | null;
@@ -10,11 +11,12 @@ export async function createSession(options: {
   const refreshTokenHash = getRefreshTokenHash(options.refreshToken);
   return prisma.session.create({
     data: {
+      id: options.id,
       userId: options.userId,
       refreshTokenHash,
       ipAddress: options.ipAddress || null,
       userAgent: options.userAgent || null,
-      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 8), // 8 hours (Fix 3)
     },
   });
 }
@@ -50,7 +52,7 @@ export async function rotateSession(sessionId: string, refreshToken: string) {
     where: { id: sessionId },
     data: {
       refreshTokenHash,
-      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 8), // 8 hours (Fix 3)
       lastUsedAt: new Date(),
     },
   });
