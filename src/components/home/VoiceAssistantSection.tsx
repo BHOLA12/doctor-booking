@@ -526,7 +526,7 @@ export default function VoiceAssistantSection() {
               }
             }
 
-            speakText(speakMsg, speakLang, true);
+            speakText(speakMsg, speakLang, false);
             setChatHistory(prev => [
               ...prev,
               { role: "user", text: t },
@@ -570,7 +570,7 @@ export default function VoiceAssistantSection() {
             }
           }
 
-          speakText(speakMsg, speakLang, true);
+          speakText(speakMsg, speakLang, false);
           setChatHistory(prev => [
             ...prev,
             { role: "user", text: t },
