@@ -164,7 +164,7 @@ export default function PatientAiPanel() {
                     Specialty Needed
                   </span>
                   <div className="flex flex-wrap gap-1.5">
-                    {symptomResult.specialty_needed.map((spec, idx) => (
+                    {symptomResult.specialty_needed?.map((spec, idx) => (
                       <Link key={idx} href={`/doctors?specialization=${encodeURIComponent(spec)}`}>
                         <Badge className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary/15 font-black text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md cursor-pointer">
                           👨‍⚕️ {spec}
@@ -211,14 +211,14 @@ export default function PatientAiPanel() {
                     <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
                       Search Tags:
                     </span>
-                    {symptomResult.doctor_search_keywords.map((kw, idx) => (
+                    {symptomResult.doctor_search_keywords?.map((kw, idx) => (
                       <span key={idx} className="text-[10px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg">
                         #{kw}
                       </span>
                     ))}
                   </div>
 
-                  <Link href={`/doctors?search=${encodeURIComponent(symptomResult.doctor_search_keywords[0] || "")}`} className="w-full">
+                  <Link href={`/doctors?search=${encodeURIComponent(symptomResult.doctor_search_keywords?.[0] || "")}`} className="w-full">
                     <button className="w-full inline-flex items-center justify-center gap-1 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-[10px] uppercase tracking-wider py-2.5 rounded-lg transition-all active:scale-[0.98] cursor-pointer">
                       Find Doctors <ArrowRight className="h-3 w-3" />
                     </button>

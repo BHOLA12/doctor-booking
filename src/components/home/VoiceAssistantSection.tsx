@@ -1087,7 +1087,7 @@ export default function VoiceAssistantSection() {
                       Specialty Needed
                     </span>
                     <div className="flex flex-wrap gap-1.5">
-                      {symptomResult.specialty_needed.map((spec, idx) => (
+                      {symptomResult.specialty_needed?.map((spec, idx) => (
                         <Link key={idx} href={`/doctors?specialization=${encodeURIComponent(spec)}`}>
                           <span className="bg-cyan-500/10 text-cyan-400 border border-cyan-800/40 hover:bg-cyan-500/15 font-black text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md cursor-pointer transition-all">
                             👨‍⚕️ {spec}
@@ -1134,7 +1134,7 @@ export default function VoiceAssistantSection() {
                       Search Tags:
                     </span>
                     {symptomResult.doctor_search_keywords && symptomResult.doctor_search_keywords.length > 0 ? (
-                      symptomResult.doctor_search_keywords.map((kw, idx) => (
+                      symptomResult.doctor_search_keywords?.map((kw, idx) => (
                         <span key={idx} className="text-[9px] font-bold text-slate-400 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-lg font-mono">
                           #{kw}
                         </span>
