@@ -354,7 +354,7 @@ export default function StorePortalDashboard() {
           const completedMeds = await Promise.all(
             rawMeds.map(async (med, index) => {
               try {
-                const res = await fetch("/api/scrape-image", {
+                const res = await fetch("/api/medicines/resolve-image", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
@@ -367,7 +367,7 @@ export default function StorePortalDashboard() {
                 const data = await res.json();
                 return {
                   ...med,
-                  image: data.scrapedUrl as string | undefined,
+                  image: data.imageUrl as string | undefined,
                   isAiGenerated: !!data.isAiGenerated as boolean,
                   aiDisclaimer: data.aiDisclaimer as string | undefined
                 };
@@ -421,7 +421,7 @@ export default function StorePortalDashboard() {
           const completedMeds = await Promise.all(
             rawMeds.map(async (med, index) => {
               try {
-                const res = await fetch("/api/scrape-image", {
+                const res = await fetch("/api/medicines/resolve-image", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
@@ -434,7 +434,7 @@ export default function StorePortalDashboard() {
                 const data = await res.json();
                 return {
                   ...med,
-                  image: data.scrapedUrl as string | undefined,
+                  image: data.imageUrl as string | undefined,
                   isAiGenerated: !!data.isAiGenerated as boolean,
                   aiDisclaimer: data.aiDisclaimer as string | undefined
                 };
@@ -489,7 +489,7 @@ export default function StorePortalDashboard() {
         const completedMeds = await Promise.all(
           rawMeds.map(async (med, index) => {
             try {
-              const res = await fetch("/api/scrape-image", {
+              const res = await fetch("/api/medicines/resolve-image", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -502,7 +502,7 @@ export default function StorePortalDashboard() {
               const data = await res.json();
               return {
                 ...med,
-                image: data.scrapedUrl as string | undefined,
+                image: data.imageUrl as string | undefined,
                 isAiGenerated: !!data.isAiGenerated as boolean,
                 aiDisclaimer: data.aiDisclaimer as string | undefined
               };

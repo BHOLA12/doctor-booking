@@ -288,30 +288,30 @@ function MedicinesContent() {
     fetchGPSLocation();
   }, [fetchGPSLocation]);
 
-  // Asynchronous Background Image Scraper Pipeline
+  // Curated Medicine Image Resolution Pipeline
   useEffect(() => {
     // Find medicines that were initialized without an image (index % 3 === 0)
     const missingImages = MEDICINES.filter((_, index) => index % 3 === 0);
     missingImages.forEach(async (med) => {
       try {
-        const res = await fetch("/api/scrape-image", {
+        const res = await fetch("/api/medicines/resolve-image", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ medicineName: med.name, medicineId: med.id, salt: med.salt, category: med.category })
         });
         const data = await res.json();
         if (res.ok && data.success) {
-          console.log(`🤖 Background Scraped & Updated ${med.name}:`, data.scrapedUrl);
-          // Dynamically update local state to fade in the scraped image and set AI properties
+          console.log(`[Image Resolver] Updated ${med.name}:`, data.imageUrl);
+          // Dynamically update local state to fade in the resolved image and set metadata properties
           setMedicinesList(prev => prev.map(m => m.id === med.id ? { 
             ...m, 
-            image: data.scrapedUrl,
+            image: data.imageUrl,
             isAiGenerated: data.isAiGenerated,
             aiDisclaimer: data.aiDisclaimer 
           } : m));
         }
       } catch (err) {
-        console.warn("Background scraper error for", med.name, err);
+        console.warn("Image resolution failure for", med.name, err);
       }
     });
   }, []);

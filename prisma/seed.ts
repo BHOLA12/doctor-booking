@@ -63,6 +63,28 @@ async function main() {
   ]);
   console.log("✅ Hospitals created:", hospitals.length);
 
+  const femaleImages = [
+    "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=300&h=300",
+    "https://images.unsplash.com/photo-1594824436998-d40b243ea4f2?auto=format&fit=crop&q=80&w=300&h=300",
+    "https://images.unsplash.com/photo-1614608682850-e0d6ed316d47?auto=format&fit=crop&q=80&w=300&h=300",
+    "https://images.unsplash.com/photo-1623854767648-e7bb8009f0db?auto=format&fit=crop&q=80&w=300&h=300"
+  ];
+
+  const maleImages = [
+    "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=300&h=300",
+    "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=300&h=300",
+    "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=300&h=300",
+    "https://images.unsplash.com/photo-1550831107-1553da8c8464?auto=format&fit=crop&q=80&w=300&h=300",
+    "https://images.unsplash.com/photo-1622902046580-2b47f47f5471?auto=format&fit=crop&q=80&w=300&h=300"
+  ];
+
+  const pharmacyImages = [
+    "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=300&h=300",
+    "https://images.unsplash.com/photo-1586015555751-63bb77f4322a?auto=format&fit=crop&q=80&w=300&h=300",
+    "https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?auto=format&fit=crop&q=80&w=300&h=300",
+    "https://images.unsplash.com/photo-1631549916768-4119b2e55c26?auto=format&fit=crop&q=80&w=300&h=300"
+  ];
+
   // Create Admin
   const admin = await prisma.user.create({
     data: {
@@ -71,6 +93,7 @@ async function main() {
       password: adminPassword,
       role: "ADMIN",
       isVerified: true,
+      avatar: maleImages[4],
     },
   });
   console.log("✅ Admin created:", admin.email);
@@ -85,6 +108,7 @@ async function main() {
         phone: "9876543210",
         role: "PATIENT",
         isVerified: true,
+        avatar: maleImages[0],
       },
     }),
     prisma.user.create({
@@ -95,6 +119,7 @@ async function main() {
         phone: "9876543211",
         role: "PATIENT",
         isVerified: true,
+        avatar: femaleImages[0],
       },
     }),
     prisma.user.create({
@@ -105,6 +130,7 @@ async function main() {
         phone: "9876543213",
         role: "PATIENT",
         isVerified: true,
+        avatar: femaleImages[1],
       },
     }),
   ]);
@@ -179,7 +205,8 @@ async function main() {
   ];
 
   const pharmacyUsers = [];
-  for (const p of pharmacyData) {
+  for (let i = 0; i < pharmacyData.length; i++) {
+    const p = pharmacyData[i];
     const user = await prisma.user.create({
       data: {
         name: p.storeName,
@@ -187,6 +214,7 @@ async function main() {
         password: hashedPassword,
         role: "PHARMACY",
         isVerified: true,
+        avatar: pharmacyImages[i % pharmacyImages.length],
       },
     });
 
@@ -279,7 +307,23 @@ async function main() {
 
   // Create Doctors
   const doctorUsers = [];
-  for (const d of doctorData) {
+  for (let i = 0; i < doctorData.length; i++) {
+    const d = doctorData[i];
+    
+    // Choose gender-appropriate avatar
+    let avatarUrl = maleImages[0];
+    if (d.name.includes("Anita")) {
+      avatarUrl = femaleImages[2];
+    } else if (d.name.includes("Meena")) {
+      avatarUrl = femaleImages[3];
+    } else if (d.name.includes("Ashok")) {
+      avatarUrl = maleImages[2];
+    } else if (d.name.includes("Manoj")) {
+      avatarUrl = maleImages[3];
+    } else if (d.name.includes("Rajesh")) {
+      avatarUrl = maleImages[1];
+    }
+
     const user = await prisma.user.create({
       data: {
         name: d.name,
@@ -287,6 +331,7 @@ async function main() {
         password: hashedPassword,
         role: "DOCTOR",
         isVerified: true,
+        avatar: avatarUrl,
       },
     });
 

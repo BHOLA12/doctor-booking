@@ -25,8 +25,23 @@ Follow this step-by-step roadmap to set up your environment and make your first 
    ```bash
    cp .env.example .env.local
    ```
-2. Retrieve local database and API credentials (see [SECURITY_SETUP.md](file:///c:/Users/kashy/OneDrive/Desktop/doctor-booking/SECURITY_SETUP.md)).
-3. Fill in the credentials in `.env.local`.
+2. Fill in the credentials in `.env.local` using the instructions below:
+
+   #### **Database Connection (Neon PostgreSQL)**
+   1. Go to your Neon console (https://console.neon.tech).
+   2. Copy the "Connection string".
+   3. Set `DATABASE_URL` and `DIRECT_URL` in `.env.local` to this connection string.
+
+   #### **OpenAI/Gemini API Key**
+   1. Go to https://platform.openai.com/api-keys.
+   2. Create or copy your key and set `OPENAI_API_KEY` in `.env.local`.
+   3. Note: The system also supports `GEMINI_API_KEY` and `GROQ_API_KEY` as alternative fallback endpoints.
+
+   #### **JWT Secret Generation**
+   Generate a strong random JWT secret:
+   * **Node.js**: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+   * **PowerShell**: `[Convert]::ToBase64String((1..32 | ForEach-Object { [byte](Get-Random -Maximum 256) }))`
+   * Set `JWT_SECRET` in `.env.local` to the generated string.
 
 ### Step 2: Database Initialization
 1. Install project dependencies:
@@ -78,8 +93,3 @@ Here are the files you should read first to understand the backend:
 | **4** | [src/server/services/openai-service.ts](file:///c:/Users/kashy/OneDrive/Desktop/doctor-booking/src/server/services/openai-service.ts) | Medium | AI LLM routing logic, prompt templates, fallback behaviors. |
 | **5** | [src/server/controllers/appointments-controller.ts](file:///c:/Users/kashy/OneDrive/Desktop/doctor-booking/src/server/controllers/appointments-controller.ts) | Medium | Handlers for listing, creating, and updating appointments. |
 | **6** | [src/server/services/session-service.ts](file:///c:/Users/kashy/OneDrive/Desktop/doctor-booking/src/server/services/session-service.ts) | Low | Database session management, rotation, and revocation. |
-
----
-
-## 🧠 Backend Understanding Score: 95%
-*The remaining 5% is reserved for runtime performance telemetry, production log patterns, and edge cases in multi-lingual LLM prompt parsing under Groq/Gemini.*
